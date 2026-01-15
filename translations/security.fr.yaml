@@ -1,0 +1,11 @@
+# French translations for Symfony Security messages
+"Invalid credentials.": "Identifiants invalides."
+"Account is disabled.": "Ce compte est desactive."
+"Account is locked.": "Ce compte est verrouille."
+"Invalid CSRF token.": "Token de securite invalide. Veuillez reessayer."
+"Too many failed login attempts, please try again in %minutes% minute.": "Trop de tentatives echouees, veuillez reessayer dans %minutes% minute."
+"Too many failed login attempts, please try again in %minutes% minutes.": "Trop de tentatives echouees, veuillez reessayer dans %minutes% minutes."
+"Account is not verified.": "Ce compte n'a pas ete verifie."
+"User account is disabled.": "Ce compte utilisateur est desactive."
+"User account is expired.": "Ce compte utilisateur a expire."
+"User credentials have expired.": "Les identifiants de ce compte ont expire."

@@ -1,0 +1,42 @@
+Rappel : {{ tournament.name }} demain !
+
+Bonjour {{ user.pseudo }},
+
+N'oubliez pas, le tournoi "{{ tournament.name }}" a lieu demain !
+
+DETAILS DU TOURNOI
+==================
+Nom: {{ tournament.name }}
+Date: {{ tournament.date|date('l d F Y', 'Europe/Paris') }}{% if tournament.time %} a {{ tournament.time|date('H:i') }}{% endif %}
+
+{% if tournament.location %}
+Lieu: {{ tournament.location }}
+{% endif %}
+Format: {{ tournament.format.label|trans }}
+Structure: {{ tournament.structure.label|trans }}
+{% if tournament.entryFee %}
+Prix d'entree: {{ tournament.entryFee }}
+{% endif %}
+
+ORGANISATEUR
+============
+{{ tournament.organizer.pseudo }}
+Email: {{ tournament.organizer.email }}
+
+LIENS UTILES
+============
+Voir le tournoi: {{ tournamentUrl }}
+Ajouter au calendrier: {{ calendarUrl }}
+
+Conseil: Pensez a preparer votre deck et a verifier votre liste de cartes sur Altered.gg avant le tournoi !
+{% if unregisterUrl %}
+
+---
+
+Vous ne pouvez plus participer ?
+Annuler mon inscription: {{ unregisterUrl }}
+{% endif %}
+
+---
+(c) {{ 'now'|date('Y') }} Altered Tournament Tools
+Cet email vous a ete envoye automatiquement. Merci de ne pas y repondre.

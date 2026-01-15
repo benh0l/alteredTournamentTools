@@ -1,0 +1,253 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon inscription - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">Modifier mon inscription</h1>
+
+    <div class="shadow rounded-lg p-6 mb-6" style="background-color: var(--card-bg);">
+        <h2 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">{{ tournament.name }}</h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-2" style="color: var(--text-secondary);">
+            <div>
+                <dt class="text-sm" style="color: var(--text-muted);">Date</dt>
+                <dd class="font-medium">
+                    {{ tournament.date|date('d/m/Y') }}
+                    {% if tournament.time %} a {{ tournament.time|date('H:i') }}{% endif %}
+                </dd>
+            </div>
+            {% if tournament.location %}
+                <div>
+                    <dt class="text-sm" style="color: var(--text-muted);">Lieu</dt>
+                    <dd class="font-medium">{{ tournament.location }}</dd>
+                </div>
+            {% endif %}
+            <div>
+                <dt class="text-sm" style="color: var(--text-muted);">Format</dt>
+                <dd class="font-medium">{{ tournament.format.label|trans }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm" style="color: var(--text-muted);">Structure</dt>
+                <dd class="font-medium">{{ tournament.structure.label|trans }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    {{ form_start(form, {'attr': {
+        'class': 'space-y-6',
+        'data-controller': 'registration-form',
+        'data-registration-form-heroes-value': heroesData|json_encode,
+        'data-registration-form-hero-out-of-faction-value': tournament.format.isHeroOutOfFaction ? 'true' : 'false',
+        'data-registration-form-bifaction-value': tournament.format.isBifaction ? 'true' : 'false'
+    }}) }}
+
+        {# Global form errors (CSRF, etc.) #}
+        {% if form.vars.errors|length > 0 %}
+            <div class="p-4 rounded-lg border-2 bg-red-50 border-red-500">
+                <div class="flex items-start">
+                    {{ ux_icon('lucide:alert-circle', {class: 'w-6 h-6 mr-3 flex-shrink-0 text-red-600'}) }}
+                    <div class="text-red-700 font-medium">
+                        {% for error in form.vars.errors %}
+                            <p>{{ error.message }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if tournament.format.isConstructed %}
+            {# Faction & Hero Selection Card - Only for Constructed formats #}
+            <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
+                <h3 class="text-lg font-medium mb-4 flex items-center" style="color: var(--text-primary);">
+                    {% if tournament.format.isHeroOutOfFaction %}
+                        {{ ux_icon('lucide:shuffle', {class: 'w-5 h-5 mr-2 text-pink-500'}) }}
+                    {% elseif tournament.format.isBifaction %}
+                        {{ ux_icon('lucide:git-merge', {class: 'w-5 h-5 mr-2 text-cyan-500'}) }}
+                    {% else %}
+                        {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                    {% endif %}
+                    {% if tournament.format.isBifaction %}
+                        Factions et Heros
+                    {% else %}
+                        Faction et Heros
+                    {% endif %}
+                </h3>
+
+                {% if tournament.format.isHeroOutOfFaction %}
+                    <div class="flex items-start p-4 mb-4 rounded-lg bg-pink-500/10 border border-pink-500/30">
+                        {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-pink-500 mr-3 flex-shrink-0 mt-0.5'}) }}
+                        <div class="text-sm" style="color: var(--text-secondary);">
+                            <strong class="text-pink-600">Format Heros Out of Faction :</strong><br>
+                            Vous devez choisir un heros appartenant a une <strong>faction differente</strong> de celle de votre deck.
+                        </div>
+                    </div>
+                {% elseif tournament.format.isBifaction %}
+                    <div class="flex items-start p-4 mb-4 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                        {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-cyan-500 mr-3 flex-shrink-0 mt-0.5'}) }}
+                        <div class="text-sm" style="color: var(--text-secondary);">
+                            <strong class="text-cyan-600">Format Bifaction :</strong><br>
+                            Vous devez choisir <strong>deux factions</strong> et un heros appartenant a <strong>l'une de ces deux factions</strong>.
+                        </div>
+                    </div>
+                {% endif %}
+
+                <p class="text-sm mb-4" style="color: var(--text-muted);">
+                    {% if tournament.format.isBifaction %}
+                        Modifiez vos deux factions et votre heros pour ce tournoi. (optionnel)
+                    {% else %}
+                        Modifiez votre faction et votre heros pour ce tournoi. (optionnel)
+                    {% endif %}
+                </p>
+
+                <div class="flex flex-col md:flex-row gap-6 mb-4">
+                    {# Selection Fields #}
+                    <div class="flex-1 grid grid-cols-1 gap-4">
+                        {# Faction Selection #}
+                        <div>
+                            {{ form_label(form.faction, tournament.format.isBifaction ? 'Premiere Faction' : null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.faction) }}
+                            </div>
+                            {% if form.faction.vars.errors|length > 0 %}
+                                <p class="mt-1 text-sm text-red-600 font-medium">{{ form.faction.vars.errors[0].message }}</p>
+                            {% endif %}
+                        </div>
+
+                        {# Second Faction Selection - Only for Bifaction #}
+                        {% if tournament.format.isBifaction %}
+                        <div>
+                            {{ form_label(form.faction2, null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.faction2) }}
+                            </div>
+                            {% if form.faction2.vars.errors|length > 0 %}
+                                <p class="mt-1 text-sm text-red-600 font-medium">{{ form.faction2.vars.errors[0].message }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        {# Hero Selection #}
+                        <div>
+                            {{ form_label(form.hero, null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.hero) }}
+                            </div>
+                            {% if form.hero.vars.errors|length > 0 %}
+                                <p class="mt-1 text-sm text-red-600 font-medium">{{ form.hero.vars.errors[0].message }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Hero Preview #}
+                    <div class="flex-shrink-0 flex flex-col items-center justify-center" data-registration-form-target="heroPreview">
+                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 shadow-lg transition-all duration-300"
+                             style="border-color: {% if registration.faction %}{{ registration.faction.color }}{% else %}var(--border-muted){% endif %}; background-color: var(--bg-subtle);"
+                             data-registration-form-target="heroImageContainer">
+                            {% if registration.hero %}
+                                <img src="{{ registration.heroImage }}" alt="{{ registration.heroLabel }}" class="w-full h-full object-cover" data-registration-form-target="heroImage">
+                                <div class="w-full h-full flex items-center justify-center hidden" data-registration-form-target="heroPlaceholder">
+                                    {{ ux_icon('lucide:user', {class: 'w-10 h-10', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center" data-registration-form-target="heroPlaceholder">
+                                    {{ ux_icon('lucide:user', {class: 'w-10 h-10', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                <img src="" alt="" class="w-full h-full object-cover hidden" data-registration-form-target="heroImage">
+                            {% endif %}
+                        </div>
+                        <span class="mt-2 text-sm font-medium" style="color: var(--text-secondary);" data-registration-form-target="heroName">
+                            {{ registration.heroLabel ?? 'Selectionnez un heros' }}
+                        </span>
+                    </div>
+                </div>
+
+                {# Faction Color Legend #}
+                <div class="flex flex-wrap gap-3 pt-4 border-t" style="border-color: var(--border-muted);">
+                    <span class="text-xs" style="color: var(--text-muted);">Factions:</span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(245, 158, 11, 0.2); color: #7a4d25;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #7a4d25;"></span>
+                        Axiom
+                    </span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #ef4444;"></span>
+                        Bravos
+                    </span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(230,84,236,0.2); color: #e394da;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #e394da;"></span>
+                        Lyra
+                    </span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(34, 197, 94, 0.2); color: #22c55e;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #22c55e;"></span>
+                        Muna
+                    </span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(59, 130, 246, 0.2); color: #3b82f6;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #3b82f6;"></span>
+                        Ordis
+                    </span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(111,43,227,0.2); color: #a855f7;">
+                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: #a855f7;"></span>
+                        Yzmir
+                    </span>
+                </div>
+            </div>
+
+            {# Decklist Card - Only for Constructed formats #}
+            <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
+                <h3 class="text-lg font-medium mb-4 flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                    Decklist
+                </h3>
+
+                <div class="mb-4">
+                    {{ form_label(form.decklistUrl, null, {'label_attr': {'class': 'block text-sm font-medium mb-1', 'style': 'color: var(--text-secondary);'}}) }}
+                    {{ form_widget(form.decklistUrl) }}
+                    {{ form_help(form.decklistUrl, {'help_attr': {'class': 'mt-1 text-sm', 'style': 'color: var(--text-muted);'}}) }}
+                    {% if form.decklistUrl.vars.errors|length > 0 %}
+                        <p class="mt-1 text-sm text-red-600 font-medium">{{ form.decklistUrl.vars.errors[0].message }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            {# Limited format info card #}
+            <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
+                <div class="flex items-start">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 bg-purple-500/20">
+                        {{ ux_icon('lucide:dice-5', {class: 'w-6 h-6 text-purple-600 dark:text-purple-400'}) }}
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">Format Limite</h3>
+                        <p class="text-sm" style="color: var(--text-secondary);">
+                            {{ tournament.format.description }}<br>
+                            La faction et le heros seront determines lors de la construction du deck sur place.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {# Render hidden fields to avoid form errors #}
+            {{ form_widget(form.faction, {'attr': {'class': 'hidden'}}) }}
+            {{ form_widget(form.faction2, {'attr': {'class': 'hidden'}}) }}
+            {{ form_widget(form.hero, {'attr': {'class': 'hidden'}}) }}
+            {{ form_widget(form.decklistUrl, {'attr': {'class': 'hidden'}}) }}
+        {% endif %}
+
+        {# Hidden faction2 field for non-Bifaction constructed formats #}
+        {% if tournament.format.isConstructed and not tournament.format.isBifaction %}
+            {{ form_widget(form.faction2, {'attr': {'class': 'hidden'}}) }}
+        {% endif %}
+
+        <div class="flex justify-between items-center">
+            <a href="{{ path('tournament_show', {'id': tournament.id}) }}"
+               class="inline-flex items-center hover:opacity-80" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                Annuler
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:save', {class: 'w-5 h-5 mr-2'}) }}
+                Mettre a jour
+            </button>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

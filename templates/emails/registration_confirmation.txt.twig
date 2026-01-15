@@ -1,0 +1,43 @@
+{% extends 'emails/base.txt.twig' %}
+
+{% block content %}
+INSCRIPTION CONFIRMEE !
+
+Bonjour {{ player.pseudo }},
+
+Votre inscription au tournoi "{{ tournament.name }}" a bien ete enregistree.
+
+---
+DETAILS DU TOURNOI
+---
+Nom: {{ tournament.name }}
+Date: {{ tournament.date|date('d/m/Y') }}{% if tournament.time %} a {{ tournament.time|date('H:i') }}{% endif %}
+
+{% if tournament.location %}
+Lieu: {{ tournament.location }}
+{% endif %}
+Format: {{ tournament.format.label|trans }}
+{% if tournament.entryFee %}
+Prix d'entree: {{ tournament.entryFee }}
+{% endif %}
+
+---
+VOTRE INSCRIPTION
+---
+Date d'inscription: {{ registration.registeredAt|date('d/m/Y a H:i') }}
+{% if registration.decklistUrl %}
+Decklist: {{ registration.decklistUrl }}
+{% endif %}
+
+---
+CONTACT ORGANISATEUR
+---
+Organisateur: {{ tournament.organizer.pseudo }}
+Email: {{ tournament.organizer.email }}
+
+---
+LIENS UTILES
+---
+Voir le tournoi: {{ tournamentUrl }}
+Annuler mon inscription: {{ unregisterUrl }}
+{% endblock %}

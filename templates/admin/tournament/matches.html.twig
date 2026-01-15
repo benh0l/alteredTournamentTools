@@ -1,0 +1,245 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ tournament.name }} - Matches - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8"
+     data-controller="admin-override"
+     data-admin-override-csrf-value="{{ csrf_token('admin_override') }}">
+
+    <div class="container mx-auto px-4">
+        {# Breadcrumb #}
+        <div class="mb-6">
+            <a href="{{ path('admin_tournament_details', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour aux details du tournoi
+            </a>
+        </div>
+
+        {# Tournament Header #}
+        <div class="rounded-lg shadow mb-8" style="background-color: var(--card-bg);">
+            <div class="px-6 py-5" style="border-bottom: 1px solid var(--border-default);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ tournament.name }}</h1>
+                        <p class="mt-1 text-sm" style="color: var(--text-muted);">
+                            Gestion des matches - {{ rounds|length }} ronde(s)
+                        </p>
+                    </div>
+                    <div>
+                        {% if tournament.status.value == 'ongoing' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                En cours
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                {{ tournament.status.value }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Rounds and Matches #}
+        {% if rounds is empty %}
+            <div class="rounded-lg shadow p-8 text-center" style="background-color: var(--card-bg); color: var(--text-muted);">
+                Aucune ronde n'a encore ete creee pour ce tournoi.
+            </div>
+        {% else %}
+            <div class="space-y-6">
+                {% for roundData in rounds %}
+                    {% set round = roundData.round %}
+                    {% set matches = roundData.matches %}
+
+                    <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+                        <div class="px-6 py-4" style="border-bottom: 1px solid var(--border-default); background-color: var(--bg-subtle);">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-medium" style="color: var(--text-primary);">
+                                    Ronde {{ round.roundNumber }}
+                                </h2>
+                                <div class="text-sm" style="color: var(--text-muted);">
+                                    {{ matches|length }} match(es)
+                                    {% if round.startedAt %}
+                                        - Demarree le {{ round.startedAt|date('d/m/Y H:i') }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if matches is empty %}
+                            <div class="px-6 py-8 text-center" style="color: var(--text-muted);">
+                                Aucun match dans cette ronde.
+                            </div>
+                        {% else %}
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
+                                    <thead style="background-color: var(--bg-subtle);">
+                                        <tr>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Table
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Joueur 1
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Joueur 2
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Statut
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Resultat
+                                            </th>
+                                            <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="background-color: var(--card-bg);">
+                                        {% for match in matches %}
+                                            <tr id="match-row-{{ match.id }}"
+                                                class="{% if match.status.value == 'dispute' %}bg-red-50{% endif %}" style="border-bottom: 1px solid var(--border-default);">
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium" style="color: var(--text-primary);">
+                                                    {{ match.tableNumber }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-primary);">
+                                                    {% if match.player1 %}
+                                                        {{ match.player1.player.pseudo }}
+                                                        {% if match.winner == match.player1 %}
+                                                            <span class="ml-1 text-green-600 font-bold">*</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span style="color: var(--text-muted);">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-primary);">
+                                                    {% if match.isBye %}
+                                                        <span class="italic" style="color: var(--text-muted);">BYE</span>
+                                                    {% elseif match.player2 %}
+                                                        {{ match.player2.player.pseudo }}
+                                                        {% if match.winner == match.player2 %}
+                                                            <span class="ml-1 text-green-600 font-bold">*</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span style="color: var(--text-muted);">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    {% if match.status.value == 'completed' %}
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                            Termine
+                                                        </span>
+                                                    {% elseif match.status.value == 'dispute' %}
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                            Litige
+                                                        </span>
+                                                    {% elseif match.status.value == 'ongoing' %}
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                            En cours
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                            En attente
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                                    {% if match.winner %}
+                                                        <span class="text-green-600 font-medium">
+                                                            {{ match.winner.player.pseudo }}
+                                                        </span>
+                                                    {% elseif match.isBye %}
+                                                        <span class="italic" style="color: var(--text-muted);">Auto</span>
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                                    {% if not match.isBye %}
+                                                        <button type="button"
+                                                                class="hover:underline" style="color: var(--color-primary-600);"
+                                                                data-action="click->admin-override#openModal"
+                                                                data-match-id="{{ match.id }}"
+                                                                data-player1-name="{{ match.player1 ? match.player1.player.pseudo : '' }}"
+                                                                data-player2-name="{{ match.player2 ? match.player2.player.pseudo : '' }}"
+                                                                data-table-number="{{ match.tableNumber }}">
+                                                            Modifier
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# Override Modal #}
+    <div id="override-modal"
+         class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+         data-admin-override-target="modal">
+        <div class="relative top-20 mx-auto p-5 w-full max-w-md shadow-lg rounded-lg" style="border: 1px solid var(--border-default); background-color: var(--card-bg);">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium" style="color: var(--text-primary);">Modifier le resultat</h3>
+                <button type="button"
+                        data-action="click->admin-override#closeModal"
+                        style="color: var(--text-muted);">
+                    {{ ux_icon('lucide:x', {class: 'h-6 w-6'}) }}
+                </button>
+            </div>
+
+            <div class="mb-4 p-3 rounded" style="background-color: var(--bg-subtle);">
+                <p class="text-sm" style="color: var(--text-secondary);">Table <span data-admin-override-target="tableNumber">-</span></p>
+            </div>
+
+            <form data-admin-override-target="form" class="space-y-4">
+                <input type="hidden" data-admin-override-target="matchId" name="match_id">
+
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Vainqueur</label>
+                    <select name="winner"
+                            data-admin-override-target="winner"
+                            class="form-input w-full"
+                            required>
+                        <option value="">Selectionnez le vainqueur...</option>
+                        <option value="player_1" data-admin-override-target="player1Option"></option>
+                        <option value="player_2" data-admin-override-target="player2Option"></option>
+                        <option value="draw">Egalite</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Raison (obligatoire)</label>
+                    <textarea name="reason"
+                              data-admin-override-target="reason"
+                              rows="3"
+                              class="form-input w-full"
+                              placeholder="Expliquez la raison de cette modification..."
+                              required></textarea>
+                    <p class="mt-1 text-xs" style="color: var(--text-muted);">
+                        Cette raison sera enregistree dans l'historique et envoyee a l'organisateur.
+                    </p>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button"
+                            data-action="click->admin-override#closeModal"
+                            class="px-4 py-2 rounded-md shadow-sm text-sm font-medium" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                        Annuler
+                    </button>
+                    <button type="submit"
+                            data-action="click->admin-override#submit"
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        Confirmer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ user.pseudo }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        {# Breadcrumb #}
+        <div class="mb-6">
+            <a href="{{ path('admin_users') }}" class="hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour a la liste des utilisateurs
+            </a>
+        </div>
+
+        {# User Header #}
+        <div class="rounded-lg shadow mb-8" style="background-color: var(--card-bg);">
+            <div class="px-6 py-5 border-b" style="border-color: var(--border-default);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ user.pseudo }}</h1>
+                        <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ user.email }}</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex flex-wrap gap-1">
+                            {% for role in user.roles %}
+                                {% if role == 'ROLE_ADMIN' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        Admin
+                                    </span>
+                                {% elseif role == 'ROLE_ORGANIZER' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        Organisateur
+                                    </span>
+                                {% elseif role == 'ROLE_USER' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" style="background-color: var(--bg-subtle); color: var(--text-secondary);">
+                                        Utilisateur
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <a href="{{ path('admin_user_edit', {id: user.id}) }}"
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Modifier les roles
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {# User Details #}
+            <div class="px-6 py-5">
+                <dl class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">ID</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.id }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Nom</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.name ?? '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Inscrit le</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.createdAt|date('d/m/Y H:i') }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Email verifie</dt>
+                        <dd class="mt-1 text-sm">
+                            {% if user.isVerified %}
+                                <span class="text-green-600">Oui</span>
+                            {% else %}
+                                <span class="text-red-600">Non</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {# Participation Statistics #}
+            <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h2 class="text-lg font-medium" style="color: var(--text-primary);">Participation aux tournois</h2>
+                </div>
+                <div class="px-6 py-5">
+                    <dl class="space-y-4">
+                        <div class="flex justify-between">
+                            <dt class="text-sm" style="color: var(--text-muted);">Tournois inscrits</dt>
+                            <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ registrations|length }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm" style="color: var(--text-muted);">Tournois organises</dt>
+                            <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ organizedTournaments|length }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm" style="color: var(--text-muted);">Total de matches</dt>
+                            <dd class="text-sm font-medium" style="color: var(--text-primary);">~{{ totalMatches }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm {% if disputeCount > 2 %}text-red-600 font-medium{% endif %}" {% if disputeCount <= 2 %}style="color: var(--text-muted);"{% endif %}>
+                                Litiges impliques
+                            </dt>
+                            <dd class="text-sm font-medium {% if disputeCount > 2 %}text-red-600{% endif %}" {% if disputeCount <= 2 %}style="color: var(--text-primary);"{% endif %}>
+                                {{ disputeCount }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            {# Recent Registrations #}
+            <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h2 class="text-lg font-medium" style="color: var(--text-primary);">Tournois recents</h2>
+                </div>
+                {% if registrations is empty %}
+                    <div class="px-6 py-8 text-center" style="color: var(--text-muted);">
+                        Aucune inscription.
+                    </div>
+                {% else %}
+                    <ul class="divide-y max-h-64 overflow-y-auto" style="border-color: var(--border-default);">
+                        {% for registration in registrations|slice(0, 5) %}
+                            <li class="px-6 py-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium" style="color: var(--text-primary);">
+                                        {{ registration.tournament.name }}
+                                    </span>
+                                    <span class="text-sm" style="color: var(--text-muted);">
+                                        {{ registration.registeredAt|date('d/m/Y') }}
+                                    </span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Dispute History #}
+        {% if disputedMatches|length > 0 %}
+            <div class="rounded-lg shadow mb-8" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h2 class="text-lg font-medium" style="color: var(--text-primary);">Historique des litiges</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y" style="border-color: var(--border-default);">
+                        <thead style="background-color: var(--bg-subtle);">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Tournoi
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Adversaire
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Resolution
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                            {% for dispute in disputedMatches %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-primary);">
+                                        <a href="{{ path('admin_tournament_details', {id: dispute.tournament.id}) }}"
+                                           class="hover:underline" style="color: var(--color-primary-600);">
+                                            {{ dispute.tournament.name }}
+                                        </a>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                        {% if dispute.opponent %}
+                                            {{ dispute.opponent.pseudo }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        {% if dispute.resolution %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                Resolu
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                En attente
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {# Organized Tournaments #}
+        {% if organizedTournaments|length > 0 %}
+            <div class="rounded-lg shadow mb-8" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h2 class="text-lg font-medium" style="color: var(--text-primary);">Tournois organises</h2>
+                </div>
+                <ul class="divide-y" style="border-color: var(--border-default);">
+                    {% for tournament in organizedTournaments %}
+                        <li class="px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <a href="{{ path('admin_tournament_details', {id: tournament.id}) }}"
+                                       class="text-sm font-medium hover:underline" style="color: var(--color-primary-600);">
+                                        {{ tournament.name }}
+                                    </a>
+                                    <p class="text-xs mt-1" style="color: var(--text-muted);">
+                                        {{ tournament.date|date('d/m/Y') }} - {{ tournament.status.value|capitalize }}
+                                    </p>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                    {% if tournament.status.value == 'ongoing' %}bg-green-100 text-green-800
+                                    {% elseif tournament.status.value == 'completed' %}bg-gray-100 text-gray-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ tournament.status.value }}
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {# Danger Zone #}
+        <div class="rounded-lg shadow border-2 border-red-200" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4 border-b bg-red-50" style="border-color: var(--border-default);">
+                <h2 class="text-lg font-medium text-red-900">Zone dangereuse</h2>
+            </div>
+            <div class="px-6 py-5">
+                <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                    La suppression d'un utilisateur est irreversible. Conformement au RGPD :
+                </p>
+                <ul class="text-sm list-disc list-inside mb-4" style="color: var(--text-secondary);">
+                    <li>Toutes les inscriptions seront supprimees</li>
+                    <li>Les tournois organises seront anonymises</li>
+                    <li>L'historique des matches sera preserve (anonymise)</li>
+                </ul>
+
+                <form action="{{ path('admin_user_delete', {id: user.id}) }}"
+                      method="POST"
+                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer cet utilisateur ? Cette action est irreversible.');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete') }}">
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                        Supprimer l'utilisateur
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

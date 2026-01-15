@@ -1,0 +1,158 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier {{ user.pseudo }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        {# Breadcrumb #}
+        <div class="mb-6">
+            <a href="{{ path('admin_user_view', {id: user.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour au profil
+            </a>
+        </div>
+
+        <div class="max-w-2xl">
+            {# User Info (read-only) #}
+            <div class="rounded-lg shadow mb-6" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h1 class="text-xl font-bold" style="color: var(--text-primary);">Modifier les roles</h1>
+                </div>
+                <div class="px-6 py-5">
+                    <dl class="space-y-4">
+                        <div>
+                            <dt class="text-sm font-medium" style="color: var(--text-muted);">Pseudo</dt>
+                            <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.pseudo }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium" style="color: var(--text-muted);">Email</dt>
+                            <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.email }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium" style="color: var(--text-muted);">Inscrit depuis</dt>
+                            <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ user.createdAt|date('d/m/Y') }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            {# Roles Form #}
+            <div class="rounded-lg shadow mb-6" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                    <h2 class="text-lg font-medium" style="color: var(--text-primary);">Gestion des roles</h2>
+                </div>
+                <form action="{{ path('admin_user_edit', {id: user.id}) }}" method="POST" class="px-6 py-5">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_user_edit') }}">
+
+                    <div class="space-y-4">
+                        <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                            Selectionnez les roles a attribuer a cet utilisateur. Le role "Utilisateur" est toujours attribue automatiquement.
+                        </p>
+
+                        <div class="space-y-3">
+                            {# ROLE_USER is always checked and disabled #}
+                            <label class="flex items-center">
+                                <input type="checkbox"
+                                       name="roles[]"
+                                       value="ROLE_USER"
+                                       checked
+                                       disabled
+                                       class="form-input h-4 w-4 text-blue-600 rounded">
+                                <span class="ml-3">
+                                    <span class="text-sm font-medium" style="color: var(--text-primary);">Utilisateur</span>
+                                    <span class="text-xs block" style="color: var(--text-muted);">Acces de base a la plateforme</span>
+                                </span>
+                            </label>
+                            {# Hidden input to ensure ROLE_USER is always sent #}
+                            <input type="hidden" name="roles[]" value="ROLE_USER">
+
+                            <label class="flex items-center">
+                                <input type="checkbox"
+                                       name="roles[]"
+                                       value="ROLE_ORGANIZER"
+                                       {% if 'ROLE_ORGANIZER' in user.roles %}checked{% endif %}
+                                       class="form-input h-4 w-4 text-blue-600 rounded focus:ring-blue-500">
+                                <span class="ml-3">
+                                    <span class="text-sm font-medium" style="color: var(--text-primary);">Organisateur</span>
+                                    <span class="text-xs block" style="color: var(--text-muted);">Peut creer et gerer des tournois</span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-center">
+                                <input type="checkbox"
+                                       name="roles[]"
+                                       value="ROLE_ADMIN"
+                                       {% if 'ROLE_ADMIN' in user.roles %}checked{% endif %}
+                                       class="form-input h-4 w-4 text-red-600 rounded focus:ring-red-500">
+                                <span class="ml-3">
+                                    <span class="text-sm font-medium text-red-900">Administrateur</span>
+                                    <span class="text-xs block" style="color: var(--text-muted);">Acces complet a l'administration</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <a href="{{ path('admin_user_view', {id: user.id}) }}"
+                           class="px-4 py-2 border rounded-md shadow-sm text-sm font-medium hover:opacity-80"
+                           style="border-color: var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                            Annuler
+                        </a>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {# Dispute History Summary #}
+            {% if disputedMatches|length > 0 %}
+                <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+                    <div class="px-6 py-4 border-b" style="border-color: var(--border-default);">
+                        <h2 class="text-lg font-medium" style="color: var(--text-primary);">
+                            Historique des litiges
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if disputedMatches|length > 2 %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ disputedMatches|length }}
+                            </span>
+                        </h2>
+                    </div>
+                    <div class="px-6 py-4">
+                        <p class="text-sm mb-3" style="color: var(--text-secondary);">
+                            Cet utilisateur a ete implique dans {{ disputedMatches|length }} litige(s).
+                            {% if disputedMatches|length > 2 %}
+                                <span class="text-red-600 font-medium">Nombre de litiges eleve.</span>
+                            {% endif %}
+                        </p>
+                        <ul class="space-y-2">
+                            {% for dispute in disputedMatches|slice(0, 5) %}
+                                <li class="text-sm">
+                                    <span style="color: var(--text-primary);">{{ dispute.tournament.name }}</span>
+                                    <span style="color: var(--text-muted);">vs {{ dispute.opponent ? dispute.opponent.pseudo : 'Inconnu' }}</span>
+                                    {% if dispute.resolution %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-2">
+                                            Resolu
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 ml-2">
+                                            En cours
+                                        </span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% if disputedMatches|length > 5 %}
+                            <p class="text-sm mt-3" style="color: var(--text-muted);">
+                                ... et {{ disputedMatches|length - 5 }} autre(s) litige(s).
+                                <a href="{{ path('admin_user_view', {id: user.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+                                    Voir tout
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

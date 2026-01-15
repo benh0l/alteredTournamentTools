@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Acces refuse - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4">
+    <div class="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
+        <div class="text-red-500 mb-4">
+            {{ ux_icon('lucide:ban', {class: 'w-24 h-24 mx-auto'}) }}
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Acces refuse</h1>
+        <p class="text-gray-600 mb-6">
+            Vous n'avez pas les permissions necessaires pour acceder a cette page.
+        </p>
+
+        <div class="space-y-4">
+            <a href="{{ path('app_home') }}"
+               class="block w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+               style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                Retour a l'accueil
+            </a>
+
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                <p class="text-sm text-gray-500">
+                    Connecte en tant que <strong>{{ app.user.pseudo }}</strong>
+                </p>
+                <p class="text-sm text-gray-500">
+                    Roles: {{ app.user.roles|join(', ') }}
+                </p>
+            {% else %}
+                <a href="{{ path('app_login') }}"
+                   class="block w-full flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                   style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                    Se connecter
+                </a>
+            {% endif %}
+        </div>
+
+        <p class="mt-6 text-sm text-gray-400">
+            Erreur 403 - Acces non autorise
+        </p>
+    </div>
+</div>
+{% endblock %}

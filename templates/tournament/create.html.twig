@@ -1,0 +1,262 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'tournament.create.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto" data-controller="tournament-form">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:trophy', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'tournament.create.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">{{ 'tournament.create.subtitle'|trans }}</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+            {# Basic Information Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-6" style="border-bottom: 1px solid var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.create.section_general'|trans }}
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:type', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.name, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                        </div>
+                        {{ form_errors(form.name) }}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.date, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:calendar', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.date, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                            </div>
+                            {{ form_errors(form.date) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.time, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:clock', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.time, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                            </div>
+                            {{ form_errors(form.time) }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form_label(form.location, null, {'label_attr': {'class': 'form-label'}}) }}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:map-pin', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.location, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                        </div>
+                        {{ form_errors(form.location) }}
+                    </div>
+                </div>
+            </div>
+
+            {# Configuration Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-6 " style="border-bottom: 1px solid var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.create.section_config'|trans }}
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.format, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.format, {'attr': {'class': 'form-input w-full'}}) }}
+                            {{ form_errors(form.format) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.structure, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.structure, {'attr': {
+                                'class': 'form-input w-full',
+                                'data-tournament-form-target': 'structure',
+                                'data-action': 'change->tournament-form#structureChanged'
+                            }}) }}
+                            {{ form_errors(form.structure) }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.swissMatchFormat, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.swissMatchFormat, {'attr': {
+                                'class': 'form-input w-full',
+                                'data-tournament-form-target': 'swissMatchFormat',
+                                'data-action': 'change->tournament-form#suggestRounds'
+                            }}) }}
+                            {{ form_errors(form.swissMatchFormat) }}
+                        </div>
+                        <div data-tournament-form-target="eliminationFormatContainer">
+                            {{ form_label(form.eliminationMatchFormat, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.eliminationMatchFormat, {'attr': {'class': 'form-input w-full'}}) }}
+                            {{ form_errors(form.eliminationMatchFormat) }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            {{ form_label(form.expectedPlayers, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:users', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.expectedPlayers, {'attr': {
+                                    'class': 'form-input w-full pl-10',
+                                    'data-tournament-form-target': 'expectedPlayers',
+                                    'data-action': 'input->tournament-form#suggestRounds'
+                                }}) }}
+                            </div>
+                            {{ form_errors(form.expectedPlayers) }}
+                        </div>
+                        <div data-tournament-form-target="swissRoundsContainer">
+                            {{ form_label(form.swissRounds, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:repeat', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.swissRounds, {'attr': {
+                                    'class': 'form-input w-full pl-10',
+                                    'data-tournament-form-target': 'swissRounds'
+                                }}) }}
+                            </div>
+                            <p class="text-xs text-blue-600 mt-1" data-tournament-form-target="roundsSuggestion"></p>
+                            {{ form_errors(form.swissRounds) }}
+                        </div>
+                        <div data-tournament-form-target="topCutSizeContainer">
+                            {{ form_label(form.topCutSize, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.topCutSize, {'attr': {'class': 'form-input w-full'}}) }}
+                            {{ form_errors(form.topCutSize) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Visibility Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-6 " style="border-bottom: 1px solid var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:eye', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.create.section_visibility'|trans }}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <span class="block text-sm font-medium text-gray-700 mb-3">{{ form_label(form.visibility) }}</span>
+                            <div class="space-y-3">
+                                {% for child in form.visibility %}
+                                    <label class="flex items-center p-3 rounded-lg hover:opacity-80" style="background-color: var(--bg-subtle); transition-colors cursor-pointer">
+                                        {{ form_widget(child, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                                        <span class="ml-3 text-sm" style="color: var(--text-secondary);">{{ child.vars.label|trans }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            {{ form_errors(form.visibility) }}
+                        </div>
+                        <div>
+                            <span class="block text-sm font-medium text-gray-700 mb-3">{{ form_label(form.decklistTransparency) }}</span>
+                            <div class="space-y-3">
+                                {% for child in form.decklistTransparency %}
+                                    <label class="flex items-center p-3 rounded-lg hover:opacity-80" style="background-color: var(--bg-subtle); transition-colors cursor-pointer">
+                                        {{ form_widget(child, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                                        <span class="ml-3 text-sm" style="color: var(--text-secondary);">{{ child.vars.label|trans }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            {{ form_errors(form.decklistTransparency) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Additional Info Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-6 " style="border-bottom: 1px solid var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.create.section_additional'|trans }}
+                    </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-input w-full', 'rows': 4}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.entryFee, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:euro', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.entryFee, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                            </div>
+                            {{ form_errors(form.entryFee) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.alteredGgLink, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:link', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.alteredGgLink, {'attr': {'class': 'form-input w-full pl-10'}}) }}
+                            </div>
+                            {{ form_errors(form.alteredGgLink) }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form_label(form.prizes, null, {'label_attr': {'class': 'form-label'}}) }}
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 pointer-events-none">
+                                {{ ux_icon('lucide:gift', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.prizes, {'attr': {'class': 'form-textarea w-full pl-10 rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500', 'rows': 3}}) }}
+                        </div>
+                        {{ form_errors(form.prizes) }}
+                    </div>
+                </div>
+            </div>
+
+            {# Actions #}
+            <div class="flex justify-between items-center">
+                <a href="{{ path('tournament_list') }}" class="inline-flex items-center hover:opacity-80" style="color: var(--text-secondary); font-medium">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'tournament.create.cancel'|trans }}
+                </a>
+                <button type="submit"
+                        class="flex items-center justify-center px-8 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {{ ux_icon('lucide:plus', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'tournament.create.submit'|trans }}
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

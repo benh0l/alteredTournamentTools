@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rechercher un tournoi{% endblock %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto">
+    {# Header #}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">Trouver un tournoi</h1>
+        <p style="color: var(--text-secondary);">Recherchez des tournois Altered pres de chez vous</p>
+    </div>
+
+    {# Search Form #}
+    <div class="border rounded-lg p-6 mb-6" style="background-color: var(--card-bg); border-color: var(--border-default);" data-controller="filter">
+        {{ form_start(form, {'attr': {'class': 'space-y-4', 'data-filter-target': 'form', 'data-action': 'submit->filter#search'}}) }}
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {# Location #}
+            <div class="lg:col-span-2">
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.location) }}</label>
+                {{ form_widget(form.location, {'attr': {'class': 'form-input w-full'}}) }}
+            </div>
+
+            {# Radius #}
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.radius) }}</label>
+                {{ form_widget(form.radius, {'attr': {'class': 'form-input w-full'}}) }}
+            </div>
+
+            {# Format #}
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.format) }}</label>
+                {{ form_widget(form.format, {'attr': {'class': 'form-input w-full'}}) }}
+            </div>
+        </div>
+
+        {# Date filters #}
+        <div class="grid md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateRange) }}</label>
+                {{ form_widget(form.dateRange, {'attr': {'class': 'form-input w-full', 'data-filter-target': 'dateRange'}}) }}
+            </div>
+
+            <div data-filter-target="customDates" class="hidden">
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateFrom) }}</label>
+                {{ form_widget(form.dateFrom, {'attr': {'class': 'form-input w-full'}}) }}
+            </div>
+
+            <div data-filter-target="customDates" class="hidden">
+                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateTo) }}</label>
+                {{ form_widget(form.dateTo, {'attr': {'class': 'form-input w-full'}}) }}
+            </div>
+        </div>
+
+        {# Hidden coordinate fields #}
+        {{ form_widget(form.lat) }}
+        {{ form_widget(form.lng) }}
+
+        {# Submit button #}
+        <div class="flex items-center justify-between">
+            <button type="submit"
+                    class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                    style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:search', {class: 'w-5 h-5 inline-block mr-2'}) }}
+                Rechercher
+            </button>
+
+            {% if search_performed %}
+            <a href="{{ path('tournament_search') }}" class="hover:opacity-80" style="color: var(--text-secondary);">
+                Effacer les filtres
+            </a>
+            {% endif %}
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+    {# Error message #}
+    {% if error_message %}
+    <div class="alert-danger">
+        <div class="flex items-center">
+            {{ ux_icon('lucide:alert-circle', {class: 'w-5 h-5 mr-2'}) }}
+            <p>{{ error_message }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# View toggle (List/Map) #}
+    {% if search_performed and results|length > 0 %}
+    <div class="flex items-center justify-between mb-4" data-controller="view-toggle">
+        <p style="color: var(--text-secondary);">
+            {{ results|length }} tournoi{% if results|length > 1 %}s{% endif %} trouve{% if results|length > 1 %}s{% endif %}
+            {% if search_location %}pres de <strong>{{ search_location }}</strong>{% endif %}
+        </p>
+
+        <div class="flex items-center space-x-2">
+            <button type="button"
+                    class="view-toggle-btn px-4 py-2 rounded-lg font-medium transition-colors"
+                    data-view-toggle-target="listBtn"
+                    data-action="click->view-toggle#showList">
+                {{ ux_icon('lucide:list', {class: 'w-5 h-5 inline-block mr-1'}) }}
+                Liste
+            </button>
+            <button type="button"
+                    class="view-toggle-btn px-4 py-2 rounded-lg font-medium transition-colors"
+                    data-view-toggle-target="mapBtn"
+                    data-action="click->view-toggle#showMap">
+                {{ ux_icon('lucide:map', {class: 'w-5 h-5 inline-block mr-1'}) }}
+                Carte
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Results #}
+    <div id="search-results" data-filter-target="results">
+        {% include 'tournament/_search_results.html.twig' %}
+    </div>
+
+    {# Map container (hidden by default) #}
+    {% if search_performed and results|length > 0 and search_coordinates %}
+    <div id="map-container"
+         class="hidden h-96 rounded-lg overflow-hidden"
+         data-controller="map"
+         data-map-center-lat-value="{{ search_coordinates.lat }}"
+         data-map-center-lng-value="{{ search_coordinates.lng }}"
+         data-map-tournaments-value="{{ results|map(r => {
+             id: r.tournament.id,
+             name: r.tournament.name,
+             date: r.tournament.date|date('d/m/Y'),
+             format: r.tournament.format.label|trans,
+             location: r.tournament.location,
+             lat: r.tournament.latitude,
+             lng: r.tournament.longitude,
+             distance: r.distance
+         })|json_encode|e('html_attr') }}">
+    </div>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Simple view toggle logic
+document.addEventListener('DOMContentLoaded', function() {
+    const listBtn = document.querySelector('[data-view-toggle-target="listBtn"]');
+    const mapBtn = document.querySelector('[data-view-toggle-target="mapBtn"]');
+    const listView = document.getElementById('search-results');
+    const mapView = document.getElementById('map-container');
+
+    if (listBtn && mapBtn && listView && mapView) {
+        // Set initial state
+        listBtn.classList.add('active');
+
+        listBtn.addEventListener('click', function() {
+            listView.classList.remove('hidden');
+            mapView.classList.add('hidden');
+            listBtn.classList.add('active');
+            mapBtn.classList.remove('active');
+            localStorage.setItem('tournamentViewPreference', 'list');
+        });
+
+        mapBtn.addEventListener('click', function() {
+            listView.classList.add('hidden');
+            mapView.classList.remove('hidden');
+            mapBtn.classList.add('active');
+            listBtn.classList.remove('active');
+            localStorage.setItem('tournamentViewPreference', 'map');
+            // Trigger map resize
+            window.dispatchEvent(new Event('resize'));
+        });
+
+        // Restore preference
+        const preference = localStorage.getItem('tournamentViewPreference');
+        if (preference === 'map') {
+            mapBtn.click();
+        }
+    }
+
+    // Custom date toggle
+    const dateRangeSelect = document.querySelector('[data-filter-target="dateRange"]');
+    const customDateFields = document.querySelectorAll('[data-filter-target="customDates"]');
+
+    if (dateRangeSelect && customDateFields.length) {
+        function toggleCustomDates() {
+            const show = dateRangeSelect.value === 'custom';
+            customDateFields.forEach(field => {
+                field.classList.toggle('hidden', !show);
+            });
+        }
+
+        dateRangeSelect.addEventListener('change', toggleCustomDates);
+        toggleCustomDates();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

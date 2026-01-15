@@ -1,0 +1,430 @@
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  /* Ensure consistent box-sizing */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Default body styles - uses theme variables */
+  body {
+    @apply antialiased;
+    background: linear-gradient(135deg, var(--bg-gradient-from) 0%, var(--bg-gradient-via) 50%, var(--bg-gradient-to) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* Focus visible styles for accessibility (NFR62) - uses theme color */
+  :focus-visible {
+    @apply outline-2 outline-offset-2;
+    outline-color: var(--color-primary-500);
+  }
+
+  /* Semantic HTML5 elements */
+  main {
+    @apply flex-1;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  /* Button base styles with touch-friendly size (NFR32) */
+  .btn {
+    @apply inline-flex items-center justify-center
+           min-h-touch min-w-touch px-4 py-2
+           font-medium rounded-xl
+           transition-all duration-200
+           shadow-md hover:shadow-lg
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn text-white;
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500)) !important;
+    --tw-ring-color: var(--color-primary-500);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-600), var(--color-accent-500)) !important;
+  }
+
+  .btn-secondary {
+    @apply btn border-2;
+    background-color: var(--card-bg);
+    color: var(--color-primary-600);
+    border-color: var(--color-primary-200);
+    --tw-ring-color: var(--color-primary-400);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-primary-50);
+    border-color: var(--color-primary-300);
+  }
+
+  .btn-success {
+    @apply btn bg-gradient-to-r from-emerald-500 to-teal-500 text-white
+           hover:from-emerald-600 hover:to-teal-600
+           focus-visible:ring-emerald-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-gradient-to-r from-red-500 to-rose-500 text-white
+           hover:from-red-600 hover:to-rose-600
+           focus-visible:ring-red-500;
+  }
+
+  .btn-warning {
+    @apply btn bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-900
+           hover:from-amber-500 hover:to-yellow-500
+           focus-visible:ring-amber-500;
+  }
+
+  /* Modern Card component with border accent - uses theme */
+  .card {
+    @apply rounded-xl shadow-lg p-5 border-l-4;
+    @apply hover:shadow-xl transition-shadow duration-300;
+    background-color: var(--card-bg);
+    border-left-color: var(--color-primary-400);
+  }
+
+  /* Card without left border */
+  .card-clean {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    background-color: var(--card-bg);
+    transition: box-shadow 0.3s ease;
+  }
+  .card-clean:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  /* Gradient card */
+  .card-gradient {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    background: linear-gradient(to bottom right, var(--card-bg), var(--color-primary-50));
+    transition: box-shadow 0.3s ease;
+  }
+  .card-gradient:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  /* Colored accent cards */
+  .card-orange {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    border-left: 4px solid #f97316;
+    background-color: var(--card-bg);
+  }
+
+  .card-amber {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    border-left: 4px solid #f59e0b;
+    background-color: var(--card-bg);
+  }
+
+  .card-rose {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    border-left: 4px solid #f43f5e;
+    background-color: var(--card-bg);
+  }
+
+  .card-emerald {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    border-left: 4px solid #10b981;
+    background-color: var(--card-bg);
+  }
+
+  /* Stats card with icon */
+  .stat-card {
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    padding: 1.25rem;
+    border: 1px solid var(--border-muted);
+    background-color: var(--card-bg);
+  }
+
+  .stat-card:hover {
+    @apply shadow-xl;
+    border-color: var(--color-primary-200);
+  }
+
+  /* Form input styles - uses theme colors */
+  .form-input {
+    @apply w-full px-4 py-3 border-2 rounded-xl transition-all duration-200;
+    background-color: var(--card-bg);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .form-input:focus {
+    border-color: var(--color-primary-400);
+    --tw-ring-color: var(--color-primary-100);
+    @apply ring-2;
+  }
+
+  .form-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .form-label {
+    @apply block text-sm font-semibold mb-2;
+    color: var(--text-secondary);
+  }
+
+  /* Form select */
+  .form-select {
+    @apply w-full px-4 py-3 border-2 rounded-xl transition-all duration-200;
+    background-color: var(--card-bg);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .form-select:focus {
+    border-color: var(--color-primary-400);
+    --tw-ring-color: var(--color-primary-100);
+    @apply ring-2;
+  }
+
+  /* Form textarea */
+  .form-textarea {
+    @apply w-full px-4 py-3 border-2 rounded-xl transition-all duration-200;
+    background-color: var(--card-bg);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .form-textarea:focus {
+    border-color: var(--color-primary-400);
+    --tw-ring-color: var(--color-primary-100);
+    @apply ring-2;
+  }
+
+  /* Badge styles for match status - more colorful */
+  .badge {
+    @apply inline-flex items-center px-3 py-1
+           rounded-full text-xs font-semibold
+           shadow-sm;
+  }
+
+  .badge-pending {
+    @apply badge border;
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+    border-color: var(--border-default);
+  }
+
+  .badge-ongoing {
+    @apply badge bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 border border-blue-200;
+  }
+
+  .badge-completed {
+    @apply badge bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border border-emerald-200;
+  }
+
+  .badge-dispute {
+    @apply badge bg-gradient-to-r from-red-100 to-rose-100 text-red-700 border border-red-200;
+  }
+
+  /* Table with modern styling - uses theme gradient */
+  .table-modern {
+    @apply w-full rounded-xl shadow-lg overflow-hidden;
+    background-color: var(--card-bg);
+  }
+
+  .table-modern thead {
+    background: linear-gradient(to right, var(--header-from), var(--header-via), var(--header-to));
+    @apply text-white;
+  }
+
+  .table-modern th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .table-modern td {
+    @apply px-4 py-3 text-sm;
+    color: var(--text-primary);
+  }
+
+  .table-modern tbody tr {
+    border-color: var(--border-muted);
+    @apply border-b transition-colors;
+  }
+
+  .table-modern tbody tr:hover {
+    background-color: var(--color-primary-50);
+  }
+
+  /* Navigation tabs - uses theme colors */
+  .nav-tabs {
+    @apply flex space-x-1 p-1 rounded-xl;
+    background-color: var(--bg-muted);
+  }
+
+  .nav-tab {
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
+  }
+
+  .nav-tab-active {
+    @apply nav-tab shadow-md;
+    background-color: var(--card-bg);
+    color: var(--color-primary-600);
+  }
+
+  .nav-tab-inactive {
+    @apply nav-tab;
+    color: var(--text-secondary);
+  }
+
+  .nav-tab-inactive:hover {
+    color: var(--color-primary-600);
+    background-color: var(--card-bg);
+    opacity: 0.5;
+  }
+
+  /* View toggle buttons */
+  .view-toggle-btn {
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+  }
+
+  .view-toggle-btn:hover {
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+  }
+
+  .view-toggle-btn.active {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+    color: white;
+  }
+
+  /* Alert boxes */
+  .alert {
+    @apply p-4 rounded-xl border-l-4 shadow-sm;
+  }
+
+  .alert-success {
+    @apply alert bg-emerald-50 border-emerald-500 text-emerald-800;
+  }
+
+  .alert-warning {
+    @apply alert bg-amber-50 border-amber-500 text-amber-800;
+  }
+
+  .alert-danger {
+    @apply alert bg-red-50 border-red-500 text-red-800;
+  }
+
+  .alert-info {
+    @apply alert bg-blue-50 border-blue-500 text-blue-800;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  /* Text utilities for responsive typography */
+  .text-responsive {
+    @apply text-sm md:text-base lg:text-lg;
+  }
+
+  /* Container with responsive padding */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Gradient text - uses theme colors */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--color-primary-500), var(--color-accent-500));
+  }
+
+  /* Animation for loading states (NFR35) */
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  /* Glass effect - uses theme bg */
+  .glass {
+    background-color: color-mix(in srgb, var(--card-bg) 80%, transparent);
+    @apply backdrop-blur-sm;
+  }
+}
+
+/* ============================================= */
+/* Dark mode specific overrides                  */
+/* ============================================= */
+[data-theme-mode="dark"] {
+  /* Dark mode alert colors */
+  .alert-success {
+    @apply bg-emerald-900/30 border-emerald-500 text-emerald-200;
+  }
+
+  .alert-warning {
+    @apply bg-amber-900/30 border-amber-500 text-amber-200;
+  }
+
+  .alert-danger {
+    @apply bg-red-900/30 border-red-500 text-red-200;
+  }
+
+  .alert-info {
+    @apply bg-blue-900/30 border-blue-500 text-blue-200;
+  }
+
+  /* Dark mode badges */
+  .badge-ongoing {
+    @apply bg-blue-900/50 text-blue-200 border-blue-700;
+  }
+
+  .badge-completed {
+    @apply bg-emerald-900/50 text-emerald-200 border-emerald-700;
+  }
+
+  .badge-dispute {
+    @apply bg-red-900/50 text-red-200 border-red-700;
+  }
+
+  /* Dark mode specific card colors */
+  .card-orange {
+    @apply border-orange-400;
+  }
+
+  .card-amber {
+    @apply border-amber-400;
+  }
+
+  .card-rose {
+    @apply border-rose-400;
+  }
+
+  .card-emerald {
+    @apply border-emerald-400;
+  }
+}

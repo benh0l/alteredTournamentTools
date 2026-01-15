@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mercure SSE Test{% endblock %}
+
+{% block body %}
+<div class="container mx-auto p-4 max-w-2xl">
+    <h1 class="text-2xl font-bold mb-4">Mercure SSE Test</h1>
+    <p class="text-gray-600 mb-6">
+        Cette page teste la connexion Server-Sent Events avec Mercure.
+    </p>
+
+    <div class="mb-4 flex items-center gap-4">
+        <button id="publish-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+            Publier un message test
+        </button>
+        <span id="connection-status" class="px-3 py-1 rounded text-sm font-medium bg-yellow-100 text-yellow-800">
+            Connexion en cours...
+        </span>
+    </div>
+
+    <div class="mb-4">
+        <h2 class="text-lg font-semibold mb-2">Messages reçus :</h2>
+        <div id="messages" class="border rounded p-4 bg-gray-50 min-h-48 max-h-96 overflow-y-auto">
+            <p class="text-gray-400 italic" id="placeholder">En attente de messages...</p>
+        </div>
+    </div>
+
+    <div class="text-sm text-gray-500">
+        <h3 class="font-medium mb-1">Instructions :</h3>
+        <ol class="list-decimal list-inside space-y-1">
+            <li>Assurez-vous que le conteneur Mercure est en cours d'exécution (<code>docker compose up -d</code>)</li>
+            <li>Le statut de connexion doit afficher "Connecté" en vert</li>
+            <li>Cliquez sur "Publier un message test" pour envoyer un message</li>
+            <li>Le message devrait apparaître instantanément dans la liste ci-dessus</li>
+        </ol>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesDiv = document.getElementById('messages');
+    const statusSpan = document.getElementById('connection-status');
+    const publishBtn = document.getElementById('publish-btn');
+    const placeholder = document.getElementById('placeholder');
+
+    // Mercure public URL from Symfony parameter
+    const mercureUrl = new URL('{{ mercure_public_url }}');
+    // Subscribe to our test topic
+    mercureUrl.searchParams.append('topic', 'http://localhost/test/messages');
+
+    let eventSource = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 3000;
+
+    function updateStatus(state, message) {
+        statusSpan.textContent = message;
+        statusSpan.className = 'px-3 py-1 rounded text-sm font-medium ';
+
+        switch(state) {
+            case 'connected':
+                statusSpan.className += 'bg-green-100 text-green-800';
+                break;
+            case 'disconnected':
+            case 'failed':
+                statusSpan.className += 'bg-red-100 text-red-800';
+                break;
+            case 'reconnecting':
+                statusSpan.className += 'bg-yellow-100 text-yellow-800';
+                break;
+            default:
+                statusSpan.className += 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    function connect() {
+        eventSource = new EventSource(mercureUrl);
+
+        eventSource.onopen = function() {
+            updateStatus('connected', 'Connecté');
+            reconnectAttempts = 0;
+            console.log('SSE connection established');
+        };
+
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            addMessage(data);
+            console.log('SSE message received:', data);
+        };
+
+        eventSource.onerror = function(error) {
+            console.error('SSE Error:', error);
+            updateStatus('disconnected', 'Déconnecté');
+
+            eventSource.close();
+
+            // Reconnection logic (NFR24 fallback)
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                updateStatus('reconnecting', `Reconnexion (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                setTimeout(connect, reconnectDelay);
+            } else {
+                updateStatus('failed', 'Connexion échouée - Fallback polling');
+                startPollingFallback();
+            }
+        };
+    }
+
+    function addMessage(data) {
+        // Remove placeholder if present
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        const messageEl = document.createElement('div');
+        messageEl.className = 'p-3 mb-2 bg-white rounded border border-gray-200 shadow-sm';
+        messageEl.innerHTML = `
+            <div class="flex justify-between items-start">
+                <span class="text-xs font-mono text-gray-400">${data.timestamp || new Date().toISOString()}</span>
+                <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">${data.type || 'message'}</span>
+            </div>
+            <p class="mt-1 font-medium text-gray-800">${escapeHtml(data.message || JSON.stringify(data))}</p>
+        `;
+
+        messagesDiv.insertBefore(messageEl, messagesDiv.firstChild);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // NFR24: Fallback polling strategy
+    function startPollingFallback() {
+        console.log('Starting polling fallback (NFR24)...');
+        // Poll every 10 seconds as fallback
+        // In real implementation, this would call /api/tournament/{id}/updates
+        const pollInterval = setInterval(function() {
+            fetch('/api/tournament/updates')
+                .then(response => {
+                    if (!response.ok) throw new Error('Polling failed');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.updates && data.updates.length > 0) {
+                        data.updates.forEach(addMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Polling error:', error);
+                    // In production, might want to retry SSE connection periodically
+                });
+        }, 10000);
+
+        // Store interval ID for cleanup
+        window._pollingInterval = pollInterval;
+    }
+
+    // Publish button handler
+    publishBtn.addEventListener('click', function() {
+        publishBtn.disabled = true;
+        publishBtn.textContent = 'Publication...';
+
+        fetch('/test/mercure/publish', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Publication failed');
+            return response.text();
+        })
+        .then(data => {
+            console.log('Published:', data);
+        })
+        .catch(error => {
+            console.error('Publish error:', error);
+            addMessage({
+                type: 'error',
+                message: 'Erreur de publication: ' + error.message,
+                timestamp: new Date().toISOString()
+            });
+        })
+        .finally(() => {
+            publishBtn.disabled = false;
+            publishBtn.textContent = 'Publier un message test';
+        });
+    });
+
+    // Initial connection
+    connect();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (eventSource) {
+            eventSource.close();
+        }
+        if (window._pollingInterval) {
+            clearInterval(window._pollingInterval);
+        }
+    });
+});
+</script>
+{% endblock %}

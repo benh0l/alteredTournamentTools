@@ -1,0 +1,85 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 theme-primary-gradient">
+            {{ ux_icon('lucide:file-text', {class: 'w-6 h-6 text-white'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step9.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step9.subtitle'|trans }}</p>
+    </div>
+
+    {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-6'}}) }}
+        {# Description #}
+        <div>
+            <label for="{{ form.description.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:align-left', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                {{ 'tournament.wizard.step9.description_label'|trans }}
+            </label>
+            {{ form_widget(form.description, {attr: {
+                'class': 'form-textarea w-full rounded-xl resize-none',
+                'rows': '4',
+                'placeholder': 'tournament.wizard.step9.description_placeholder'|trans
+            }}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        {# Entry Fee #}
+        <div>
+            <label for="{{ form.entryFee.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:ticket', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                {{ 'tournament.wizard.step9.entry_fee_label'|trans }}
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {{ ux_icon('lucide:euro', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                </div>
+                {{ form_widget(form.entryFee, {attr: {
+                    'class': 'form-input w-full pl-10 rounded-xl',
+                    'placeholder': 'tournament.wizard.step9.entry_fee_placeholder'|trans
+                }}) }}
+            </div>
+            {{ form_errors(form.entryFee) }}
+        </div>
+
+        {# Prizes #}
+        <div>
+            <label for="{{ form.prizes.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:gift', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                {{ 'tournament.wizard.step9.prizes_label'|trans }}
+            </label>
+            {{ form_widget(form.prizes, {attr: {
+                'class': 'form-textarea w-full rounded-xl resize-none',
+                'rows': '3',
+                'placeholder': 'tournament.wizard.step9.prizes_placeholder'|trans
+            }}) }}
+            {{ form_errors(form.prizes) }}
+        </div>
+
+        {# Altered.gg Link #}
+        <div>
+            <label for="{{ form.alteredGgLink.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:link', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                {{ 'tournament.wizard.step9.altered_gg_link'|trans }}
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {{ ux_icon('lucide:external-link', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                </div>
+                {{ form_widget(form.alteredGgLink, {attr: {
+                    'class': 'form-input w-full pl-10 rounded-xl',
+                    'placeholder': 'tournament.wizard.step9.altered_gg_placeholder'|trans
+                }}) }}
+            </div>
+            {{ form_errors(form.alteredGgLink) }}
+            <p class="text-xs mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step9.altered_gg_hint'|trans }}</p>
+        </div>
+
+        <div class="rounded-xl p-4 border" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+            <p class="text-sm flex items-start" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:info', {class: 'w-4 h-4 mr-2 flex-shrink-0 mt-0.5', style: 'color: var(--text-muted);'}) }}
+                <span>{{ 'tournament.wizard.step9.optional_info'|trans }}</span>
+            </p>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

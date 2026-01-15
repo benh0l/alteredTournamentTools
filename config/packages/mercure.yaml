@@ -1,0 +1,16 @@
+# Mercure SSE (Server-Sent Events) Configuration
+# For real-time updates: dashboard, standings, timer
+mercure:
+    hubs:
+        default:
+            # Internal URL used by Symfony to publish (container-to-container)
+            url: '%env(MERCURE_URL)%'
+            # External URL used by browsers to subscribe (accessible from host)
+            public_url: '%env(MERCURE_PUBLIC_URL)%'
+            jwt:
+                # JWT secret must match Mercure hub configuration in compose.yaml
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                # Allow publishing to all topics (restrict in production)
+                publish: ['*']
+                # Allow subscribing to all topics (anonymous enabled in hub)
+                subscribe: ['*']

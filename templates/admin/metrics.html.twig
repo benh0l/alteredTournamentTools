@@ -1,0 +1,166 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Metriques - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Metriques</h1>
+            <button type="button"
+                    onclick="location.reload()"
+                    class="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                {{ ux_icon('lucide:refresh-cw', {class: 'h-4 w-4 mr-2'}) }}
+                Actualiser
+            </button>
+        </div>
+
+        {# KPI Cards #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {# Tournaments Card #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted);">Tournois</p>
+                        <p class="mt-1 text-3xl font-bold" style="color: var(--text-primary);">{{ metrics.tournaments.total }}</p>
+                    </div>
+                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
+                        {{ ux_icon('lucide:trophy', {class: 'h-6 w-6 text-blue-600'}) }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm" style="color: var(--text-secondary);">+{{ metrics.tournaments.thisMonth }} ce mois</span>
+                    {% if metrics.tournaments.trend != 0 %}
+                        <span class="ml-2 text-sm {% if metrics.tournaments.trend > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if metrics.tournaments.trend > 0 %}+{% endif %}{{ metrics.tournaments.trend }}%
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Players Card #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted);">Joueurs</p>
+                        <p class="mt-1 text-3xl font-bold" style="color: var(--text-primary);">{{ metrics.players.unique }}</p>
+                    </div>
+                    <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                        {{ ux_icon('lucide:users', {class: 'h-6 w-6 text-green-600'}) }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm" style="color: var(--text-secondary);">{{ metrics.players.activeThisMonth }} actifs ce mois</span>
+                    {% if metrics.players.trend != 0 %}
+                        <span class="ml-2 text-sm {% if metrics.players.trend > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if metrics.players.trend > 0 %}+{% endif %}{{ metrics.players.trend }}%
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Retention Card #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted);">Retention orgas</p>
+                        <p class="mt-1 text-3xl font-bold" style="color: var(--text-primary);">{{ metrics.organizers.rate }}%</p>
+                    </div>
+                    <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
+                        {{ ux_icon('lucide:shield-check', {class: 'h-6 w-6 text-purple-600'}) }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm" style="color: var(--text-secondary);">{{ metrics.organizers.retained }}/{{ metrics.organizers.total }} organisateurs</span>
+                </div>
+            </div>
+
+            {# Average Size Card #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted);">Taille moyenne</p>
+                        <p class="mt-1 text-3xl font-bold" style="color: var(--text-primary);">{{ metrics.averageSize.average }}</p>
+                    </div>
+                    <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+                        {{ ux_icon('lucide:users', {class: 'h-6 w-6 text-yellow-600'}) }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm" style="color: var(--text-secondary);">joueurs par tournoi</span>
+                </div>
+            </div>
+        </div>
+
+        {# Charts #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {# Monthly Tournaments Chart #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <h3 class="text-lg font-medium mb-4" style="color: var(--text-primary);">Tournois crees par mois</h3>
+                <div class="h-64">
+                    <canvas id="tournamentsChart"
+                            data-controller="metrics-chart"
+                            data-metrics-chart-type-value="line"
+                            data-metrics-chart-data-value="{{ metrics.charts.monthlyTournaments|json_encode }}"></canvas>
+                </div>
+            </div>
+
+            {# Monthly Users Chart #}
+            <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                <h3 class="text-lg font-medium mb-4" style="color: var(--text-primary);">Nouveaux utilisateurs par mois</h3>
+                <div class="h-64">
+                    <canvas id="usersChart"
+                            data-controller="metrics-chart"
+                            data-metrics-chart-type-value="line"
+                            data-metrics-chart-data-value="{{ metrics.charts.monthlyUsers|json_encode }}"
+                            data-metrics-chart-color-value="green"></canvas>
+                </div>
+            </div>
+
+            {# Size Distribution Chart #}
+            <div class="rounded-lg shadow p-6 lg:col-span-2" style="background-color: var(--card-bg);">
+                <h3 class="text-lg font-medium mb-4" style="color: var(--text-primary);">Distribution des tailles de tournois</h3>
+                <div class="h-64">
+                    <canvas id="sizeChart"
+                            data-controller="metrics-chart"
+                            data-metrics-chart-type-value="bar"
+                            data-metrics-chart-distribution-value="{{ metrics.charts.sizeDistribution|json_encode }}"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Additional Stats #}
+        <div class="mt-8 rounded-lg shadow" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <h3 class="text-lg font-medium" style="color: var(--text-primary);">Statistiques detaillees</h3>
+            </div>
+            <div class="px-6 py-4">
+                <dl class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Total utilisateurs inscrits</dt>
+                        <dd class="mt-1 text-2xl font-semibold" style="color: var(--text-primary);">{{ metrics.players.total }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Nouveaux ce mois</dt>
+                        <dd class="mt-1 text-2xl font-semibold" style="color: var(--text-primary);">{{ metrics.players.newThisMonth }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium" style="color: var(--text-muted);">Tournois le mois dernier</dt>
+                        <dd class="mt-1 text-2xl font-semibold" style="color: var(--text-primary);">{{ metrics.tournaments.lastMonth }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        {# Cache Info #}
+        <div class="mt-4 text-center text-sm" style="color: var(--text-muted);">
+            Les metriques sont mises en cache pendant 1 heure pour optimiser les performances.
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rondes - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+            &larr; Retour au tournoi
+        </a>
+    </div>
+
+    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">{{ tournament.name }} - Rondes</h1>
+
+    {% if rounds|length == 0 %}
+        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 text-center">
+            <p class="text-yellow-800 dark:text-yellow-400">Aucune ronde n'a encore ete demarree.</p>
+            {% if is_granted('TOURNAMENT_MANAGE', tournament) and tournament.published %}
+                <form action="{{ path('round_start_first', {id: tournament.id}) }}" method="post" class="mt-4">
+                    <input type="hidden" name="_token" value="{{ csrf_token('start-first-round-' ~ tournament.id) }}">
+                    <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        Demarrer la Ronde 1
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="space-y-4">
+            {% for round in rounds %}
+                <div class="rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold" style="color: var(--text-primary);">Ronde {{ round.roundNumber }}</h2>
+                            <span class="{{ round.status.badgeClasses }} px-2 py-1 rounded text-sm">
+                                {{ round.status.label|trans }}
+                            </span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span style="color: var(--text-secondary);">
+                                {{ round.completedMatchesCount }}/{{ round.matches|length }} matchs termines
+                            </span>
+                            <a href="{{ path('round_show', {id: tournament.id, roundNumber: round.roundNumber}) }}"
+                               class="hover:underline" style="color: var(--color-primary-600);">
+                                Voir les matchs &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_granted('TOURNAMENT_MANAGE', tournament) and tournament.ongoing %}
+            {% set latest_round = tournament.latestRound %}
+            {% if latest_round and latest_round.areAllMatchesCompleted %}
+                {% if tournament.hasReachedSwissRoundLimit %}
+                    {# Round limit reached - show complete tournament button #}
+                    <div class="mt-6 bg-purple-500/10 border border-purple-500/30 rounded-lg p-6 text-center">
+                        <p class="text-purple-800 dark:text-purple-400 mb-2">La ronde {{ latest_round.roundNumber }} est terminee.</p>
+                        <p class="text-orange-600 dark:text-orange-400 mb-4">Limite de rondes atteinte ({{ tournament.roundsCount }}/{{ tournament.swissRounds }})</p>
+                        <form action="{{ path('round_complete_tournament', {id: tournament.id}) }}" method="post">
+                            <input type="hidden" name="_token" value="{{ csrf_token('complete-tournament-' ~ tournament.id) }}">
+                            <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
+                                Terminer le tournoi
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="mt-6 bg-green-500/10 border border-green-500/30 rounded-lg p-6 text-center">
+                        <p class="text-green-800 dark:text-green-400 mb-4">La ronde {{ latest_round.roundNumber }} est terminee.</p>
+                        <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="post">
+                            <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
+                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                                Demarrer la Ronde {{ latest_round.roundNumber + 1 }}
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% elseif latest_round and not latest_round.areAllMatchesCompleted %}
+                <div class="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 text-center">
+                    <p class="text-blue-800 dark:text-blue-400">
+                        Ronde {{ latest_round.roundNumber }} en cours.
+                        {{ latest_round.matches|length - latest_round.completedMatchesCount }} match(s) restant(s).
+                    </p>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    <div class="mt-6">
+        <a href="{{ path('round_standings', {id: tournament.id}) }}"
+           class="hover:underline" style="color: var(--color-primary-600);">
+            Voir le classement &rarr;
+        </a>
+    </div>
+</div>
+{% endblock %}

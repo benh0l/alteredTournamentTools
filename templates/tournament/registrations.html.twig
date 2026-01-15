@@ -1,0 +1,575 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscriptions - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    {# Header #}
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <nav class="text-sm text-gray-500 mb-2">
+                <a href="{{ path('tournament_show', {'id': tournament.id}) }}" class="hover:text-gray-700">
+                    {{ tournament.name }}
+                </a>
+                <span class="mx-2">/</span>
+                <span>Inscriptions</span>
+            </nav>
+            <h1 class="text-3xl font-bold">Gestion des inscriptions</h1>
+        </div>
+
+        <div class="mt-4 md:mt-0 flex items-center space-x-4">
+            {# Player Count Badge #}
+            <div class="bg-blue-500/20 text-blue-800 dark:text-blue-400 px-4 py-2 rounded-lg font-medium">
+                <span>{{ registrations|length }}</span>{% if tournament.maxPlayers %}/{{ tournament.maxPlayers }}{% endif %}
+                joueurs
+            </div>
+
+            {# Export Button #}
+            <a href="{{ path('tournament_registrations_export', {'id': tournament.id}) }}"
+               class="bg-gray-500/20 hover:bg-gray-500/30 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition">
+                Exporter CSV
+            </a>
+
+            {# Close/Reopen Registrations Button #}
+            {% if not tournament.registrationsClosed %}
+                <form action="{{ path('tournament_close_registrations', {'id': tournament.id}) }}" method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token('close_registrations' ~ tournament.id) }}">
+                    <button type="submit"
+                            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition"
+                            onclick="return confirm('Fermer les inscriptions ?')">
+                        Fermer les inscriptions
+                    </button>
+                </form>
+            {% else %}
+                <form action="{{ path('tournament_reopen_registrations', {'id': tournament.id}) }}" method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token('reopen_registrations' ~ tournament.id) }}">
+                    <button type="submit"
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                        Rouvrir les inscriptions
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Status Badge #}
+    {% if tournament.registrationsClosed %}
+        <div class="bg-red-500/20 border border-red-500/30 text-red-800 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
+            Les inscriptions sont actuellement fermees.
+        </div>
+    {% endif %}
+
+    {# Add Player Section (organizer can add players even when registrations are closed) #}
+    {% if tournament.status.value in ['published', 'ongoing'] %}
+    <div class="theme-card shadow-md rounded-lg overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gray-500/10 border-b" style="border-color: var(--border-default);">
+            <button type="button"
+                    id="toggle-add-player"
+                    class="flex items-center justify-between w-full text-left font-medium theme-text-primary">
+                <span class="flex items-center">
+                    {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2 text-green-600'}) }}
+                    Ajouter un joueur manuellement
+                </span>
+                {{ ux_icon('lucide:chevron-down', {class: 'w-5 h-5 transform transition-transform', id: 'add-player-chevron'}) }}
+            </button>
+        </div>
+        <div id="add-player-form" class="hidden p-6">
+            <div class="mb-4">
+                <label for="user-search" class="block text-sm font-medium theme-text-secondary mb-2">
+                    Rechercher un utilisateur (email ou pseudo)
+                </label>
+                <div class="relative">
+                    <input type="text"
+                           id="user-search"
+                           class="form-input"
+                           placeholder="Tapez au moins 2 caracteres..."
+                           autocomplete="off">
+                    <div id="search-spinner" class="hidden absolute right-3 top-2.5">
+                        {{ ux_icon('lucide:loader-2', {class: 'animate-spin h-5 w-5 text-gray-400'}) }}
+                    </div>
+                </div>
+            </div>
+
+            {# Search Results #}
+            <div id="search-results" class="hidden mb-4">
+                <div class="theme-card border rounded-lg max-h-64 overflow-y-auto" style="border-color: var(--border-default); --tw-divide-y-reverse: 0; --tw-divide-opacity: 1;">
+                    {# Results will be populated by JavaScript #}
+                </div>
+            </div>
+
+            {# Selected User Form #}
+            <div id="selected-user-form" class="hidden">
+                <form action="{{ path('tournament_registrations_add', {'id': tournament.id}) }}"
+                      method="POST"
+                      class="space-y-4"
+                      data-controller="registration-form"
+                      data-registration-form-heroes-value='{{ heroesData|json_encode|raw }}'
+                      data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                      data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('add_player' ~ tournament.id) }}">
+                    <input type="hidden" name="user_id" id="selected-user-id" value="">
+
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-blue-500/30 rounded-full flex items-center justify-center">
+                                    <span class="text-lg font-medium text-blue-600" id="selected-user-initial">?</span>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium theme-text-primary" id="selected-user-pseudo">-</div>
+                                    <div class="text-sm theme-text-muted" id="selected-user-email">-</div>
+                                </div>
+                            </div>
+                            <button type="button"
+                                    id="clear-selection"
+                                    class="theme-text-muted hover:opacity-80">
+                                {{ ux_icon('lucide:x', {class: 'w-5 h-5'}) }}
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if tournament.format.isConstructed %}
+                        {# Faction & Hero Selection for Constructed formats #}
+                        <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
+                            <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
+                                {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
+                                Faction et Heros (optionnel)
+                            </h4>
+
+                            {% if tournament.format.isHeroOutOfFaction %}
+                                <div class="flex items-start p-3 mb-3 rounded-lg bg-pink-500/10 border border-pink-500/30">
+                                    {{ ux_icon('lucide:info', {class: 'w-4 h-4 text-pink-500 mr-2 flex-shrink-0 mt-0.5'}) }}
+                                    <p class="text-xs theme-text-secondary">
+                                        <strong class="text-pink-600">Format Heros Out of Faction :</strong>
+                                        Le heros doit etre d'une faction differente du deck.
+                                    </p>
+                                </div>
+                            {% elseif tournament.format.isBifaction %}
+                                <div class="flex items-start p-3 mb-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                                    {{ ux_icon('lucide:info', {class: 'w-4 h-4 text-cyan-500 mr-2 flex-shrink-0 mt-0.5'}) }}
+                                    <p class="text-xs theme-text-secondary">
+                                        <strong class="text-cyan-600">Format Bifaction :</strong>
+                                        Deux factions requises, heros de l'une des deux.
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {# Faction Select #}
+                                <div>
+                                    <label for="add-player-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        {{ tournament.format.isBifaction ? 'Premiere Faction' : 'Faction' }}
+                                    </label>
+                                    <select name="faction"
+                                            id="add-player-faction"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="faction"
+                                            data-action="change->registration-form#factionChanged">
+                                        <option value="">Selectionnez une faction</option>
+                                        {% for label, value in factionChoices %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% if tournament.format.isBifaction %}
+                                    {# Faction 2 Select for Bifaction #}
+                                    <div>
+                                        <label for="add-player-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            Seconde Faction
+                                        </label>
+                                        <select name="faction2"
+                                                id="add-player-faction2"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="faction2"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">Selectionnez une faction</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+
+                                {# Hero Select #}
+                                <div class="{{ tournament.format.isBifaction ? 'md:col-span-2' : '' }}">
+                                    <label for="add-player-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        Heros
+                                    </label>
+                                    <select name="hero"
+                                            id="add-player-hero"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="hero"
+                                            disabled>
+                                        <option value="">Selectionnez d'abord une faction</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        {# Limited format - no faction/hero selection #}
+                        <div class="flex items-start p-3 rounded-lg bg-gray-500/10 border" style="border-color: var(--border-default);">
+                            {{ ux_icon('lucide:info', {class: 'w-4 h-4 mr-2 flex-shrink-0 mt-0.5', style: 'color: var(--text-muted);'}) }}
+                            <p class="text-xs theme-text-muted">
+                                Format Limited : La faction et le heros seront determines lors de la construction du deck sur place.
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <label for="decklist_url" class="block text-sm font-medium theme-text-secondary mb-2">
+                            URL de la decklist (optionnel)
+                        </label>
+                        <input type="url"
+                               name="decklist_url"
+                               id="decklist_url"
+                               class="form-input"
+                               placeholder="https://...">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                        Ajouter au tournoi
+                    </button>
+                </form>
+            </div>
+
+            <p id="no-results" class="hidden theme-text-muted text-sm text-center py-4">
+                Aucun utilisateur trouve pour cette recherche.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Registrations Table #}
+    {% if registrations|length > 0 %}
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-500/10">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        #
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <a href="{{ path('tournament_registrations', {
+                            'id': tournament.id,
+                            'sort': 'player.pseudo',
+                            'direction': sort_field == 'player.pseudo' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="flex items-center hover:text-gray-700">
+                            Pseudo
+                            {% if sort_field == 'player.pseudo' %}
+                                {% if sort_direction == 'ASC' %}
+                                    {{ ux_icon('lucide:chevron-up', {class: 'w-4 h-4 ml-1'}) }}
+                                {% else %}
+                                    {{ ux_icon('lucide:chevron-down', {class: 'w-4 h-4 ml-1'}) }}
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Faction / Heros
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Decklist
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <a href="{{ path('tournament_registrations', {
+                            'id': tournament.id,
+                            'sort': 'registeredAt',
+                            'direction': sort_field == 'registeredAt' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
+                        }) }}" class="flex items-center hover:text-gray-700">
+                            Inscrit le
+                            {% if sort_field == 'registeredAt' %}
+                                {% if sort_direction == 'ASC' %}
+                                    {{ ux_icon('lucide:chevron-up', {class: 'w-4 h-4 ml-1'}) }}
+                                {% else %}
+                                    {{ ux_icon('lucide:chevron-down', {class: 'w-4 h-4 ml-1'}) }}
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for registration in registrations %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ loop.index }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-medium text-gray-600">
+                                    {{ registration.player.pseudo|first|upper }}
+                                </span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium text-gray-900">
+                                        {{ registration.player.pseudo }}
+                                    </span>
+                                    {% if registration.player.id == tournament.organizer.id %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-800 dark:text-purple-400">
+                                            Organisateur
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                {% if registration.player.name %}
+                                <div class="text-sm text-gray-500">
+                                    {{ registration.player.name }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if registration.faction %}
+                            {% set factionColors = {
+                                'axiom': {'bg': 'rgba(59, 130, 246, 0.2)', 'text': '#3b82f6', 'border': '#3b82f6'},
+                                'bravos': {'bg': 'rgba(239, 68, 68, 0.2)', 'text': '#ef4444', 'border': '#ef4444'},
+                                'lyra': {'bg': 'rgba(168, 85, 247, 0.2)', 'text': '#a855f7', 'border': '#a855f7'},
+                                'muna': {'bg': 'rgba(34, 197, 94, 0.2)', 'text': '#22c55e', 'border': '#22c55e'},
+                                'ordis': {'bg': 'rgba(245, 158, 11, 0.2)', 'text': '#f59e0b', 'border': '#f59e0b'}
+                            } %}
+                            {% set colors = factionColors[registration.faction.value] ?? {'bg': 'rgba(107, 114, 128, 0.2)', 'text': '#6b7280', 'border': '#6b7280'} %}
+                            <div class="flex items-center gap-3">
+                                {% if registration.heroImage %}
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2" style="border-color: {{ colors.border }};">
+                                        <img src="{{ registration.heroImage }}" alt="{{ registration.heroLabel }}" class="w-full h-full object-cover">
+                                    </div>
+                                {% endif %}
+                                <div class="flex flex-col gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ colors.bg }}; color: {{ colors.text }};">
+                                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: {{ colors.text }};"></span>
+                                        {{ registration.faction.label|trans }}
+                                    </span>
+                                    {% if registration.heroLabel %}
+                                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                                            {{ registration.heroLabel }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="text-gray-400 text-xs">Non renseigne</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {% if registration.decklistUrl %}
+                            <a href="{{ registration.decklistUrl }}"
+                               target="_blank"
+                               class="text-blue-600 hover:text-blue-800 flex items-center">
+                                Voir decklist
+                                {{ ux_icon('lucide:external-link', {class: 'w-4 h-4 ml-1'}) }}
+                            </a>
+                        {% else %}
+                            <span class="text-gray-400">Non fournie</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ registration.registeredAt|date('d/m/Y H:i') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {% if tournament.status.value == 'published' %}
+                        <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
+                              method="POST"
+                              class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
+                            <button type="submit"
+                                    class="text-red-600 hover:text-red-900"
+                                    onclick="return confirm('Retirer {{ registration.player.pseudo }} du tournoi ?')">
+                                Retirer
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        {{ ux_icon('lucide:users', {class: 'w-16 h-16 mx-auto text-gray-400 mb-4'}) }}
+        <h2 class="text-xl font-medium text-gray-900 mb-2">Aucun joueur inscrit</h2>
+        <p class="text-gray-500">Les joueurs pourront s'inscrire une fois le tournoi publie.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if tournament.status.value in ['published', 'ongoing'] %}
+    <script>
+    (function() {
+        function initAddPlayerForm() {
+            const toggleBtn = document.getElementById('toggle-add-player');
+            const addPlayerForm = document.getElementById('add-player-form');
+            const chevron = document.getElementById('add-player-chevron');
+
+            // Exit early if toggle elements don't exist
+            if (!toggleBtn || !addPlayerForm) {
+                return;
+            }
+
+            // Prevent duplicate initialization
+            if (toggleBtn.dataset.initialized === 'true') {
+                return;
+            }
+            toggleBtn.dataset.initialized = 'true';
+
+            const searchInput = document.getElementById('user-search');
+            const searchSpinner = document.getElementById('search-spinner');
+            const searchResults = document.getElementById('search-results');
+            const noResults = document.getElementById('no-results');
+            const selectedUserForm = document.getElementById('selected-user-form');
+            const selectedUserId = document.getElementById('selected-user-id');
+            const selectedUserInitial = document.getElementById('selected-user-initial');
+            const selectedUserPseudo = document.getElementById('selected-user-pseudo');
+            const selectedUserEmail = document.getElementById('selected-user-email');
+            const clearSelection = document.getElementById('clear-selection');
+
+            let searchTimeout = null;
+            const searchUrl = '{{ path('tournament_registrations_search_users', {'id': tournament.id}) }}';
+
+            // Toggle add player form
+            toggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                addPlayerForm.classList.toggle('hidden');
+                if (chevron) {
+                    chevron.classList.toggle('rotate-180');
+                }
+            });
+
+            // Search users with debounce
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.trim();
+
+                    // Clear previous timeout
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
+                    }
+
+                    // Hide previous results
+                    if (searchResults) searchResults.classList.add('hidden');
+                    if (noResults) noResults.classList.add('hidden');
+
+                    if (query.length < 2) {
+                        return;
+                    }
+
+                    // Debounce search
+                    searchTimeout = setTimeout(function() {
+                        if (searchSpinner) searchSpinner.classList.remove('hidden');
+
+                        fetch(searchUrl + '?q=' + encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(data => {
+                                if (searchSpinner) searchSpinner.classList.add('hidden');
+                                displayResults(data.users || []);
+                            })
+                            .catch(error => {
+                                if (searchSpinner) searchSpinner.classList.add('hidden');
+                                console.error('Search error:', error);
+                            });
+                    }, 300);
+                });
+            }
+
+            // Display search results
+            function displayResults(users) {
+                if (!searchResults) return;
+
+                const container = searchResults.querySelector('div');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                if (users.length === 0) {
+                    if (noResults) noResults.classList.remove('hidden');
+                    searchResults.classList.add('hidden');
+                    return;
+                }
+
+                if (noResults) noResults.classList.add('hidden');
+
+                users.forEach(function(user, index) {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-3 cursor-pointer';
+                    item.style.cssText = index > 0 ? 'border-top: 1px solid var(--border-default);' : '';
+                    item.onmouseenter = function() { this.style.backgroundColor = 'var(--bg-muted)'; };
+                    item.onmouseleave = function() { this.style.backgroundColor = ''; };
+                    item.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-8 w-8 theme-bg-muted rounded-full flex items-center justify-center">
+                                <span class="text-sm font-medium theme-text-secondary">${user.pseudo.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium theme-text-primary">${user.pseudo}</div>
+                                <div class="text-sm theme-text-muted">${user.email}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            Selectionner
+                        </button>
+                    `;
+
+                    item.addEventListener('click', function() {
+                        selectUser(user);
+                    });
+
+                    container.appendChild(item);
+                });
+
+                searchResults.classList.remove('hidden');
+            }
+
+            // Select a user
+            function selectUser(user) {
+                if (selectedUserId) selectedUserId.value = user.id;
+                if (selectedUserInitial) selectedUserInitial.textContent = user.pseudo.charAt(0).toUpperCase();
+                if (selectedUserPseudo) selectedUserPseudo.textContent = user.pseudo;
+                if (selectedUserEmail) selectedUserEmail.textContent = user.email;
+
+                if (searchResults) searchResults.classList.add('hidden');
+                if (searchInput) searchInput.value = '';
+                if (selectedUserForm) selectedUserForm.classList.remove('hidden');
+            }
+
+            // Clear selection
+            if (clearSelection) {
+                clearSelection.addEventListener('click', function() {
+                    if (selectedUserId) selectedUserId.value = '';
+                    if (selectedUserForm) selectedUserForm.classList.add('hidden');
+                });
+            }
+        }
+
+        // Initialize when DOM is ready
+        // Handle both standard page load and Turbo navigation
+        function init() {
+            // Small delay to ensure DOM is fully rendered
+            setTimeout(initAddPlayerForm, 10);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // Also handle Turbo navigation (re-init when navigating with Turbo)
+        document.addEventListener('turbo:load', init);
+        document.addEventListener('turbo:render', init);
+    })();
+    </script>
+    {% endif %}
+{% endblock %}

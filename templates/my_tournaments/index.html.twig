@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes tournois{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Mes tournois</h1>
+
+    {% if total_count == 0 %}
+        {# Empty State #}
+        <div class="rounded-lg shadow-md p-8 text-center" style="background-color: var(--card-bg);">
+            {{ ux_icon('lucide:clipboard-list', {class: 'w-16 h-16 mx-auto mb-4', style: 'color: var(--text-muted);'}) }}
+            <h2 class="text-xl font-medium mb-2" style="color: var(--text-primary);">Aucune inscription</h2>
+            <p class="mb-6" style="color: var(--text-muted);">Vous n'êtes inscrit à aucun tournoi pour le moment.</p>
+            <a href="{{ path('tournament_list') }}"
+               class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200">
+                Parcourir les tournois
+            </a>
+        </div>
+    {% else %}
+        {# Ongoing Tournaments #}
+        {% if grouped_tournaments.ongoing|length > 0 %}
+        <section class="mb-10">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                En cours ({{ grouped_tournaments.ongoing|length }})
+            </h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {% for registration in grouped_tournaments.ongoing %}
+                    {{ include('my_tournaments/_tournament_card.html.twig', {
+                        registration: registration,
+                        status_color: 'green',
+                        show_unregister: false
+                    }) }}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {# Upcoming Tournaments #}
+        {% if grouped_tournaments.upcoming|length > 0 %}
+        <section class="mb-10">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                A venir ({{ grouped_tournaments.upcoming|length }})
+            </h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {% for registration in grouped_tournaments.upcoming %}
+                    {{ include('my_tournaments/_tournament_card.html.twig', {
+                        registration: registration,
+                        status_color: 'blue',
+                        show_unregister: true
+                    }) }}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {# Completed Tournaments #}
+        {% if grouped_tournaments.completed|length > 0 %}
+        <section class="mb-10">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="w-3 h-3 rounded-full mr-2" style="background-color: var(--text-muted);"></span>
+                Termines ({{ grouped_tournaments.completed|length }})
+            </h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {% for registration in grouped_tournaments.completed %}
+                    {{ include('my_tournaments/_tournament_card.html.twig', {
+                        registration: registration,
+                        status_color: 'gray',
+                        show_unregister: false
+                    }) }}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

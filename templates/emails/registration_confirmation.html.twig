@@ -1,0 +1,79 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}{{ 'email.registration_confirmation.subject'|trans({'%tournament%': tournament.name}) }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #1a365d; margin-bottom: 20px;">{{ 'email.registration_confirmation.title'|trans|default('Inscription confirmee !') }}</h2>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.common.greeting'|trans({'%name%': player.pseudo}) }}
+</p>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.registration_confirmation.body'|trans({'%tournament%': tournament.name}) }}
+</p>
+
+<div style="background-color: #f7fafc; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #2d3748; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.registration_confirmation.tournament_details'|trans|default('Details du tournoi') }}
+    </h3>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.name'|trans }}:</strong> {{ tournament.name }}
+    </p>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.date'|trans }}:</strong> {{ tournament.date|date('d/m/Y') }}{% if tournament.time %} {{ 'common.at'|trans }} {{ tournament.time|date('H:i') }}{% endif %}
+    </p>
+    {% if tournament.location %}
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.location'|trans }}:</strong> {{ tournament.location }}
+    </p>
+    {% endif %}
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'form.tournament.format'|trans }}:</strong> {{ tournament.format.label|trans }}
+    </p>
+    {% if tournament.entryFee %}
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'tournament.show.entry_fee'|trans }}:</strong> {{ tournament.entryFee }}
+    </p>
+    {% endif %}
+</div>
+
+<div style="background-color: #ebf8ff; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #2b6cb0; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.registration_confirmation.your_registration'|trans|default('Votre inscription') }}
+    </h3>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'email.registration_confirmation.registration_date'|trans|default('Date d\'inscription') }}:</strong> {{ registration.registeredAt|date('d/m/Y') }} {{ 'common.at'|trans }} {{ registration.registeredAt|date('H:i') }}
+    </p>
+    {% if registration.decklistUrl %}
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'email.registration_confirmation.decklist'|trans|default('Decklist') }}:</strong>
+        <a href="{{ registration.decklistUrl }}" style="color: #3182ce;">{{ 'email.registration_confirmation.view_decklist'|trans|default('Voir ma decklist') }}</a>
+    </p>
+    {% endif %}
+</div>
+
+<div style="background-color: #faf5ff; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #6b46c1; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.registration_confirmation.organizer_contact'|trans|default('Contact organisateur') }}
+    </h3>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.organizer'|trans }}:</strong> {{ tournament.organizer.pseudo }}
+    </p>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.email'|trans }}:</strong>
+        <a href="mailto:{{ tournament.organizer.email }}" style="color: #6b46c1;">{{ tournament.organizer.email }}</a>
+    </p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ tournamentUrl }}" class="button" style="display: inline-block; background-color: #1a56db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        {{ 'email.registration_confirmation.view_tournament'|trans|default('Voir le tournoi') }}
+    </a>
+</div>
+
+<p style="font-size: 14px; color: #718096; margin-top: 30px; text-align: center;">
+    {{ 'email.registration_confirmation.cannot_participate'|trans|default('Vous ne pouvez plus participer ?') }}
+    <a href="{{ unregisterUrl }}" style="color: #e53e3e;">{{ 'email.registration_confirmation.cancel_registration'|trans|default('Annuler mon inscription') }}</a>
+</p>
+{% endblock %}

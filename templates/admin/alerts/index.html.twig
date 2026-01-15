@@ -1,0 +1,237 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Alertes systeme - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">Alertes systeme</h1>
+                <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ total }} alerte(s) au total</p>
+            </div>
+
+            <form action="{{ path('admin_alerts_run_checks') }}" method="POST" class="inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_run_health_checks') }}">
+                <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    {{ ux_icon('lucide:refresh-cw', {class: 'h-4 w-4 mr-2'}) }}
+                    Lancer une verification
+                </button>
+            </form>
+        </div>
+
+        {# Alert Counts Summary #}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="rounded-lg shadow p-4 border-l-4 border-red-500" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm" style="color: var(--text-muted);">Critiques</p>
+                        <p class="text-2xl font-bold text-red-600">{{ alertCounts.critical }}</p>
+                    </div>
+                    {{ ux_icon('lucide:alert-triangle', {class: 'h-8 w-8 text-red-400'}) }}
+                </div>
+            </div>
+
+            <div class="rounded-lg shadow p-4 border-l-4 border-yellow-500" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm" style="color: var(--text-muted);">Avertissements</p>
+                        <p class="text-2xl font-bold text-yellow-600">{{ alertCounts.warning }}</p>
+                    </div>
+                    {{ ux_icon('lucide:alert-triangle', {class: 'h-8 w-8 text-yellow-400'}) }}
+                </div>
+            </div>
+
+            <div class="rounded-lg shadow p-4 border-l-4 border-blue-500" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm" style="color: var(--text-muted);">Informations</p>
+                        <p class="text-2xl font-bold text-blue-600">{{ alertCounts.info }}</p>
+                    </div>
+                    {{ ux_icon('lucide:info', {class: 'h-8 w-8 text-blue-400'}) }}
+                </div>
+            </div>
+        </div>
+
+        {# Filters #}
+        <div class="rounded-lg shadow mb-6" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4">
+                <form method="GET" action="{{ path('admin_alerts') }}" class="flex flex-wrap gap-4 items-end">
+                    <div class="w-48">
+                        <label for="type" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Type</label>
+                        <select id="type"
+                                name="type"
+                                class="form-input w-full rounded-md shadow-sm">
+                            <option value="">Tous les types</option>
+                            {% for alertType in alertTypes %}
+                                <option value="{{ alertType.value }}" {% if filters.type == alertType.value %}selected{% endif %}>
+                                    {{ alertType.label|trans }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="w-48">
+                        <label for="severity" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Severite</label>
+                        <select id="severity"
+                                name="severity"
+                                class="form-input w-full rounded-md shadow-sm">
+                            <option value="">Toutes</option>
+                            {% for sev in alertSeverities %}
+                                <option value="{{ sev.value }}" {% if filters.severity == sev.value %}selected{% endif %}>
+                                    {{ sev.label|trans }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="w-48">
+                        <label for="status" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Statut</label>
+                        <select id="status"
+                                name="status"
+                                class="form-input w-full rounded-md shadow-sm">
+                            <option value="">Tous</option>
+                            <option value="active" {% if filters.status == 'active' %}selected{% endif %}>Actives</option>
+                            <option value="acknowledged" {% if filters.status == 'acknowledged' %}selected{% endif %}>Acquittees</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            Filtrer
+                        </button>
+                    </div>
+
+                    {% if filters.type or filters.severity or filters.status %}
+                        <div>
+                            <a href="{{ path('admin_alerts') }}"
+                               class="px-4 py-2 rounded-md inline-block" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                                Reinitialiser
+                            </a>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        {# Alerts Table #}
+        <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+            {% if alerts is empty %}
+                <div class="px-6 py-8 text-center" style="color: var(--text-muted);">
+                    {{ ux_icon('lucide:check-circle', {class: 'mx-auto h-12 w-12', style: 'color: var(--text-muted);'}) }}
+                    <p class="mt-2">Aucune alerte trouvee.</p>
+                </div>
+            {% else %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y" style="--tw-divide-opacity: 1; border-color: var(--border-default);">
+                        <thead style="background-color: var(--bg-subtle);">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Severite
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Type
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Message
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Date
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Statut
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                            {% for alert in alerts %}
+                                <tr class="{% if not alert.acknowledged %}bg-{{ alert.severity.color }}-50{% endif %} hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {% if alert.severity.value == 'critical' %}bg-red-100 text-red-800
+                                            {% elseif alert.severity.value == 'warning' %}bg-yellow-100 text-yellow-800
+                                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                            {{ alert.severity.label|trans }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-primary);">
+                                        {{ alert.type.label|trans }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm max-w-md truncate" style="color: var(--text-primary);">
+                                        {{ alert.message }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                        {{ alert.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if alert.acknowledged %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                Acquittee
+                                            </span>
+                                            <p class="text-xs mt-1" style="color: var(--text-muted);">
+                                                Par {{ alert.acknowledgedBy ? alert.acknowledgedBy.pseudo : 'Inconnu' }}
+                                            </p>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{{ path('admin_alert_view', {id: alert.id}) }}"
+                                           class="hover:underline mr-3" style="color: var(--color-primary-600);">
+                                            Details
+                                        </a>
+                                        {% if not alert.acknowledged %}
+                                            <form action="{{ path('admin_alert_acknowledge', {id: alert.id}) }}"
+                                                  method="POST"
+                                                  class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_alert_acknowledge') }}">
+                                                <button type="submit"
+                                                        class="text-green-600 hover:text-green-900">
+                                                    Acquitter
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if totalPages > 1 %}
+                    <div class="px-6 py-4" style="border-top: 1px solid var(--border-default);">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm" style="color: var(--text-secondary);">
+                                Page {{ page }} sur {{ totalPages }}
+                            </div>
+                            <div class="flex space-x-2">
+                                {% if page > 1 %}
+                                    <a href="{{ path('admin_alerts', filters|merge({page: page - 1})) }}"
+                                       class="px-3 py-1 rounded-md text-sm" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                                        Precedent
+                                    </a>
+                                {% endif %}
+
+                                {% if page < totalPages %}
+                                    <a href="{{ path('admin_alerts', filters|merge({page: page + 1})) }}"
+                                       class="px-3 py-1 rounded-md text-sm" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                                        Suivant
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

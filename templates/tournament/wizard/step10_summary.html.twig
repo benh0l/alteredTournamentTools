@@ -1,0 +1,227 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-green-500/20 rounded-xl mb-4">
+            {{ ux_icon('lucide:clipboard-check', {class: 'w-6 h-6 text-green-500'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step10.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.subtitle'|trans }}</p>
+    </div>
+
+    <div class="space-y-6">
+        {# Basic Info #}
+        <div class="border rounded-2xl p-5" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                {{ 'tournament.wizard.step10.basic_info'|trans }}
+            </h3>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl p-3" style="background-color: var(--bg-subtle);">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.name'|trans }}</dt>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.name }}</dd>
+                </div>
+                <div class="rounded-xl p-3" style="background-color: var(--bg-subtle);">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.date'|trans }}</dt>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">
+                        {{ summary.date|date('d/m/Y') }}
+                        {% if summary.time %} {{ 'common.at'|trans }} {{ summary.time|date('H:i') }}{% endif %}
+                    </dd>
+                </div>
+                {% if summary.location %}
+                    <div class="md:col-span-2 rounded-xl p-3" style="background-color: var(--bg-subtle);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.location'|trans }}</dt>
+                        <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.location }}</dd>
+                    </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        {# Tournament Config #}
+        <div class="border rounded-2xl p-5" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2 text-purple-500'}) }}
+                {{ 'tournament.wizard.step10.configuration'|trans }}
+            </h3>
+            <dl class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.format'|trans }}</dt>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.format }}</dd>
+                </div>
+                <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.structure'|trans }}</dt>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.structure }}</dd>
+                </div>
+                <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.swiss_matches'|trans }}</dt>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.swissMatchFormat }}</dd>
+                </div>
+                {% if summary.eliminationMatchFormat %}
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.elim_matches'|trans }}</dt>
+                        <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.eliminationMatchFormat }}</dd>
+                    </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        {# Players Config #}
+        <div class="border rounded-2xl p-5" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2 text-orange-500'}) }}
+                {{ 'tournament.wizard.step10.players_rounds'|trans }}
+            </h3>
+            <dl class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="bg-orange-500/20 rounded-xl p-3 text-center">
+                    <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.expected_players'|trans }}</dt>
+                    <dd class="text-lg font-bold text-orange-600">{{ summary.expectedPlayers }}</dd>
+                </div>
+                {% if summary.swissRounds %}
+                    <div class="bg-blue-500/20 rounded-xl p-3 text-center">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.swiss_rounds'|trans }}</dt>
+                        <dd class="text-lg font-bold text-blue-600">
+                            {{ summary.swissRounds }}
+                            {% if summary.swissRoundsAutoSuggested|default(false) %}
+                                <span class="text-xs font-normal text-blue-400">{{ 'tournament.wizard.step10.auto'|trans }}</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                {% endif %}
+                {% if summary.topCutSize %}
+                    <div class="bg-amber-500/20 rounded-xl p-3 text-center">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.top_cut'|trans }}</dt>
+                        <dd class="text-lg font-bold text-amber-600">Top {{ summary.topCutSize }}</dd>
+                    </div>
+                {% endif %}
+            </dl>
+        </div>
+
+        {# Group Stage Config (for GROUP_STAGE_ELIMINATION) #}
+        {% if summary.groupCount %}
+            <div class="bg-green-500/10 border border-green-500/30 rounded-2xl p-5">
+                <h3 class="text-lg font-semibold text-green-600 dark:text-green-400 mb-4 flex items-center">
+                    {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'tournament.wizard.step10.group_config'|trans }}
+                </h3>
+                <dl class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.group_count'|trans }}</dt>
+                        <dd class="text-lg font-bold text-green-600">{{ summary.groupCount }}</dd>
+                    </div>
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.players_per_group'|trans }}</dt>
+                        <dd class="text-lg font-bold text-green-600">{{ summary.playersPerGroup }}</dd>
+                    </div>
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.total_players'|trans }}</dt>
+                        <dd class="text-lg font-bold text-green-600">{{ summary.totalGroupPlayers|default(summary.groupCount * summary.playersPerGroup) }}</dd>
+                    </div>
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.qualifiers_per_group'|trans }}</dt>
+                        <dd class="text-lg font-bold text-green-600">{{ summary.qualifiersPerGroup }}</dd>
+                    </div>
+                    <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.total_qualifiers'|trans }}</dt>
+                        <dd class="text-lg font-bold text-green-600">{{ summary.totalQualifiers|default(summary.groupCount * summary.qualifiersPerGroup) }}</dd>
+                    </div>
+                    {% if summary.groupFormationMethod %}
+                        <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
+                            <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.formation'|trans }}</dt>
+                            <dd class="text-sm font-medium text-green-600">{{ summary.groupFormationMethod }}</dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            </div>
+        {% endif %}
+
+        {# Visibility #}
+        <div class="border rounded-2xl p-5" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:eye', {class: 'w-5 h-5 mr-2 text-indigo-500'}) }}
+                {{ 'tournament.wizard.step10.visibility_section'|trans }}
+            </h3>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
+                    <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.tournament'|trans }}</dt>
+                    <dd class="text-sm font-medium flex items-center" style="color: var(--text-primary);">
+                        {% if summary.visibility == 'Public' %}
+                            {{ ux_icon('lucide:globe', {class: 'w-4 h-4 mr-1 text-green-500'}) }}
+                        {% else %}
+                            {{ ux_icon('lucide:lock', {class: 'w-4 h-4 mr-1 text-amber-500'}) }}
+                        {% endif %}
+                        {{ summary.visibility }}
+                    </dd>
+                </div>
+                <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
+                    <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.decklists'|trans }}</dt>
+                    <dd class="text-sm font-medium flex items-center" style="color: var(--text-primary);">
+                        {% if summary.decklistTransparency == 'Ouvertes' %}
+                            {{ ux_icon('lucide:eye', {class: 'w-4 h-4 mr-1 text-blue-500'}) }}
+                        {% else %}
+                            {{ ux_icon('lucide:eye-off', {class: 'w-4 h-4 mr-1 text-gray-400'}) }}
+                        {% endif %}
+                        {{ summary.decklistTransparency }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        {# Optional Details #}
+        {% if summary.description or summary.entryFee or summary.prizes or summary.alteredGgLink %}
+            <div class="border rounded-2xl p-5" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                    {{ 'tournament.wizard.step10.details'|trans }}
+                </h3>
+                <dl class="space-y-3">
+                    {% if summary.description %}
+                        <div class="rounded-xl p-3" style="background-color: var(--bg-subtle);">
+                            <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.description'|trans }}</dt>
+                            <dd class="text-sm" style="color: var(--text-primary);">{{ summary.description|nl2br }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if summary.entryFee %}
+                        <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.entry_fee'|trans }}</dt>
+                            <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.entryFee }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if summary.prizes %}
+                        <div class="rounded-xl p-3" style="background-color: var(--bg-subtle);">
+                            <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.prizes'|trans }}</dt>
+                            <dd class="text-sm" style="color: var(--text-primary);">{{ summary.prizes|nl2br }}</dd>
+                        </div>
+                    {% endif %}
+                    {% if summary.alteredGgLink %}
+                        <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step9.altered_gg_link'|trans }}</dt>
+                            <dd class="text-sm font-medium">
+                                <a href="{{ summary.alteredGgLink }}" target="_blank" class="text-orange-600 hover:text-orange-700 hover:underline flex items-center">
+                                    {{ ux_icon('lucide:external-link', {class: 'w-4 h-4 mr-1'}) }}
+                                    {{ 'tournament.wizard.step10.view_on_altered'|trans }}
+                                </a>
+                            </dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="alert-warning mt-6">
+        <p class="flex items-start">
+            {{ ux_icon('lucide:alert-circle', {class: 'w-5 h-5 mr-2 flex-shrink-0'}) }}
+            <span><strong>{{ 'tournament.wizard.step10.draft_warning'|trans }}</strong></span>
+        </p>
+    </div>
+{% endblock %}
+
+{% block wizard_next_button %}
+    <form action="{{ path('tournament_wizard_create') }}" method="POST" class="inline">
+        <input type="hidden" name="_token" value="{{ csrf_token('wizard_create') }}">
+        <button type="submit" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg transition-all duration-200 transform hover:scale-105">
+            {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
+            {{ 'tournament.wizard.step10.confirm_create'|trans }}
+        </button>
+    </form>
+{% endblock %}

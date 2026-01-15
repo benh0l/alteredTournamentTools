@@ -1,0 +1,194 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Resultats - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    {# Header #}
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ tournament.name }}</h1>
+                <p style="color: var(--text-secondary);">Resultats des rondes</p>
+            </div>
+            <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="font-medium hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour
+            </a>
+        </div>
+    </div>
+
+    {# Navigation tabs #}
+    <div class="mb-6 border-b" style="border-color: var(--border-default);">
+        <nav class="flex space-x-8">
+            <a href="{{ path('tournament_pairings', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 border-transparent hover:border-gray-300" style="color: var(--text-muted);">
+                Pairings
+            </a>
+            <a href="{{ path('tournament_standings', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 border-transparent hover:border-gray-300" style="color: var(--text-muted);">
+                Classement
+            </a>
+            <a href="{{ path('tournament_results', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 font-medium" style="color: var(--color-primary-600); border-color: var(--color-primary-600);">
+                Resultats
+            </a>
+        </nav>
+    </div>
+
+    {% if rounds_data|length > 0 %}
+        {# Rounds accordion #}
+        <div class="space-y-4">
+            {% for data in rounds_data|reverse %}
+                {% set round = data.round %}
+                {% set matches = data.matches %}
+                {% set isCurrentRound = tournament.currentRound and round.id == tournament.currentRound.id %}
+
+                <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+                    {# Round header #}
+                    <button type="button"
+                            class="w-full px-6 py-4 flex justify-between items-center hover:opacity-80 transition"
+                            style="background-color: var(--card-bg);"
+                            onclick="toggleRound({{ round.roundNumber }})">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                                Ronde {{ round.roundNumber }}
+                            </h3>
+                            <span class="{{ round.status.badgeClasses }} px-2 py-1 rounded text-xs">
+                                {{ round.status.label|trans }}
+                            </span>
+                            {% if isCurrentRound %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                                    En cours
+                                </span>
+                            {% endif %}
+                        </div>
+                        <span id="chevron-{{ round.roundNumber }}" class="{% if loop.first %}rotate-180{% endif %} transform transition-transform">
+                            {{ ux_icon('lucide:chevron-down', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </span>
+                    </button>
+
+                    {# Round matches #}
+                    <div id="round-{{ round.roundNumber }}"
+                         class="border-t {% if not loop.first %}hidden{% endif %}" style="border-color: var(--border-default);">
+                        <table class="min-w-full divide-y" style="border-color: var(--border-default);">
+                            <thead style="background-color: var(--bg-subtle);">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Table</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Joueur 1</th>
+                                    <th class="px-4 py-2 text-center text-xs font-medium uppercase" style="color: var(--text-muted);">Score</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium uppercase" style="color: var(--text-muted);">Joueur 2</th>
+                                    <th class="px-4 py-2 text-center text-xs font-medium uppercase" style="color: var(--text-muted);">Resultat</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                                {% for match in matches %}
+                                    {% set isMyMatch = player_registration and (
+                                        (match.player1 and match.player1.id == player_registration.id) or
+                                        (match.player2 and match.player2.id == player_registration.id)
+                                    ) %}
+                                    {% set myResult = null %}
+                                    {% if isMyMatch and match.completed %}
+                                        {% if match.winner %}
+                                            {% if (match.player1 and match.player1.id == player_registration.id and match.winner.id == match.player1.id) or
+                                                  (match.player2 and match.player2.id == player_registration.id and match.winner.id == match.player2.id) %}
+                                                {% set myResult = 'win' %}
+                                            {% else %}
+                                                {% set myResult = 'loss' %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <tr class="{% if isMyMatch %}{% if myResult == 'win' %}bg-green-50{% elseif myResult == 'loss' %}bg-red-50{% endif %}{% endif %}"
+                                        style="{% if isMyMatch and not myResult %}background-color: var(--color-primary-50);{% endif %}">
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm" style="color: var(--text-primary);">
+                                            {{ match.tableNumber }}
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
+                                            {{ match.player1.player.displayName }}
+                                            {% if isMyMatch and match.player1 and match.player1.id == player_registration.id %}
+                                                <span style="color: var(--color-primary-600);">(vous)</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-center" style="color: var(--text-primary);">
+                                            {% if match.completed %}
+                                                <span class="font-medium">{{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}</span>
+                                            {% elseif match.isByeMatch %}
+                                                <span style="color: var(--text-muted);">BYE</span>
+                                            {% else %}
+                                                <span style="color: var(--text-muted);">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-sm text-right {% if match.winner and match.player2 and match.winner == match.player2 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
+                                            {% if match.player2 %}
+                                                {{ match.player2.player.displayName }}
+                                                {% if isMyMatch and match.player2.id == player_registration.id %}
+                                                    <span style="color: var(--color-primary-600);">(vous)</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="italic" style="color: var(--text-muted);">BYE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap text-center">
+                                            {% if isMyMatch %}
+                                                {% if myResult == 'win' %}
+                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                                                        Victoire
+                                                    </span>
+                                                {% elseif myResult == 'loss' %}
+                                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
+                                                        Defaite
+                                                    </span>
+                                                {% elseif match.isByeMatch %}
+                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                                                        BYE
+                                                    </span>
+                                                {% else %}
+                                                    <span class="px-2 py-1 rounded text-xs" style="background-color: var(--bg-muted); color: var(--text-secondary);">
+                                                        En cours
+                                                    </span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-xs" style="color: var(--text-muted);">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-4 text-center text-sm" style="color: var(--text-muted);">
+                                            Aucun match dans cette ronde
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-lg shadow p-8 text-center" style="background-color: var(--card-bg);">
+            <p style="color: var(--text-secondary);">Aucune ronde jouee pour le moment.</p>
+            <p class="text-sm mt-2" style="color: var(--text-muted);">
+                Les resultats s'afficheront ici au fur et a mesure des rondes.
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function toggleRound(roundNumber) {
+            const content = document.getElementById('round-' + roundNumber);
+            const chevron = document.getElementById('chevron-' + roundNumber);
+
+            if (content) {
+                content.classList.toggle('hidden');
+            }
+            if (chevron) {
+                chevron.classList.toggle('rotate-180');
+            }
+        }
+    </script>
+{% endblock %}
+{% endblock %}

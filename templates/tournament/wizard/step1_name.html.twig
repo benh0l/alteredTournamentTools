@@ -1,0 +1,45 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:type', {class: 'w-6 h-6', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step1.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step1.subtitle'|trans }}</p>
+    </div>
+
+    {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-6'}}) }}
+        <div>
+            <label for="{{ form.name.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                {{ 'tournament.wizard.step1.title'|trans }}
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {{ ux_icon('lucide:trophy', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                </div>
+                {{ form_widget(form.name, {
+                    'attr': {
+                        'class': 'form-input w-full pl-10 rounded-xl text-lg',
+                        'placeholder': 'tournament.wizard.step1.name_placeholder'|trans
+                    }
+                }) }}
+            </div>
+            {{ form_errors(form.name) }}
+        </div>
+
+        <div class="bg-amber-500/10 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4">
+            <div class="flex">
+                {{ ux_icon('lucide:lightbulb', {class: 'w-5 h-5 text-amber-500 dark:text-amber-400 mr-3 flex-shrink-0 mt-0.5'}) }}
+                <div class="text-sm text-amber-800 dark:text-amber-300">
+                    <p class="font-medium mb-1">{{ 'tournament.wizard.step1.tips_title'|trans }}</p>
+                    <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-400">
+                        <li>{{ 'tournament.wizard.step1.tip1'|trans }}</li>
+                        <li>{{ 'tournament.wizard.step1.tip2'|trans }}</li>
+                        <li>{{ 'tournament.wizard.step1.tip3'|trans }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}
+<nav class="bg-gray-900">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-8">
+                <a href="{{ path('admin_dashboard') }}" class="text-xl font-bold text-white">
+                    Administration
+                </a>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ path('admin_dashboard') }}"
+                       class="{% if app.request.attributes.get('_route') == 'admin_dashboard' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %}">
+                        Tableau de bord
+                    </a>
+                    <a href="{{ path('admin_users') }}"
+                       class="{% if app.request.attributes.get('_route') starts with 'admin_user' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %}">
+                        Utilisateurs
+                    </a>
+                    <a href="{{ path('admin_logs') }}"
+                       class="{% if app.request.attributes.get('_route') == 'admin_logs' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %}">
+                        Logs
+                    </a>
+                    <a href="{{ path('admin_metrics') }}"
+                       class="{% if app.request.attributes.get('_route') == 'admin_metrics' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %}">
+                        Metriques
+                    </a>
+                    <a href="{{ path('admin_alerts') }}"
+                       class="{% if app.request.attributes.get('_route') starts with 'admin_alert' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %} relative">
+                        Alertes
+                        {% set alertCount = admin_active_alerts_count() %}
+                        {% if alertCount > 0 %}
+                            <span class="absolute -top-1 -right-3 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                                {{ alertCount }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{{ path('tournament_list') }}" class="text-gray-300 hover:text-white text-sm">
+                    Retour au site
+                </a>
+                <span class="text-gray-500">|</span>
+                <span class="text-gray-300">{{ app.user.pseudo }}</span>
+                <a href="{{ path('app_logout') }}" class="text-gray-300 hover:text-white">
+                    Deconnexion
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen" style="background-color: var(--bg-muted);">
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="bg-gray-900 border-t border-gray-700">
+    <div class="container mx-auto px-4 py-4 text-center text-sm text-gray-400">
+        &copy; {{ 'now'|date('Y') }} Altered Tournament Tools - Administration
+    </div>
+</footer>
+{% endblock %}

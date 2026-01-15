@@ -1,0 +1,13 @@
+{% extends 'emails/base.txt.twig' %}
+
+{% block content %}
+Bonjour {{ recipientName|default('utilisateur') }} !
+
+Ceci est un email de test envoye depuis Altered Tournament Tools.
+
+Si vous recevez cet email, la configuration du mailer fonctionne correctement.
+
+Details techniques :
+- Date d'envoi : {{ 'now'|date('d/m/Y H:i:s') }}
+- Environnement : {{ app.environment }}
+{% endblock %}

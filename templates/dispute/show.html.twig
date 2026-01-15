@@ -1,0 +1,180 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'dispute.show.page_title'|trans({'%number%': match.tableNumber}) }}{% endblock %}
+
+{% block body %}
+<div class="max-w-2xl mx-auto px-4 py-6">
+    <div class="mb-6">
+        <a href="{{ path('dispute_list', {tournamentId: tournament.id}) }}" class="font-medium hover:underline" style="color: var(--color-primary-600);">
+            &larr; {{ 'dispute.show.back_to_disputes'|trans }}
+        </a>
+    </div>
+
+    <div class="rounded-lg shadow-lg p-6" style="background-color: var(--card-bg);">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'dispute.show.resolve_dispute'|trans }}</h1>
+            <span class="px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-800 dark:text-red-300">
+                {{ 'dispute.show.badge'|trans }}
+            </span>
+        </div>
+
+        <div class="text-sm mb-6" style="color: var(--text-muted);">
+            {{ tournament.name }} - {{ 'dashboard.round.title'|trans({'%number%': match.round.roundNumber}) }} - {{ 'common.table'|trans }} {{ match.tableNumber }}
+        </div>
+
+        <div class="rounded-lg p-4 mb-6" style="background-color: var(--bg-subtle);">
+            <div class="flex justify-between items-center">
+                <div class="text-center flex-1">
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ 'dispute.show.player1'|trans }}</p>
+                </div>
+                <div class="px-4 text-2xl font-bold" style="color: var(--text-muted);">{{ 'match.show.vs'|trans }}</div>
+                <div class="text-center flex-1">
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ 'dispute.show.player2'|trans }}</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">{{ 'dispute.show.player_submissions'|trans }}</h2>
+
+        <div class="space-y-4 mb-8">
+            {% for submission in submissions %}
+                <div class="border rounded-lg p-4" style="{% if submission.claimedWinnerId == match.player1.id %}background-color: var(--color-primary-50); border-color: var(--color-primary-300);{% else %}background-color: #f5f3ff; border-color: #c4b5fd;{% endif %}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-medium" style="color: var(--text-primary);">
+                                {{ 'dispute.show.submitted_by'|trans }}:
+                                <span style="color: var(--text-secondary);">
+                                    {% if submission.submittedBy.id == match.player1.player.id %}
+                                        {{ match.player1.player.displayName }}
+                                    {% else %}
+                                        {{ match.player2.player.displayName }}
+                                    {% endif %}
+                                </span>
+                            </p>
+                            <p class="text-sm mt-1" style="color: var(--text-secondary);">
+                                {{ 'dispute.show.declared_winner'|trans }}:
+                                <span class="font-semibold">
+                                    {% if submission.claimedWinnerId == match.player1.id %}
+                                        {{ match.player1.player.displayName }}
+                                    {% else %}
+                                        {{ match.player2.player.displayName }}
+                                    {% endif %}
+                                </span>
+                            </p>
+                            <p class="text-sm" style="color: var(--text-secondary);">
+                                {{ 'common.score'|trans }}: {{ submission.player1Score }} - {{ submission.player2Score }}
+                            </p>
+                        </div>
+                        <div class="text-xs" style="color: var(--text-muted);">
+                            {{ submission.submittedAt|date('d/m H:i') }}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted);">{{ 'dispute.show.no_submissions'|trans }}</p>
+            {% endfor %}
+        </div>
+
+        <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">{{ 'dispute.show.organizer_decision'|trans }}</h2>
+
+        <form method="POST" action="{{ path('dispute_resolve', {tournamentId: tournament.id, matchId: match.id}) }}" class="space-y-6">
+            <input type="hidden" name="_token" value="{{ csrf_token('dispute_resolve_' ~ match.id) }}">
+
+            <div>
+                <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">
+                    {{ 'dispute.show.who_won'|trans }}
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative">
+                        <input type="radio" name="winner_id" value="{{ match.player1.id }}" required
+                               class="peer sr-only" id="winner_player1">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
+                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                    hover:opacity-80"
+                             style="border-color: var(--border-default);">
+                            <span class="font-semibold text-lg block" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</span>
+                        </div>
+                    </label>
+                    <label class="relative">
+                        <input type="radio" name="winner_id" value="{{ match.player2.id }}" required
+                               class="peer sr-only" id="winner_player2">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
+                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                    hover:opacity-80"
+                             style="border-color: var(--border-default);">
+                            <span class="font-semibold text-lg block" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">
+                    {{ 'dispute.show.final_score'|trans }}
+                </label>
+                <div class="flex items-center justify-center gap-4">
+                    <div class="text-center">
+                        <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                            {{ match.player1.player.displayName }}
+                        </label>
+                        <input type="number" id="player1_score" name="player1_score" min="0" max="3" value="2"
+                               class="form-input w-16 h-12 text-center text-xl">
+                    </div>
+                    <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
+                    <div class="text-center">
+                        <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                            {{ match.player2.player.displayName }}
+                        </label>
+                        <input type="number" id="player2_score" name="player2_score" min="0" max="3" value="0"
+                               class="form-input w-16 h-12 text-center text-xl">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-yellow-500/10 dark:bg-yellow-500/20 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-4">
+                <p class="text-yellow-800 dark:text-yellow-300 text-sm">
+                    <strong>{{ 'dispute.show.warning'|trans }}:</strong> {{ 'dispute.show.warning_message'|trans }}
+                </p>
+            </div>
+
+            <button type="submit" class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                {{ 'dispute.show.resolve_button'|trans }}
+            </button>
+        </form>
+    </div>
+
+    {% if match.disputeHistory is not empty %}
+        <div class="mt-6 rounded-lg shadow p-6" style="background-color: var(--card-bg);">
+            <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">{{ 'dispute.show.history'|trans }}</h2>
+            <div class="space-y-2">
+                {% for entry in match.disputeHistory %}
+                    <div class="flex items-start text-sm">
+                        <span class="w-32 flex-shrink-0" style="color: var(--text-muted);">
+                            {{ entry.timestamp|date('d/m H:i:s') }}
+                        </span>
+                        <span class="px-2 py-0.5 rounded text-xs font-medium mr-2
+                            {% if entry.type == 'submission' %}bg-blue-500/20 text-blue-800 dark:text-blue-300
+                            {% elseif entry.type == 'created' %}bg-red-500/20 text-red-800 dark:text-red-300
+                            {% elseif entry.type == 'resolved' %}bg-green-500/20 text-green-800 dark:text-green-300
+                            {% else %}bg-gray-500/20{% endif %}"
+                            style="{% if entry.type != 'submission' and entry.type != 'created' and entry.type != 'resolved' %}color: var(--text-secondary);{% endif %}">
+                            {{ entry.type }}
+                        </span>
+                        <span style="color: var(--text-secondary);">
+                            {% if entry.type == 'submission' %}
+                                {{ 'dispute.show.history_submission'|trans({'%submittedBy%': entry.data.submittedBy, '%claimedWinner%': entry.data.claimedWinner}) }}
+                            {% elseif entry.type == 'created' %}
+                                {{ 'dispute.show.history_created'|trans }}: {{ entry.data.reason }}
+                            {% elseif entry.type == 'resolved' %}
+                                {{ 'dispute.show.history_resolved'|trans }}
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

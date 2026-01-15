@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.notifications.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:bell', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'profile.notifications.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">{{ 'profile.notifications.subtitle'|trans }}</p>
+        </div>
+
+        <div data-controller="notification-preferences"
+             data-notification-preferences-csrf-value="{{ csrf_token('notification-preferences') }}">
+
+            {# Toast for feedback #}
+            <div data-notification-preferences-target="toast"
+                 class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity flex items-center">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
+                {{ 'profile.notifications.saved'|trans }}
+            </div>
+
+            {# Reminders Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-6" style="background-color: var(--card-bg);">
+                <div class="p-6 border-b" style="border-color: var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:calendar-clock', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'profile.notifications.reminders_title'|trans }}
+                    </h2>
+                    <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.reminders_desc'|trans }}</p>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:calendar', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.notifications.reminder_d1'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.reminder_d1_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-notification-preferences-target="checkbox"
+                               data-action="change->notification-preferences#toggle"
+                               data-key="d_minus_1"
+                               {% if preferences.d_minus_1 %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:clock', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.notifications.reminder_h1'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.reminder_h1_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-notification-preferences-target="checkbox"
+                               data-action="change->notification-preferences#toggle"
+                               data-key="h_minus_1"
+                               {% if preferences.h_minus_1 %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:play', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.notifications.round_start'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.round_start_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-notification-preferences-target="checkbox"
+                               data-action="change->notification-preferences#toggle"
+                               data-key="round_start"
+                               {% if preferences.round_start %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+                </div>
+            </div>
+
+            {# Channels Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-6" style="background-color: var(--card-bg);">
+                <div class="p-6 border-b" style="border-color: var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:send', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'profile.notifications.channels_title'|trans }}
+                    </h2>
+                    <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.channels_desc'|trans }}</p>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:mail', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.notifications.email'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.email_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-notification-preferences-target="checkbox"
+                               data-action="change->notification-preferences#toggle"
+                               data-key="channels.email"
+                               {% if preferences.channels.email %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+
+                    <div class="flex items-center justify-between p-4 rounded-xl opacity-50" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:smartphone', {class: 'w-5 h-5 mr-3', style: 'color: var(--text-muted);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.notifications.browser'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.notifications.browser_coming_soon'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               disabled
+                               class="h-5 w-5 rounded cursor-not-allowed"
+                               style="border-color: var(--border-default);">
+                    </div>
+                </div>
+            </div>
+
+            {# Info Note #}
+            <div class="alert-info">
+                <div class="flex items-center">
+                    {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-3 flex-shrink-0'}) }}
+                    <span class="text-sm">{{ 'profile.notifications.auto_save_note'|trans }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# Back link #}
+        <div class="mt-6 text-center">
+            <a href="{{ path('app_profile') }}" class="inline-flex items-center font-semibold" style="color: var(--color-primary-600);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'profile.back_to_profile'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

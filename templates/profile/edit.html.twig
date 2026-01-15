@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.edit.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 theme-primary-gradient rounded-2xl shadow-lg mb-4">
+                {{ ux_icon('lucide:user-pen', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'profile.edit.title'|trans }}</h1>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+
+            {# Avatar Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-8">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center" style="color: var(--text-primary);">
+                        <span style="color: var(--text-muted);">{{ ux_icon('lucide:camera', {class: 'w-5 h-5 mr-2'}) }}</span>
+                        {{ 'profile.edit.profile_picture'|trans }}
+                    </h2>
+
+                    <div class="flex items-center gap-6" data-controller="avatar-preview">
+                        <div class="relative group cursor-pointer" data-action="click->avatar-preview#triggerInput">
+                            <div class="w-24 h-24 rounded-full overflow-hidden shadow-lg" style="border: 4px solid var(--border-muted);"
+                                 data-avatar-preview-target="preview">
+                                {% if app.user.avatar %}
+                                    <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar"
+                                         class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full theme-primary-gradient flex items-center justify-center text-white text-2xl font-bold"
+                                         data-avatar-preview-target="placeholder">
+                                        {{ app.user.pseudo|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                {{ ux_icon('lucide:camera', {class: 'w-6 h-6 text-white'}) }}
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            {{ form_widget(form.avatarFile, {
+                                'attr': {
+                                    'class': 'hidden',
+                                    'data-avatar-preview-target': 'input',
+                                    'data-action': 'change->avatar-preview#preview'
+                                }
+                            }) }}
+                            <button type="button"
+                                    class="px-4 py-2 border-2 font-medium rounded-lg hover:opacity-80 transition-all"
+                                    style="border-color: var(--border-default); color: var(--text-secondary);"
+                                    data-action="click->avatar-preview#triggerInput">
+                                {{ ux_icon('lucide:upload', {class: 'w-4 h-4 mr-2 inline'}) }}
+                                {{ 'profile.edit.change_photo'|trans }}
+                            </button>
+                            <p class="mt-2 text-xs" style="color: var(--text-muted);">{{ 'profile.edit.photo_formats'|trans }}</p>
+                            {{ form_errors(form.avatarFile) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Account Info Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+                <div class="p-8">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center" style="color: var(--text-primary);">
+                        <span style="color: var(--text-muted);">{{ ux_icon('lucide:id-card', {class: 'w-5 h-5 mr-2'}) }}</span>
+                        {{ 'profile.edit.account_info'|trans }}
+                    </h2>
+
+                    <div class="space-y-6">
+                        <div>
+                            {{ form_label(form.pseudo, null, {
+                                'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:at-sign', {class: 'w-5 h-5'}) }}
+                                </div>
+                                {{ form_widget(form.pseudo, {
+                                    'attr': {'class': 'form-input w-full pl-10 rounded-lg'}
+                                }) }}
+                            </div>
+                            {{ form_errors(form.pseudo) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.teamTag, null, {
+                                'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:users', {class: 'w-5 h-5'}) }}
+                                </div>
+                                {{ form_widget(form.teamTag, {
+                                    'attr': {'class': 'form-input w-full pl-10 rounded-lg'}
+                                }) }}
+                            </div>
+                            <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'profile.edit.team_tag_hint'|trans }} <span class="font-mono" style="color: var(--color-primary-600);">[TAG] Pseudo</span></p>
+                            {{ form_errors(form.teamTag) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.email, null, {
+                                'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:mail', {class: 'w-5 h-5'}) }}
+                                </div>
+                                {{ form_widget(form.email, {
+                                    'attr': {
+                                        'class': 'form-input w-full pl-10 rounded-lg',
+                                        'data-original-email': originalEmail
+                                    }
+                                }) }}
+                            </div>
+                            {{ form_errors(form.email) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.name, null, {
+                                'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:user', {class: 'w-5 h-5'}) }}
+                                </div>
+                                {{ form_widget(form.name, {
+                                    'attr': {'class': 'form-input w-full pl-10 rounded-lg'}
+                                }) }}
+                            </div>
+                            {{ form_errors(form.name) }}
+                        </div>
+
+                        {# Password confirmation for email change #}
+                        <div id="password-field" class="hidden">
+                            <div class="mb-4 flex items-center p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                                {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 text-amber-500 dark:text-amber-400 mr-3 flex-shrink-0'}) }}
+                                <span class="text-sm text-amber-700 dark:text-amber-400">{{ 'profile.edit.password_confirm_warning'|trans }}</span>
+                            </div>
+                            {{ form_label(form.currentPassword, null, {
+                                'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:lock', {class: 'w-5 h-5'}) }}
+                                </div>
+                                {{ form_widget(form.currentPassword, {
+                                    'attr': {'class': 'form-input w-full pl-10 rounded-lg'}
+                                }) }}
+                            </div>
+                            {{ form_errors(form.currentPassword) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Actions #}
+            <div class="flex justify-between items-center">
+                <a href="{{ path('app_profile') }}" class="inline-flex items-center font-medium hover:opacity-80" style="color: var(--text-secondary);">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'profile.back_to_profile'|trans }}
+                </a>
+                <button type="submit"
+                        class="flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'profile.save'|trans }}
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.querySelector('[name="profile_edit_form[email]"]');
+    const passwordField = document.getElementById('password-field');
+    const originalEmail = emailInput.dataset.originalEmail;
+
+    function togglePasswordField() {
+        if (emailInput.value !== originalEmail) {
+            passwordField.classList.remove('hidden');
+        } else {
+            passwordField.classList.add('hidden');
+        }
+    }
+
+    emailInput.addEventListener('input', togglePasswordField);
+    togglePasswordField();
+});
+</script>
+{% endblock %}

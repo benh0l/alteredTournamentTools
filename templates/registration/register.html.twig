@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.register.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:user-plus', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'auth.register.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">
+                {{ 'auth.register.subtitle'|trans }}
+            </p>
+        </div>
+
+        {# Registration Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            {{ form_start(registrationForm, {
+                'attr': {
+                    'class': 'p-8',
+                    'novalidate': 'novalidate',
+                    'enctype': 'multipart/form-data'
+                }
+            }) }}
+
+                {# Avatar Upload Section #}
+                <div class="mb-8 text-center" data-controller="avatar-preview">
+                    <label class="block text-sm font-medium mb-4" style="color: var(--text-secondary);">{{ 'auth.register.avatar_label'|trans }}</label>
+                    <div class="flex flex-col items-center">
+                        <div class="relative group cursor-pointer" data-action="click->avatar-preview#triggerInput">
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 shadow-lg transition-all group-hover:shadow-xl"
+                                 style="background: linear-gradient(to bottom right, var(--bg-muted), var(--border-default)); border-color: var(--card-bg);"
+                                 data-avatar-preview-target="preview">
+                                {{ ux_icon('lucide:user', {class: 'w-12 h-12', style: 'color: var(--text-muted);', 'data-avatar-preview-target': 'placeholder'}) }}
+                            </div>
+                            <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                {{ ux_icon('lucide:camera', {class: 'w-6 h-6 text-white'}) }}
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            {{ form_widget(registrationForm.avatarFile, {
+                                'attr': {
+                                    'class': 'hidden',
+                                    'data-avatar-preview-target': 'input',
+                                    'data-action': 'change->avatar-preview#preview'
+                                }
+                            }) }}
+                            <button type="button"
+                                    class="text-sm font-medium"
+                                    style="color: var(--color-primary-600);"
+                                    data-action="click->avatar-preview#triggerInput">
+                                {{ 'auth.register.avatar_choose'|trans }}
+                            </button>
+                        </div>
+                        <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'auth.register.avatar_formats'|trans }}</p>
+                        {{ form_errors(registrationForm.avatarFile) }}
+                    </div>
+                </div>
+
+                <hr class="mb-8" style="border-color: var(--border-default);">
+
+                {# Account Information Section #}
+                <div class="space-y-6">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:mail', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'auth.register.account_info'|trans }}
+                    </h2>
+
+                    {# Email field #}
+                    <div>
+                        {{ form_label(registrationForm.email, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(registrationForm.email, {
+                            'attr': {'class': 'form-input w-full'}
+                        }) }}
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+
+                    {# Pseudo field #}
+                    <div>
+                        {{ form_label(registrationForm.pseudo, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(registrationForm.pseudo, {
+                            'attr': {'class': 'form-input w-full'}
+                        }) }}
+                        <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'auth.register.pseudo_help'|trans }}</p>
+                        {{ form_errors(registrationForm.pseudo) }}
+                    </div>
+
+                    {# Name field (optional) #}
+                    <div>
+                        {{ form_label(registrationForm.name, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(registrationForm.name, {
+                            'attr': {'class': 'form-input w-full'}
+                        }) }}
+                        {{ form_errors(registrationForm.name) }}
+                    </div>
+                </div>
+
+                <hr class="my-8" style="border-color: var(--border-default);">
+
+                {# Security Section #}
+                <div class="space-y-6">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:lock', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'auth.register.security'|trans }}
+                    </h2>
+
+                    {# Password fields #}
+                    <div>
+                        {{ form_label(registrationForm.plainPassword.first, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(registrationForm.plainPassword.first, {
+                            'attr': {'class': 'form-input w-full'}
+                        }) }}
+                        <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'auth.register.password_help'|trans }}</p>
+                        {{ form_errors(registrationForm.plainPassword.first) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(registrationForm.plainPassword.second, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(registrationForm.plainPassword.second, {
+                            'attr': {'class': 'form-input w-full'}
+                        }) }}
+                        {{ form_errors(registrationForm.plainPassword.second) }}
+                    </div>
+
+                    {# Global password errors (mismatch) #}
+                    {% if registrationForm.plainPassword.vars.errors|length > 0 %}
+                        <div class="text-red-600 text-sm">
+                            {{ form_errors(registrationForm.plainPassword) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-8" style="border-color: var(--border-default);">
+
+                {# Terms checkbox #}
+                <div class="flex items-start">
+                    {{ form_widget(registrationForm.agreeTerms, {
+                        'attr': {'class': 'h-5 w-5 rounded mt-0.5', 'style': 'accent-color: var(--color-primary-600);'}
+                    }) }}
+                    <label for="{{ registrationForm.agreeTerms.vars.id }}" class="ml-3 block text-sm" style="color: var(--text-secondary);">
+                        {{ 'auth.register.terms_accept'|trans }} <a href="#" class="font-medium" style="color: var(--color-primary-600);">{{ 'auth.register.terms_of_service'|trans }}</a>
+                        {{ 'common.and'|trans }} <a href="#" class="font-medium" style="color: var(--color-primary-600);">{{ 'auth.register.privacy_policy'|trans }}</a>
+                    </label>
+                </div>
+                {{ form_errors(registrationForm.agreeTerms) }}
+
+                {# Submit button #}
+                <div class="mt-8">
+                    <button type="submit"
+                            class="w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                            style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'auth.register.submit'|trans }}
+                    </button>
+                </div>
+
+            {{ form_end(registrationForm) }}
+        </div>
+
+        {# Login link #}
+        <div class="mt-6 text-center">
+            <p style="color: var(--text-secondary);">
+                {{ 'auth.register.already_account'|trans }}
+                <a href="{{ path('app_login') }}" class="font-semibold" style="color: var(--color-primary-600);">
+                    {{ 'auth.register.login_link'|trans }}
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

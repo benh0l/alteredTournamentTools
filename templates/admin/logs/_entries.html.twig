@@ -1,0 +1,99 @@
+{% if entries is empty %}
+    <div class="px-6 py-12 text-center" style="color: var(--text-muted);">
+        Aucune entree de log trouvee.
+    </div>
+{% else %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
+            <thead style="background-color: var(--bg-subtle);">
+                <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-48" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                        Date/Heure
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-24" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                        Niveau
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-24" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                        Canal
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                        Message
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-20" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                        Contexte
+                    </th>
+                </tr>
+            </thead>
+            <tbody style="background-color: var(--card-bg);">
+                {% for entry in entries %}
+                    {% set levelClass = {
+                        'EMERGENCY': 'bg-red-100 text-red-800',
+                        'ALERT': 'bg-red-100 text-red-800',
+                        'CRITICAL': 'bg-red-100 text-red-800',
+                        'ERROR': 'bg-red-100 text-red-800',
+                        'WARNING': 'bg-yellow-100 text-yellow-800',
+                        'NOTICE': 'bg-blue-100 text-blue-800',
+                        'INFO': 'bg-blue-100 text-blue-800',
+                        'DEBUG': 'bg-gray-100 text-gray-800'
+                    }[entry.level_name|upper] ?? 'bg-gray-100 text-gray-800' %}
+
+                    {% set rowClass = '' %}
+                    {% if entry.level_name|upper in ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR'] %}
+                        {% set rowClass = 'bg-red-50' %}
+                    {% elseif entry.level_name|upper == 'WARNING' %}
+                        {% set rowClass = 'bg-yellow-50' %}
+                    {% endif %}
+
+                    <tr class="{{ rowClass }}" style="border-bottom: 1px solid var(--border-default);">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-mono" style="color: var(--text-muted);">
+                            {{ entry.datetime|slice(0, 19)|replace({'T': ' '}) }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ levelClass }}">
+                                {{ entry.level_name|upper }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                            {{ entry.channel ?? 'app' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm max-w-lg truncate" style="color: var(--text-primary);" title="{{ entry.message }}">
+                            {{ entry.message|length > 100 ? entry.message|slice(0, 100) ~ '...' : entry.message }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                            {% if entry.context is defined and entry.context is not empty %}
+                                <button type="button"
+                                        class="hover:underline text-xs" style="color: var(--color-primary-600);"
+                                        data-action="click->logs-filter#toggleContext"
+                                        data-context="{{ entry.context|json_encode }}">
+                                    Voir
+                                </button>
+                            {% else %}
+                                <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{# Context Modal (hidden by default) #}
+<div id="context-modal"
+     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+     data-logs-filter-target="modal">
+    <div class="relative top-20 mx-auto p-5 w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-lg" style="border: 1px solid var(--border-default); background-color: var(--card-bg);">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium" style="color: var(--text-primary);">Contexte du log</h3>
+            <button type="button"
+                    data-action="click->logs-filter#closeModal"
+                    style="color: var(--text-muted);">
+                {{ ux_icon('lucide:x', {class: 'h-6 w-6'}) }}
+            </button>
+        </div>
+        <div data-logs-filter-target="contextContent"
+             class="rounded-lg p-4 overflow-auto max-h-96" style="background-color: var(--bg-subtle);">
+            <pre class="text-sm whitespace-pre-wrap font-mono" style="color: var(--text-primary);"></pre>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###
+
+###> docker ###
+compose.override.yaml
+docker-compose.override.yml
+###< docker ###
+
+###> php-cs-fixer ###
+.php-cs-fixer.cache
+###< php-cs-fixer ###
+
+###> IDE & Editors ###
+/.idea/
+/.vscode/
+/.cursor/
+/.windsurf/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+###< IDE & Editors ###
+
+###> AI Tools ###
+/.agent/
+/.augment/
+/.claude/
+/.clinerules/
+/.crush/
+/.gemini/
+/.iflow/
+/.kiro/
+/.opencode/
+/.qwen/
+/.roo/
+/.rovodev/
+/.trae/
+/.kilocodemodes
+/.mcp.json
+###< AI Tools ###
+
+###> BMAD ###
+/_bmad/
+/_bmad-output/
+###< BMAD ###
+
+###> OS Files ###
+.DS_Store
+Thumbs.db
+Desktop.ini
+nul
+###< OS Files ###
+
+###> Uploads (user content) ###
+/public/uploads/avatars/*
+!/public/uploads/avatars/.gitkeep
+###< Uploads ###

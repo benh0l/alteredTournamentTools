@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'match.submit.page_title'|trans({'%number%': match.tableNumber}) }}{% endblock %}
+
+{% block body %}
+<div class="max-w-lg mx-auto px-4 py-6">
+    <div class="mb-6">
+        <a href="{{ path('round_show', {id: match.round.tournament.id, roundNumber: match.round.roundNumber}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+            &larr; {{ 'match.back_to_round'|trans }}
+        </a>
+    </div>
+
+    {# Organizer mode banner #}
+    {% if organizer_mode|default(false) %}
+        <div class="px-4 py-3 rounded-lg mb-4" style="background-color: var(--color-purple-100); border: 1px solid var(--color-purple-300); color: var(--color-purple-800);">
+            <div class="flex items-center">
+                {{ ux_icon('lucide:user-circle', {class: 'w-5 h-5 mr-2'}) }}
+                <span class="font-medium">{{ 'match.submit.organizer_mode'|trans }}</span>
+            </div>
+            <p class="text-sm mt-1">{{ 'match.submit.organizer_mode_desc'|trans }}</p>
+        </div>
+    {% endif %}
+
+    {# Match already completed warning #}
+    {% if match.completed and organizer_mode|default(false) %}
+        <div class="px-4 py-3 rounded-lg mb-4" style="background-color: var(--color-yellow-100); border: 1px solid var(--color-yellow-300); color: var(--color-yellow-800);">
+            <div class="flex items-center">
+                {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 mr-2'}) }}
+                <span class="font-medium">{{ 'match.submit.already_completed'|trans }}</span>
+            </div>
+            <p class="text-sm mt-1">
+                {{ 'match.submit.current_result'|trans }} : {{ match.player1Score }} - {{ match.player2Score }}
+                ({{ 'match.submit.winner'|trans }} : {{ match.winner.player.displayName }})
+            </p>
+            <p class="text-sm">{{ 'match.submit.correct_result'|trans }}</p>
+        </div>
+    {% endif %}
+
+    <div class="rounded-lg shadow-lg p-6" style="background-color: var(--card-bg);">
+        <h1 class="text-2xl font-bold text-center mb-2" style="color: var(--text-primary);">
+            {% if organizer_mode|default(false) %}
+                {{ 'match.submit.validate_title'|trans }}
+            {% else %}
+                {{ 'match.submit.submit_result'|trans }}
+            {% endif %}
+        </h1>
+        <p class="text-center mb-6" style="color: var(--text-secondary);">{{ 'common.table'|trans }} {{ match.tableNumber }}</p>
+
+        <div class="rounded-lg p-4 mb-6" style="background-color: var(--color-gray-50);">
+            <div class="flex justify-between items-center">
+                <div class="text-center flex-1">
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ 'match.submit.player1'|trans }}</p>
+                </div>
+                <div class="px-4 text-2xl font-bold" style="color: var(--text-muted);">{{ 'match.show.vs'|trans }}</div>
+                <div class="text-center flex-1">
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ 'match.submit.player2'|trans }}</p>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ path('match_submit', {id: match.id}) }}" class="space-y-6">
+            <input type="hidden" name="_token" value="{{ csrf_token('match_submit_' ~ match.id) }}">
+            {% if organizer_mode|default(false) %}
+                <input type="hidden" name="organizer_override" value="1">
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
+                    {{ 'match.submit.what_result'|trans }}
+                </label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="relative">
+                        <input type="radio" name="winner_id" value="{{ match.player1.id }}" required
+                               class="peer sr-only" id="winner_player1">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
+                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                    hover:border-gray-400" style="border-color: var(--border-default);">
+                            <span class="font-semibold text-base block truncate" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</span>
+                            <span class="text-sm" style="color: var(--color-green-600);">{{ 'match.submit.victory'|trans }}</span>
+                        </div>
+                    </label>
+                    <label class="relative">
+                        <input type="radio" name="winner_id" value="0" required
+                               class="peer sr-only" id="winner_tie">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
+                                    peer-checked:border-amber-500 peer-checked:bg-amber-500/10
+                                    hover:border-gray-400" style="border-color: var(--border-default);">
+                            <span class="font-semibold text-base block" style="color: var(--text-primary);">{{ 'match.submit.tie'|trans }}</span>
+                            <span class="text-sm" style="color: var(--color-amber-600);">{{ 'match.submit.draw'|trans }}</span>
+                        </div>
+                    </label>
+                    <label class="relative">
+                        <input type="radio" name="winner_id" value="{{ match.player2.id }}" required
+                               class="peer sr-only" id="winner_player2">
+                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
+                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
+                                    hover:border-gray-400" style="border-color: var(--border-default);">
+                            <span class="font-semibold text-base block truncate" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</span>
+                            <span class="text-sm" style="color: var(--color-green-600);">{{ 'match.submit.victory'|trans }}</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
+                    {{ 'match.submit.score_optional'|trans }}
+                </label>
+                <div class="flex items-center justify-center gap-4">
+                    <div class="text-center">
+                        <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                            {{ match.player1.player.displayName }}
+                        </label>
+                        <input type="number" id="player1_score" name="player1_score" min="0" max="3" value="0"
+                               class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                    </div>
+                    <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
+                    <div class="text-center">
+                        <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                            {{ match.player2.player.displayName }}
+                        </label>
+                        <input type="number" id="player2_score" name="player2_score" min="0" max="3" value="0"
+                               class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                    </div>
+                </div>
+                <p class="text-xs text-center mt-2" style="color: var(--text-muted);">
+                    {{ 'match.submit.score_help'|trans }}
+                </p>
+            </div>
+
+            <button type="submit"
+                    class="w-full py-4 px-6 font-semibold rounded-lg text-white text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md hover:shadow-lg"
+                    style="{% if organizer_mode|default(false) %}background-color: var(--color-purple-600); --tw-ring-color: var(--color-purple-500);{% else %}background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));{% endif %}">
+                {% if organizer_mode|default(false) %}
+                    {{ 'match.submit.validate_organizer'|trans }}
+                {% else %}
+                    {{ 'match.submit.submit_result'|trans }}
+                {% endif %}
+            </button>
+        </form>
+
+        <p class="text-xs text-center mt-4" style="color: var(--text-muted);">
+            {% if organizer_mode|default(false) %}
+                {{ 'match.submit.organizer_note'|trans }}
+            {% else %}
+                {{ 'match.submit.result_note'|trans }}
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}

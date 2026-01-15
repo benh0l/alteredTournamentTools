@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.delete.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg mb-4">
+                {{ ux_icon('lucide:user-x', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold text-red-600">{{ 'profile.delete.title'|trans }}</h1>
+        </div>
+
+        {# Warning Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden mb-6" style="background-color: var(--card-bg);">
+            <div class="bg-red-50 border-b border-red-100 p-6">
+                <div class="flex items-start">
+                    {{ ux_icon('lucide:alert-triangle', {class: 'w-6 h-6 text-red-500 mr-4 flex-shrink-0 mt-0.5'}) }}
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-800 mb-2">{{ 'profile.delete.warning_title'|trans }}</h3>
+                        <div class="text-sm text-red-700 space-y-2">
+                            <p>{{ 'profile.delete.warning_intro'|trans }}</p>
+                            <ul class="list-disc list-inside space-y-1 ml-2">
+                                <li>{{ 'profile.delete.warning_1'|trans }}</li>
+                                <li>{{ 'profile.delete.warning_2'|trans }}</li>
+                                <li>{{ 'profile.delete.warning_3'|trans }}</li>
+                                <li>{{ 'profile.delete.warning_4'|trans }}</li>
+                                <li>{{ 'profile.delete.warning_5'|trans }}</li>
+                            </ul>
+                            <p class="font-semibold pt-2">{{ 'profile.delete.warning_final'|trans }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Export & Delete Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8">
+                {# Export Section #}
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:download', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'profile.delete.export_title'|trans }}
+                    </h2>
+                    <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                        {{ 'profile.delete.export_desc'|trans }}
+                    </p>
+                    <a href="{{ path('app_profile_export') }}"
+                       class="inline-flex items-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:file-json', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.delete.export_button'|trans }}
+                    </a>
+                </div>
+
+                <hr style="border-color: var(--border-default);" class="mb-8">
+
+                {# Delete Form #}
+                <div>
+                    <h2 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:trash-2', {class: 'w-5 h-5 mr-2 text-red-400'}) }}
+                        {{ 'profile.delete.confirm_title'|trans }}
+                    </h2>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+                        <div>
+                            {{ form_label(form.password, null, {
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:lock', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.password, {
+                                    'attr': {'class': 'form-input w-full pl-10'}
+                                }) }}
+                            </div>
+                            {{ form_errors(form.password) }}
+                        </div>
+
+                        <div class="flex items-start p-4 rounded-xl" style="background-color: var(--bg-subtle);">
+                            {{ form_widget(form.confirm, {
+                                'attr': {'class': 'h-5 w-5 text-red-600 focus:ring-red-500 rounded mt-0.5', 'style': 'border-color: var(--border-default);'}
+                            }) }}
+                            <label for="{{ form.confirm.vars.id }}" class="ml-3 block text-sm" style="color: var(--text-secondary);">
+                                {{ form.confirm.vars.label }}
+                            </label>
+                        </div>
+                        {{ form_errors(form.confirm) }}
+
+                        <div class="flex justify-between items-center pt-4">
+                            <a href="{{ path('app_profile') }}" class="inline-flex items-center font-medium" style="color: var(--text-secondary);">
+                                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                                {{ 'profile.delete.cancel'|trans }}
+                            </a>
+                            <button type="submit"
+                                    class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-red-600 hover:to-red-700 transition-all">
+                                {{ ux_icon('lucide:trash-2', {class: 'w-5 h-5 mr-2'}) }}
+                                {{ 'profile.delete.submit'|trans }}
+                            </button>
+                        </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

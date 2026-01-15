@@ -1,0 +1,1202 @@
+# ============================================================================
+# French Translations - Altered Tournament Tools
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Navigation & Layout
+# ----------------------------------------------------------------------------
+nav:
+    home: "Accueil"
+    tournaments: "Tournois"
+    my_tournaments: "Mes tournois"
+    profile: "Profil"
+    admin: "Administration"
+    login: "Connexion"
+    logout: "Deconnexion"
+    register: "Inscription"
+    language: "Langue"
+
+# ----------------------------------------------------------------------------
+# Common Actions
+# ----------------------------------------------------------------------------
+action:
+    save: "Enregistrer"
+    cancel: "Annuler"
+    delete: "Supprimer"
+    edit: "Modifier"
+    create: "Creer"
+    back: "Retour"
+    next: "Suivant"
+    previous: "Precedent"
+    submit: "Soumettre"
+    confirm: "Confirmer"
+    close: "Fermer"
+    view: "Voir"
+    search: "Rechercher"
+    filter: "Filtrer"
+    reset: "Reinitialiser"
+    export: "Exporter"
+    download: "Telecharger"
+    upload: "Telecharger"
+    refresh: "Actualiser"
+    copy: "Copier"
+
+# ----------------------------------------------------------------------------
+# Common Labels
+# ----------------------------------------------------------------------------
+common:
+    yes: "Oui"
+    no: "Non"
+    or: "ou"
+    and: "et"
+    at: "a"
+    all: "Tout"
+    none: "Aucun"
+    loading: "Chargement..."
+    error: "Erreur"
+    success: "Succes"
+    warning: "Attention"
+    info: "Information"
+    required: "Obligatoire"
+    optional: "Optionnel"
+    date: "Date"
+    time: "Heure"
+    location: "Lieu"
+    description: "Description"
+    name: "Nom"
+    email: "Email"
+    password: "Mot de passe"
+    status: "Statut"
+    actions: "Actions"
+    details: "Details"
+    table: "Table"
+    score: "Score"
+    player: "Joueur"
+    players: "Joueurs"
+    organizer: "Organisateur"
+    round: "Ronde"
+    rounds: "Rondes"
+    match: "Match"
+    matches: "Matchs"
+
+# ----------------------------------------------------------------------------
+# Enums - Tournament Status
+# ----------------------------------------------------------------------------
+enum:
+    tournament_status:
+        draft: "Brouillon"
+        published: "Publie"
+        ongoing: "En cours"
+        completed: "Termine"
+        cancelled: "Annule"
+
+    tournament_visibility:
+        public: "Public"
+        private: "Prive"
+        public_desc: "Public (visible par tous)"
+        private_desc: "Prive (sur invitation)"
+
+    tournament_format:
+        constructed_standard: "Construit Standard"
+        constructed_singleton: "Construit Singleton"
+        constructed_nuc: "Construit NUC"
+        constructed_hero_oof: "(Fun) Heros Out of Faction"
+        constructed_bifaction: "(Fun) Bifaction"
+        limited: "Limite"
+
+    tournament_format_description:
+        constructed_standard: "39 cartes + Heros minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
+        constructed_singleton: "Exemplaire unique par rarete. Deck de 59 cartes + Heros."
+        constructed_nuc: "Aucune Unique autorisee."
+        constructed_hero_oof: "Le heros doit appartenir a une faction differente de celle du deck."
+        constructed_bifaction: "Le joueur choisit deux factions et un heros issu de l'une de ces factions."
+        limited: "Les decks sont construits sur place a partir de boosters."
+
+    tournament_structure:
+        swiss_only: "Rondes Suisses uniquement"
+        single_elimination: "Elimination directe"
+        mixed: "Suisses + Top Cut"
+        group_stage_elimination: "Phase de poules + Elimination"
+
+    tournament_structure_description:
+        swiss_only: "Plusieurs rondes, tout le monde joue tous les matchs"
+        single_elimination: "Elimination directe des le premier match"
+        mixed: "Rondes suisses puis Top Cut en elimination"
+        group_stage_elimination: "Phase de poules (round-robin) puis elimination des qualifies"
+
+    decklist_transparency:
+        open: "Decklists ouvertes"
+        closed: "Decklists fermees"
+
+    match_format:
+        bo1: "Best of 1"
+        bo3: "Best of 3"
+
+    round_status:
+        pending: "En attente"
+        ongoing: "En cours"
+        completed: "Terminee"
+
+    match_status:
+        pending: "En attente"
+        ongoing: "En cours"
+        completed: "Termine"
+        dispute: "Litige"
+
+    pairing_mode:
+        random: "Aleatoire"
+        registration_order: "Ordre d'inscription"
+
+    pairing_mode_description:
+        random: "Les joueurs sont melanges aleatoirement"
+        registration_order: "Les joueurs sont apparies dans l'ordre d'inscription"
+
+    bracket_size:
+        top_4: "Top 4"
+        top_8: "Top 8"
+        top_16: "Top 16"
+        top_32: "Top 32"
+
+    bracket_round:
+        final: "Finale"
+        semifinals: "Demi-finales"
+        quarterfinals: "Quarts de finale"
+        round_of_16: "Huitiemes de finale"
+        round_of_32: "Seiziemes de finale"
+        round: "Tour %number%"
+
+    notification_type:
+        d_minus_1: "Rappel J-1"
+        h_minus_1: "Rappel H-1"
+        round_start: "Debut de ronde"
+
+    notification_status:
+        pending: "En attente"
+        sent: "Envoye"
+        failed: "Echec"
+
+    alert_type:
+        error_rate: "Taux d'erreur"
+        response_time: "Temps de reponse"
+        pairing_failure: "Echec appariement"
+        mercure_down: "Mercure deconnecte"
+        database_slow: "Base de donnees lente"
+        memory_high: "Memoire elevee"
+
+    alert_severity:
+        info: "Information"
+        warning: "Avertissement"
+        critical: "Critique"
+
+    group_formation_method:
+        random: "Tirage aleatoire"
+        serpentine: "Serpentine (selon classement)"
+
+    group_formation_method_description:
+        random: "Les joueurs sont repartis aleatoirement dans les poules"
+        serpentine: "Les joueurs sont repartis en serpentine selon leur classement (1,2,3,4 puis 8,7,6,5...)"
+
+    faction:
+        axiom: "Axiom"
+        bravos: "Bravos"
+        lyra: "Lyra"
+        muna: "Muna"
+        ordis: "Ordis"
+        yzmir: "Yzmir"
+
+# ----------------------------------------------------------------------------
+# Home Page
+# ----------------------------------------------------------------------------
+home:
+    title: "Accueil - Altered Tournament Tools"
+    current_match: "Match en cours"
+    round_number: "Ronde %d"
+    you: "Vous"
+    opponent: "Adversaire"
+    bye: "BYE"
+    table_number: "Table %d"
+    time_elapsed: "Temps ecoule"
+    submit_result: "Soumettre le resultat"
+    view_decklist: "Voir decklist"
+    automatic_win: "Victoire automatique (BYE)"
+    ongoing_tournaments: "Tournois en cours"
+    upcoming_tournaments: "Prochains tournois"
+    discover_tournaments: "Decouvrir les tournois"
+    view_all: "Voir tout"
+    waiting: "En attente"
+    join: "Rejoindre"
+    register_for: "S'inscrire"
+    registered_count: "%count% inscrit|%count% inscrits"
+    welcome: "Bienvenue, %name% !"
+    no_tournaments: "Vous n'avez pas de tournoi en cours. Parcourez les tournois disponibles pour vous inscrire."
+    view_tournaments: "Voir les tournois"
+    my_registrations: "Mes inscriptions"
+    landing:
+        title: "Altered Tournament Tools"
+        subtitle: "Organisez et gerez vos tournois de cartes Altered en toute simplicite"
+        create_account: "Creer un compte"
+        sign_in: "Se connecter"
+        upcoming: "Prochains tournois"
+    features:
+        title: "Fonctionnalites"
+        management:
+            title: "Gestion des tournois"
+            description: "Creez et gerez vos tournois avec differents formats (Suisse, elimination)"
+        realtime:
+            title: "Temps reel"
+            description: "Suivez les resultats et classements en direct grace aux mises a jour instantanees"
+        mobile:
+            title: "Mobile-first"
+            description: "Interface optimisee pour les appareils mobiles et tablettes"
+
+# ----------------------------------------------------------------------------
+# Authentication
+# ----------------------------------------------------------------------------
+auth:
+    login:
+        title: "Connexion"
+        page_title: "Connexion - Altered Tournament Tools"
+        subtitle: "Connectez-vous a votre compte"
+        email_label: "Adresse email"
+        email_placeholder: "votre@email.com"
+        password_label: "Mot de passe"
+        password_placeholder: "Votre mot de passe"
+        remember_me: "Se souvenir de moi"
+        forgot_password: "Mot de passe oublie ?"
+        submit: "Se connecter"
+        no_account: "Pas encore de compte ?"
+        register_link: "Creer un compte"
+        error:
+            invalid_credentials: "Identifiants invalides."
+            account_disabled: "Votre compte a ete desactive."
+
+    register:
+        title: "Creer un compte"
+        page_title: "Inscription - Altered Tournament Tools"
+        subtitle: "Rejoignez la communaute Altered Tournament Tools"
+        avatar_label: "Photo de profil (optionnel)"
+        avatar_choose: "Choisir une photo"
+        avatar_formats: "JPG, PNG, GIF ou WebP. Max 2 Mo."
+        account_info: "Informations du compte"
+        security: "Securite"
+        pseudo_help: "Lettres, chiffres, tirets et underscores uniquement"
+        password_help: "Minimum 8 caracteres"
+        terms_accept: "J'accepte les"
+        terms_of_service: "conditions d'utilisation"
+        privacy_policy: "politique de confidentialite"
+        submit: "Creer mon compte"
+        already_account: "Deja un compte ?"
+        login_link: "Se connecter"
+
+    reset_password:
+        request:
+            title: "Mot de passe oublie ?"
+            page_title: "Mot de passe oublie - Altered Tournament Tools"
+            subtitle: "Pas de panique, on va arranger ca"
+            instructions: "Entrez votre adresse email et nous vous enverrons un lien pour reinitialiser votre mot de passe."
+            submit: "Envoyer le lien"
+            remember: "Vous vous souvenez ?"
+            back_to_login: "Se connecter"
+        check_email:
+            title: "Verifiez vos emails"
+            page_title: "Verifiez vos emails - Altered Tournament Tools"
+            message: "Si un compte existe avec cette adresse email, vous recevrez un lien pour reinitialiser votre mot de passe."
+            expiry: "Le lien expirera dans"
+            expiry_time: "1 heure"
+            resend: "Renvoyer un email"
+            back_to_login: "Retour a la connexion"
+        reset:
+            title: "Nouveau mot de passe"
+            page_title: "Nouveau mot de passe - Altered Tournament Tools"
+            subtitle: "Choisissez un mot de passe securise"
+            password_help: "Minimum 12 caracteres. Utilisez lettres, chiffres et caracteres speciaux."
+            submit: "Changer le mot de passe"
+            back_to_login: "Retour a la connexion"
+
+# ----------------------------------------------------------------------------
+# Profile
+# ----------------------------------------------------------------------------
+profile:
+    title: "Mon Profil"
+    page_title: "Mon Profil - Altered Tournament Tools"
+    personal_info: "Informations personnelles"
+    pseudo: "Pseudo"
+    team_tag: "Tag de team"
+    not_defined: "Non defini"
+    email_address: "Adresse email"
+    full_name: "Nom complet"
+    not_provided: "Non renseigne"
+    last_update: "Derniere mise a jour"
+    edit_profile: "Modifier le profil"
+    back_to_profile: "Retour au profil"
+    save: "Enregistrer"
+
+    edit:
+        title: "Modifier mon profil"
+        page_title: "Modifier mon profil - Altered Tournament Tools"
+        success: "Profil mis a jour avec succes."
+        profile_picture: "Photo de profil"
+        change_photo: "Changer la photo"
+        photo_formats: "JPG, PNG, GIF ou WebP. Max 2 Mo."
+        account_info: "Informations du compte"
+        team_tag_hint: "Votre tag s'affichera au format"
+        password_confirm_warning: "Pour des raisons de securite, confirmez votre mot de passe pour changer l'email."
+
+    change_password:
+        title: "Changer le mot de passe"
+        page_title: "Changer le mot de passe - Altered Tournament Tools"
+        subtitle: "Securisez votre compte"
+        current_password: "Mot de passe actuel"
+        new_password: "Nouveau mot de passe"
+        confirm_password: "Confirmer le nouveau mot de passe"
+        password_hint: "Minimum 12 caracteres. Lettres, chiffres et caracteres speciaux."
+        submit: "Changer le mot de passe"
+        success: "Mot de passe change avec succes."
+
+    delete:
+        title: "Supprimer mon compte"
+        page_title: "Supprimer mon compte - Altered Tournament Tools"
+        warning_title: "Attention : Action irreversible"
+        warning_intro: "La suppression de votre compte entrainera :"
+        warning_1: "La suppression definitive de votre compte"
+        warning_2: "La suppression de toutes vos inscriptions aux tournois"
+        warning_3: "L'anonymisation de votre historique de matchs"
+        warning_4: "La suppression de vos tournois en brouillon"
+        warning_5: "L'anonymisation des tournois que vous avez organises"
+        warning_final: "Cette action est irreversible."
+        export_title: "Exporter vos donnees"
+        export_desc: "Conformement au RGPD, vous pouvez telecharger une copie de vos donnees personnelles avant de supprimer votre compte."
+        export_button: "Telecharger mes donnees (JSON)"
+        confirm_title: "Confirmer la suppression"
+        cancel: "Annuler"
+        submit: "Supprimer definitivement"
+        warning: "Attention : cette action est irreversible. Toutes vos donnees seront supprimees."
+        confirm: "Pour confirmer, tapez votre mot de passe"
+
+    notifications:
+        title: "Notifications"
+        page_title: "Preferences de notifications - Altered Tournament Tools"
+        subtitle: "Gerez vos preferences de notifications"
+        saved: "Preferences sauvegardees"
+        reminders_title: "Rappels de tournois"
+        reminders_desc: "Choisissez quand recevoir des rappels pour vos tournois."
+        reminder_d1: "Rappel J-1"
+        reminder_d1_desc: "Un jour avant le tournoi"
+        reminder_h1: "Rappel H-1"
+        reminder_h1_desc: "Une heure avant le tournoi"
+        round_start: "Debut de ronde"
+        round_start_desc: "Quand une nouvelle ronde commence"
+        channels_title: "Canaux de notification"
+        channels_desc: "Choisissez comment recevoir vos notifications."
+        email: "Email"
+        email_desc: "Recevoir les notifications par email"
+        browser: "Notifications navigateur"
+        browser_coming_soon: "Bientot disponible"
+        auto_save_note: "Les modifications sont sauvegardees automatiquement."
+        email_notifications: "Notifications par email"
+
+    avatar: "Photo de profil"
+    change_avatar: "Changer la photo"
+    member_since: "Membre depuis"
+    tournaments_participated: "Tournois participes"
+    tournaments_organized: "Tournois organises"
+
+# ----------------------------------------------------------------------------
+# Tournaments
+# ----------------------------------------------------------------------------
+tournament:
+    title: "Tournois"
+    organized_by: "Organise par"
+    list:
+        title: "Liste des tournois"
+        no_tournaments: "Aucun tournoi disponible"
+        search_placeholder: "Rechercher un tournoi..."
+        filter_format: "Filtrer par format"
+        filter_status: "Filtrer par statut"
+        all_formats: "Tous les formats"
+        all_statuses: "Tous les statuts"
+
+    show:
+        information: "Informations"
+        configuration: "Configuration"
+        registration: "Inscription"
+        registered: "Vous etes inscrit !"
+        edit_registration: "Modifier mon inscription"
+        unregister: "Se desinscrire"
+        registrations_closed: "Les inscriptions sont fermees."
+        registrations_open: "Les inscriptions sont ouvertes !"
+        register_btn: "S'inscrire"
+        login_to_register: "Connectez-vous pour vous inscrire"
+        back_to_list: "Retour a la liste des tournois"
+        players_card:
+            title: "Joueurs"
+            no_players: "Aucun joueur inscrit"
+        prizes: "Dotations"
+        view_on_altered: "Voir sur Altered.gg"
+        entry_fee: "Prix d'entree"
+
+    completed:
+        title: "Tournoi termine"
+        completed_at: "%date% - %rounds% ronde|%date% - %rounds% rondes"
+        final_standings: "Classement final"
+        podium: "Podium"
+        statistics: "Statistiques"
+
+    ongoing:
+        title: "Tournoi en cours"
+        follow_realtime: "Suivez les matchs en temps reel"
+        view_dashboard: "Voir le Dashboard"
+
+    create:
+        title: "Creer un tournoi"
+        subtitle: "Configurez votre tournoi en detail"
+        quick_create: "Creation rapide"
+        wizard: "Assistant de creation"
+        wizard_description: "Configurez votre tournoi etape par etape"
+        section_general: "Informations generales"
+        section_config: "Configuration du tournoi"
+        section_visibility: "Visibilite et decklists"
+        section_additional: "Informations supplementaires"
+        cancel: "Annuler"
+        submit: "Creer le tournoi"
+        choice:
+            title: "Creer un nouveau tournoi"
+            subtitle: "Choisissez votre methode de creation"
+            wizard_title: "Assistant guide"
+            wizard_desc: "Creation pas a pas avec des explications pour chaque option. Ideal pour les nouveaux organisateurs."
+            manual_title: "Creation manuelle"
+            manual_desc: "Formulaire complet sur une seule page. Pour les organisateurs experimentes."
+            start: "Commencer"
+            back_to_list: "Retour a la liste des tournois"
+
+    edit:
+        title: "Modifier le tournoi"
+        success: "Tournoi modifie avec succes."
+
+    manage:
+        publish: "Publier"
+        publish_confirm: "Publier ce tournoi? Il sera visible publiquement."
+        delete: "Supprimer"
+        delete_confirm: "Supprimer ce tournoi? Cette action est irreversible."
+        manage_registrations: "Gerer inscriptions"
+        manage_groups: "Gerer les poules"
+        start_tournament: "Lancer le tournoi"
+        start_confirm: "Lancer le tournoi ? Cela generera les pairings de la premiere ronde."
+        min_players: "Min. %count% joueurs pour lancer"
+        config_locked: "Configuration verrouillee"
+
+    registrations:
+        title: "Gestion des inscriptions"
+        add_player: "Ajouter un joueur"
+        search_player: "Rechercher un joueur..."
+        no_results: "Aucun joueur trouve"
+        remove: "Retirer"
+        remove_confirm: "Retirer ce joueur du tournoi ?"
+        close: "Fermer les inscriptions"
+        reopen: "Rouvrir les inscriptions"
+        closed_badge: "Inscriptions fermees"
+        player_count: "%count% joueur|%count% joueurs"
+        export: "Exporter la liste"
+
+    wizard:
+        step: "Etape %current% sur %total%"
+        back: "Retour"
+        next: "Suivant"
+        manual_mode: "Mode manuel"
+        cancel: "Annuler et retourner a la liste"
+        step1:
+            title: "Nom du tournoi"
+            question: "Comment s'appelle votre tournoi ?"
+            subtitle: "Choisissez un nom clair et attractif"
+            name_placeholder: "Ex: Tournoi de la Rentree 2024"
+            tips_title: "Conseils pour un bon nom"
+            tip1: "Incluez le type de tournoi (Construit, Draft...)"
+            tip2: "Mentionnez la ville ou le lieu si pertinent"
+            tip3: "Gardez-le court et memorable"
+        step2:
+            title: "Date et lieu"
+            question: "Quand et ou ?"
+            subtitle: "Definissez la date, l'heure et le lieu du tournoi"
+            date_label: "Date du tournoi"
+            time_label: "Heure de debut"
+            location_label: "Lieu"
+            location_placeholder: "Ex: La Taverne du Gobelin, 12 rue des Jeux, Paris"
+            location_hint: "Le lieu sera affiche publiquement si le tournoi est public."
+        step3:
+            title: "Format de jeu"
+            question: "Quel format de jeu ?"
+            subtitle: "Choisissez comment les joueurs construiront leur deck"
+            select_format: "Selectionnez le format"
+            format_desc:
+                constructed_standard: "Les joueurs viennent avec leur propre deck. 39 cartes + Heros minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
+                constructed_singleton: "Les joueurs viennent avec leur propre deck. Exemplaire unique par rarete. Deck de 59 cartes + Heros."
+                constructed_nuc: "Les joueurs viennent avec leur propre deck. Aucune Unique autorisee."
+                constructed_hero_oof: "Les joueurs viennent avec leur propre deck. Le heros doit etre d'une faction differente du deck."
+                constructed_bifaction: "Les joueurs viennent avec leur propre deck. Deux factions choisies. Heros issu de l'une des deux."
+                draft: "Les decks sont construits sur place a partir de boosters."
+        step4:
+            title: "Structure du tournoi"
+            question: "Quelle structure de tournoi ?"
+            subtitle: "Definissez comment les matchs seront organises"
+            select_structure: "Selectionnez la structure"
+            swiss_rounds: "Nombre de rondes suisses"
+            top_cut_size: "Taille du Top Cut"
+            group_count: "Nombre de poules"
+            players_per_group: "Joueurs par poule"
+            qualifiers_per_group: "Qualifies par poule"
+            structure_desc:
+                swiss_only: "Plusieurs rondes, tout le monde joue tous les matchs. Ideal pour les petits tournois."
+                single_elimination: "Elimination directe des le premier match. Rapide et intense."
+                mixed: "Rondes suisses puis Top Cut en elimination. Le meilleur des deux mondes."
+                group_stage_elimination: "Phase de poules (round-robin) puis elimination des qualifies."
+        step5:
+            title: "Format des matchs"
+            question: "Quel format de matchs ?"
+            subtitle: "Choisissez le nombre de parties par match"
+            swiss_matches: "Matchs en phase Suisse"
+            elimination_matches: "Matchs en elimination"
+            swiss_rounds: "Rondes Suisses"
+            elimination_phase: "Phase d'elimination"
+            elimination_hint: "Applicable pour le Top Cut ou l'elimination directe"
+            bo1_info: "En BO1, une ronde supplementaire sera ajoutee automatiquement (regle officielle Altered TCG)"
+            match_desc:
+                bo1: "Match en 1 partie"
+                bo3: "2 parties gagnantes"
+        step6:
+            title: "Nombre de joueurs"
+            question: "Combien de joueurs ?"
+            question_groups: "Configuration des poules"
+            subtitle: "Estimez le nombre de participants"
+            subtitle_groups: "Definissez la structure de vos poules"
+            expected_players: "Joueurs attendus"
+            swiss_rounds: "Rondes suisses"
+            swiss_rounds_hint: "Laissez vide pour la suggestion automatique"
+            top_cut_size: "Taille du Top Cut"
+            top_cut_hint: "Nombre de joueurs qui passent en phase d'elimination"
+            group_structure: "Structure des poules"
+            group_count: "Nombre de poules"
+            players_per_group: "Joueurs par poule"
+            qualifiers_per_group: "Qualifies par poule"
+            formation_method: "Methode de formation"
+            summary: "Resume"
+            total_players: "Total joueurs"
+            rounds_per_group: "Rondes/poule"
+            qualifiers: "Qualifies"
+            bracket: "Bracket"
+            max_players: "Nombre maximum de joueurs"
+            max_players_help: "Laissez vide pour illimite"
+        step7:
+            title: "Visibilite"
+            question: "Qui peut voir votre tournoi ?"
+            subtitle: "Choisissez la visibilite de votre evenement"
+            select_visibility: "Selectionnez la visibilite"
+            public_help: "Visible par tous, inscriptions ouvertes"
+            private_help: "Visible uniquement par vous, sur invitation"
+            visibility_desc:
+                public: "Visible par tous les joueurs dans la liste des tournois"
+                private: "Accessible uniquement par lien direct ou invitation"
+            private_info: "Un tournoi prive peut etre partage via son lien unique. Seules les personnes ayant le lien pourront le voir."
+        step8:
+            title: "Decklists"
+            question: "Les decklists sont-elles visibles ?"
+            subtitle: "Definissez la transparence des compositions de deck"
+            select_transparency: "Selectionnez la transparence"
+            open_help: "Les joueurs peuvent voir les decklists adverses"
+            closed_help: "Les decklists restent privees"
+            require_decklist: "Exiger une decklist"
+            require_decklist_help: "Les joueurs doivent fournir leur decklist a l'inscription"
+            transparency_desc:
+                open: "Les joueurs peuvent voir les decklists de leurs adversaires"
+                closed: "Les compositions de deck restent secretes jusqu'a la fin"
+            transparency_info: "Les decklists ouvertes permettent aux joueurs de preparer leurs strategies, tandis que les decklists fermees ajoutent un element de surprise."
+        step9:
+            title: "Details supplementaires"
+            question: "Details supplementaires"
+            subtitle: "Ces informations sont optionnelles"
+            description_label: "Description du tournoi"
+            description_placeholder: "Decrivez votre tournoi, les regles specifiques, etc."
+            prizes_label: "Dotations / Prix"
+            prizes_placeholder: "Ex: 1er: Booster Box, 2eme: 10 boosters..."
+            entry_fee_label: "Prix d'entree"
+            entry_fee_placeholder: "Ex: 10 EUR ou Gratuit"
+            altered_gg_link: "Lien Altered.gg"
+            altered_gg_placeholder: "https://altered.gg/..."
+            altered_gg_hint: "Lien vers l'evenement sur Altered.gg si existant."
+            optional_info: "Tous ces champs sont optionnels. Vous pourrez les modifier apres la creation du tournoi."
+        step10:
+            title: "Recapitulatif"
+            question: "Resume de votre tournoi"
+            subtitle: "Verifiez les informations avant de creer"
+            confirm_create: "Creer le tournoi"
+            basic_info: "Informations de base"
+            name: "Nom"
+            date: "Date"
+            location: "Lieu"
+            configuration: "Configuration"
+            format: "Format"
+            structure: "Structure"
+            swiss_matches: "Matchs Suisses"
+            elim_matches: "Matchs Elim."
+            players_rounds: "Joueurs et rondes"
+            expected_players: "Joueurs attendus"
+            swiss_rounds: "Rondes suisses"
+            top_cut: "Top Cut"
+            group_config: "Configuration des poules"
+            group_count: "Nombre de poules"
+            players_per_group: "Joueurs/poule"
+            total_players: "Total joueurs"
+            qualifiers_per_group: "Qualifies/poule"
+            total_qualifiers: "Total qualifies"
+            formation: "Formation"
+            visibility_section: "Visibilite"
+            tournament: "Tournoi"
+            decklists: "Decklists"
+            details: "Details"
+            description: "Description"
+            entry_fee: "Prix d'entree"
+            prizes: "Dotations"
+            view_on_altered: "Voir sur Altered.gg"
+            draft_warning: "Le tournoi sera cree en mode brouillon. Vous pourrez le modifier et le publier quand vous serez pret."
+            auto: "(auto)"
+
+# ----------------------------------------------------------------------------
+# Dashboard
+# ----------------------------------------------------------------------------
+dashboard:
+    title: "Dashboard"
+    title_organizer: "Dashboard Organisateur"
+    back_to_tournament: "Retour au tournoi"
+    no_rounds: "Le tournoi n'a pas encore commence. Aucune ronde en cours."
+    start_tournament: "Demarrer le tournoi"
+
+    round:
+        title: "Ronde %number%"
+        completed: "Terminee"
+        ongoing: "En cours"
+        pending: "En attente"
+        completed_at: "Terminee le %date%"
+        all_matches_completed: "Tous les matchs sont termines"
+        page_title: "Ronde %number% - Dashboard - %tournament%"
+        back_to_dashboard: "Retour au dashboard"
+        info:
+            status: "Statut"
+            started: "Demarree"
+            completed: "Terminee"
+            total_matches: "Total matchs"
+            completed_count: "Termines"
+            disputes: "Litiges"
+            duration: "Duree totale"
+            min: "min"
+        no_matches: "Aucun match dans cette ronde"
+        matches_completed: "%completed%/%total% matchs termines"
+
+    timer:
+        elapsed: "Temps ecoule (%duration% min recommande)"
+        color_legend:
+            green: "< 35 min"
+            orange: "35-50 min"
+            red: "> 50 min"
+
+    statistics:
+        title: "Statistiques"
+        progress: "Progression"
+        completed_matches: "Matchs termines"
+        ongoing_matches: "En cours"
+        pending_matches: "En attente"
+        disputed_matches: "Litiges"
+        bye_matches: "BYE"
+        no_round: "Aucune ronde en cours"
+        view_disputes: "Voir les litiges (%count%)"
+
+    rounds:
+        title: "Rondes"
+        current: "(en cours)"
+
+    matches:
+        title: "Matchs - Ronde %number%"
+        full_view: "Vue complete"
+        completed_count: "%completed%/%total% matchs termines"
+        resolve: "Resoudre"
+        submit: "Soumettre"
+        start_next_round: "Demarrer la ronde suivante"
+        complete_tournament: "Terminer le tournoi"
+        round_limit_reached: "Limite de rondes atteinte (%current%/%max%)"
+        player1: "Joueur 1"
+        player2: "Joueur 2"
+        draw: "Egalite"
+        standings: "Classement"
+
+    connection:
+        connected: "Connecte"
+        realtime_active: "Temps reel actif"
+        reconnecting: "Reconnexion %current%/%max%"
+        disconnected: "Deconnecte"
+        polling_active: "Mode polling actif"
+
+# ----------------------------------------------------------------------------
+# Match
+# ----------------------------------------------------------------------------
+match:
+    title: "Match"
+    back_to_round: "Retour a la ronde"
+    bye_automatic_win: "BYE - Victoire automatique"
+    tie: "Egalite"
+    completed_on: "Termine le %date%"
+    dispute_message: "Ce match est en litige. Contactez l'organisateur pour resolution."
+
+    show:
+        title: "Details du match"
+        page_title: "Match - Table %number%"
+        round: "Ronde %number%"
+        table: "Table %number%"
+        vs: "VS"
+        score: "Score"
+        status: "Statut"
+        result_pending: "En attente du resultat"
+        submit_result: "Soumettre le Resultat"
+
+    submit:
+        title: "Soumettre le resultat"
+        page_title: "Soumettre Resultat - Table %number%"
+        validate_title: "Valider le Resultat"
+        organizer_mode: "Mode Organisateur"
+        organizer_mode_desc: "Vous pouvez valider directement le resultat de ce match."
+        already_completed: "Match deja termine"
+        current_result: "Resultat actuel"
+        winner: "Vainqueur"
+        correct_result: "Vous pouvez corriger ce resultat si necessaire."
+        what_result: "Quel est le resultat du match ?"
+        victory: "Victoire"
+        tie: "Egalite"
+        draw: "Match nul"
+        player1: "Joueur 1"
+        player2: "Joueur 2"
+        score_optional: "Score (optionnel)"
+        score_help: "Pour BO1, laissez 0-0. Pour BO3, indiquez le score (ex: 2-1)."
+        validate_organizer: "Valider le Resultat (Organisateur)"
+        submit_result: "Soumettre le Resultat"
+        organizer_note: "En tant qu'organisateur, le resultat sera valide immediatement."
+        result_note: "Le resultat sera valide automatiquement si votre adversaire soumet le meme resultat."
+        your_score: "Votre score"
+        opponent_score: "Score adverse"
+        you_won: "Vous avez gagne"
+        you_lost: "Vous avez perdu"
+        confirm: "Confirmer le resultat"
+        warning: "Attention : le resultat ne pourra plus etre modifie apres soumission."
+
+    waiting:
+        title: "En attente"
+        page_title: "En attente - Table %number%"
+        waiting_confirmation: "En attente de confirmation"
+        opponent_not_submitted: "Votre adversaire n'a pas encore soumis son resultat."
+        your_submission: "Votre soumission"
+        declared_result: "Resultat declare"
+        victory: "Victoire %player%"
+        submitted_on: "Soumis le %date%"
+        view_round: "Voir la ronde"
+        organizer_mode: "Mode Organisateur"
+        organizer_validate: "Vous pouvez valider ce resultat immediatement."
+        validate_now: "Valider maintenant"
+        validate_confirm: "Valider ce resultat immediatement sans attendre l'adversaire ?"
+        no_auto_refresh: "Cette page ne se rafraichit pas automatiquement. Revenez plus tard pour verifier le statut."
+        waiting_for_opponent: "En attente de la soumission adverse"
+        opponent_submission: "Soumission adverse"
+        not_submitted: "Pas encore soumis"
+
+    dispute:
+        title: "Litige"
+        description: "Les deux joueurs ont soumis des resultats differents."
+        your_result: "Votre resultat"
+        opponent_result: "Resultat adverse"
+        contact_organizer: "Veuillez contacter l'organisateur pour resoudre ce litige."
+
+# ----------------------------------------------------------------------------
+# Dispute
+# ----------------------------------------------------------------------------
+dispute:
+    list:
+        title: "Litiges"
+        page_title: "Litiges - %tournament%"
+        back_to_rounds: "Retour aux rondes"
+        no_disputes: "Aucun litige en cours"
+        all_results_ok: "Tous les resultats sont en ordre."
+        disputes_to_resolve: "%count% litige(s) a resoudre"
+
+    show:
+        title: "Resolution de litige"
+        page_title: "Resoudre Litige - Table %number%"
+        back_to_disputes: "Retour aux litiges"
+        resolve_dispute: "Resoudre le Litige"
+        badge: "Litige"
+        match_info: "Informations du match"
+        player1: "Joueur 1"
+        player2: "Joueur 2"
+        player_submissions: "Soumissions des joueurs"
+        submitted_by: "Soumis par"
+        declared_winner: "Vainqueur declare"
+        no_submissions: "Aucune soumission disponible."
+        organizer_decision: "Decision de l'organisateur"
+        who_won: "Qui a gagne ce match ?"
+        final_score: "Score final"
+        warning: "Attention"
+        warning_message: "Cette decision est definitive et sera enregistree dans l'historique du match."
+        resolve_button: "Resoudre le Litige"
+        history: "Historique"
+        history_submission: "Joueur %submittedBy% a declare victoire pour %claimedWinner%"
+        history_created: "Litige cree"
+        history_resolved: "Resolu par organisateur"
+        player1_claim: "Declaration de %player%"
+        player2_claim: "Declaration de %player%"
+        resolve: "Resoudre le litige"
+        select_winner: "Selectionner le gagnant"
+        declare_draw: "Declarer match nul"
+        confirm_resolution: "Confirmer la resolution"
+
+# ----------------------------------------------------------------------------
+# Standings & Results
+# ----------------------------------------------------------------------------
+standings:
+    title: "Classement"
+    rank: "Rang"
+    player: "Joueur"
+    points: "Points"
+    omw: "OMW%"
+    gw: "GW%"
+    ogw: "OGW%"
+    wins: "V"
+    losses: "D"
+    draws: "N"
+
+    final:
+        title: "Classement final"
+        champion: "Champion"
+
+    podium:
+        title: "Podium"
+        first: "1er"
+        second: "2eme"
+        third: "3eme"
+
+# ----------------------------------------------------------------------------
+# Statistics
+# ----------------------------------------------------------------------------
+stats:
+    title: "Statistiques du tournoi"
+    total_matches: "Total de matchs"
+    total_players: "Total de joueurs"
+    total_rounds: "Total de rondes"
+    average_match_duration: "Duree moyenne des matchs"
+    faction_distribution: "Repartition des factions"
+    hero_popularity: "Popularite des heros"
+
+# ----------------------------------------------------------------------------
+# Admin
+# ----------------------------------------------------------------------------
+admin:
+    title: "Administration"
+    dashboard:
+        title: "Tableau de bord"
+        total_users: "Utilisateurs"
+        total_tournaments: "Tournois"
+        active_tournaments: "Tournois actifs"
+        recent_alerts: "Alertes recentes"
+
+    users:
+        title: "Utilisateurs"
+        search: "Rechercher un utilisateur..."
+        email: "Email"
+        pseudo: "Pseudo"
+        created_at: "Cree le"
+        last_login: "Derniere connexion"
+        roles: "Roles"
+        actions: "Actions"
+        view: "Voir"
+        edit: "Modifier"
+        delete: "Supprimer"
+        ban: "Bannir"
+
+    alerts:
+        title: "Alertes"
+        no_alerts: "Aucune alerte"
+        acknowledge: "Acquitter"
+        acknowledged: "Acquittee"
+        severity: "Severite"
+        type: "Type"
+        message: "Message"
+        created_at: "Date"
+
+    logs:
+        title: "Journaux"
+        filter_level: "Niveau"
+        filter_channel: "Canal"
+
+# ----------------------------------------------------------------------------
+# Emails
+# ----------------------------------------------------------------------------
+email:
+    common:
+        greeting: "Bonjour %name%,"
+        footer: "L'equipe Altered Tournament Tools"
+        do_not_reply: "Ceci est un email automatique, merci de ne pas y repondre."
+
+    welcome:
+        subject: "Bienvenue sur Altered Tournament Tools !"
+        body: "Votre compte a ete cree avec succes. Vous pouvez maintenant vous inscrire aux tournois et organiser les votres."
+
+    registration_confirmation:
+        subject: "Inscription confirmee - %tournament%"
+        body: "Votre inscription au tournoi %tournament% a ete confirmee."
+
+    registration_removal:
+        subject: "Inscription annulee - %tournament%"
+        body: "Votre inscription au tournoi %tournament% a ete annulee."
+
+    tournament_reminder_d1:
+        subject: "Rappel : Tournoi %tournament% demain !"
+        body: "Le tournoi %tournament% aura lieu demain. N'oubliez pas de preparer votre deck !"
+
+    tournament_reminder_h1:
+        subject: "Rappel : Tournoi %tournament% dans 1 heure !"
+        body: "Le tournoi %tournament% commence dans 1 heure. Rendez-vous sur place !"
+
+    round_start:
+        subject: "Nouvelle ronde - %tournament%"
+        body: "Une nouvelle ronde vient de commencer. Consultez vos pairings."
+
+    password_reset:
+        subject: "Reinitialisation de votre mot de passe"
+        body: "Cliquez sur le lien ci-dessous pour reinitialiser votre mot de passe."
+        link_text: "Reinitialiser mon mot de passe"
+        expiry: "Ce lien expire dans 1 heure."
+
+    password_changed:
+        subject: "Mot de passe modifie"
+        body: "Votre mot de passe a ete modifie avec succes."
+
+    notification:
+        subject:
+            d_minus_1: "Rappel : Tournoi %tournament% demain !"
+            h_minus_1: "Rappel : Tournoi %tournament% dans 1 heure !"
+            round_start: "Nouvelle ronde - %tournament%"
+
+# ----------------------------------------------------------------------------
+# Flash Messages
+# ----------------------------------------------------------------------------
+flash:
+    success:
+        tournament_created: "Tournoi cree avec succes !"
+        tournament_updated: "Tournoi modifie avec succes !"
+        tournament_deleted: "Tournoi supprime avec succes."
+        tournament_published: "Tournoi publie avec succes !"
+        tournament_started: "Tournoi demarre avec succes."
+        tournament_completed: "Tournoi termine ! Les resultats finaux sont disponibles."
+        registration_success: "Inscription reussie ! Vous etes maintenant inscrit au tournoi."
+        registration_updated: "Votre inscription a ete mise a jour."
+        unregistration_success: "Vous etes desinscrit du tournoi."
+        player_added: "Joueur ajoute avec succes."
+        player_removed: "Joueur retire avec succes."
+        match_result_submitted: "Resultat soumis avec succes."
+        match_result_confirmed: "Resultat confirme !"
+        match_result_validated: "Resultat valide par l'organisateur."
+        match_result_forced: "Resultat force avec succes."
+        dispute_resolved: "Litige resolu avec succes."
+        round_started: "Nouvelle ronde demarree."
+        profile_updated: "Profil mis a jour avec succes."
+        password_changed: "Mot de passe modifie avec succes."
+        password_reset: "Votre mot de passe a ete modifie avec succes. Vous pouvez maintenant vous connecter."
+        settings_saved: "Parametres enregistres."
+        account_created: "Votre compte a ete cree avec succes ! Bienvenue sur Altered Tournament Tools."
+        account_deleted: "Votre compte a ete supprime avec succes."
+        alert_acknowledged: "L'alerte a ete acquittee."
+        alert_check_complete: "Verification terminee. Aucun probleme detecte."
+        message_sent: "Message envoye a %count% organisateur(s)."
+        message_sent_to_user: "Message envoye a %pseudo%."
+        registrations_closed: "Les inscriptions sont fermees."
+        registrations_reopened: "Les inscriptions sont reouvertes."
+        results_published: "Les resultats du tournoi ont ete publies."
+        user_roles_updated: "Les roles de l'utilisateur ont ete mis a jour."
+        user_deleted_gdpr: "L'utilisateur a ete supprime conformement au RGPD."
+
+    error:
+        tournament_not_found: "Tournoi introuvable."
+        registration_failed: "Echec de l'inscription."
+        unregistration_failed: "Echec de la desinscription."
+        match_result_failed: "Echec de la soumission du resultat."
+        invalid_token: "Token invalide. Veuillez reessayer."
+        invalid_csrf_token: "Token CSRF invalide."
+        invalid_security_token: "Token de securite invalide. Veuillez reessayer."
+        access_denied: "Acces refuse."
+        already_registered: "Vous etes deja inscrit a ce tournoi."
+        registrations_closed: "Les inscriptions sont fermees pour ce tournoi."
+        registrations_not_accepted: "Le tournoi n'accepte pas les inscriptions."
+        tournament_full: "Le tournoi est complet."
+        invalid_decklist: "Decklist invalide."
+        player_not_found: "Joueur introuvable."
+        player_not_registered: "Ce joueur n'est pas inscrit a ce tournoi."
+        player_already_registered: "Ce joueur est deja inscrit au tournoi."
+        cannot_start_tournament: "Impossible de demarrer le tournoi."
+        min_players_required: "Nombre minimum de joueurs requis : %count%."
+        invalid_winner: "Vainqueur invalide."
+        not_match_participant: "Vous n'etes pas un participant de ce match."
+        no_validate_rights: "Vous n'avez pas les droits pour valider ce match."
+        password_required_for_email: "Veuillez entrer votre mot de passe actuel pour changer votre email."
+        current_password_incorrect: "Mot de passe actuel incorrect."
+        password_incorrect: "Mot de passe incorrect."
+        cannot_edit_own_roles: "Vous ne pouvez pas modifier vos propres roles."
+        cannot_delete_own_account: "Vous ne pouvez pas supprimer votre propre compte."
+        reset_link_invalid: "Ce lien de reinitialisation est invalide ou a expire."
+        select_recipient: "Veuillez selectionner un destinataire."
+        select_player: "Veuillez selectionner un joueur."
+        groups_not_supported: "Ce tournoi ne supporte pas les phases de poules."
+        groups_already_formed: "Les poules ont deja ete formees."
+        groups_not_formed: "Les poules n'ont pas encore ete formees."
+        wizard_incomplete: "Veuillez completer toutes les etapes de l'assistant."
+        not_registered: "Vous n'etes pas inscrit a ce tournoi."
+        cannot_edit_after_start: "Impossible de modifier votre inscription une fois le tournoi commence."
+        cannot_unregister_after_start: "Impossible de se desinscrire une fois le tournoi commence."
+        tournament_not_completed: "Le tournoi doit etre termine pour publier les resultats."
+
+    warning:
+        match_not_in_dispute: "Ce match n'est pas en litige."
+        cannot_force_bye: "Impossible de forcer le resultat d'un BYE."
+        cannot_submit_bye: "Impossible de soumettre un resultat pour un BYE."
+        dispute_created: "Litige cree - les resultats ne correspondent pas. Contactez l'organisateur."
+        wizard_steps_incomplete: "Certaines etapes ne sont pas completees."
+        results_not_available: "Les resultats de ce tournoi ne sont pas encore disponibles."
+        stats_not_available: "Les statistiques de ce tournoi ne sont pas encore disponibles."
+
+    info:
+        match_already_completed: "Ce match est deja termine."
+        results_already_published: "Les resultats sont deja publies."
+
+# ----------------------------------------------------------------------------
+# Validation Messages
+# ----------------------------------------------------------------------------
+validation:
+    not_blank: "Ce champ ne peut pas etre vide."
+    email: "Veuillez entrer une adresse email valide."
+    min_length: "Ce champ doit contenir au moins %limit% caracteres."
+    max_length: "Ce champ ne peut pas depasser %limit% caracteres."
+    password_mismatch: "Les mots de passe ne correspondent pas."
+    invalid_date: "Date invalide."
+    invalid_url: "URL invalide."
+    unique_email: "Cette adresse email est deja utilisee."
+    unique_pseudo: "Ce pseudo est deja utilise."
+    url_invalid: "Veuillez entrer une URL valide"
+    decklist_url_invalid: "Le lien doit provenir de altered.gg"
+
+    tournament:
+        name_required: "Le nom du tournoi est requis"
+        name_min: "Le nom doit contenir au moins {{ limit }} caracteres"
+        name_max: "Le nom ne peut pas depasser {{ limit }} caracteres"
+        date_required: "La date du tournoi est requise"
+        format_required: "Le format de jeu est requis"
+        structure_required: "La structure du tournoi est requise"
+        swiss_format_required: "Le format des matchs suisses est requis"
+        players_range: "Le nombre de joueurs doit etre entre {{ min }} et {{ max }}"
+        rounds_range: "Le nombre de rondes doit etre entre {{ min }} et {{ max }}"
+        visibility_required: "La visibilite est requise"
+        decklist_transparency_required: "La transparence des decklists est requise"
+
+    user:
+        email_required: "Veuillez entrer votre email"
+        email_invalid: "Veuillez entrer un email valide"
+        pseudo_required: "Veuillez choisir un pseudo"
+        pseudo_min: "Le pseudo doit contenir au moins {{ limit }} caracteres"
+        pseudo_max: "Le pseudo ne peut pas depasser {{ limit }} caracteres"
+        pseudo_format: "Le pseudo ne peut contenir que des lettres, chiffres, tirets et underscores"
+        name_max: "Le nom ne peut pas depasser {{ limit }} caracteres"
+        password_required: "Veuillez entrer un mot de passe"
+        password_min: "Le mot de passe doit contenir au moins {{ limit }} caracteres"
+        passwords_mismatch: "Les mots de passe ne correspondent pas"
+        terms_required: "Vous devez accepter les conditions d'utilisation"
+        avatar_invalid: "Veuillez uploader une image valide (JPG, PNG, GIF ou WebP)"
+
+# ----------------------------------------------------------------------------
+# Form Labels
+# ----------------------------------------------------------------------------
+form:
+    common:
+        select: "Selectionner..."
+
+    tournament:
+        name: "Nom du tournoi"
+        name_placeholder: "Ex: Tournoi Winter 2026"
+        date: "Date"
+        time: "Heure de debut"
+        location: "Lieu"
+        location_placeholder: "Adresse ou nom du lieu"
+        format: "Format de jeu"
+        structure: "Structure du tournoi"
+        visibility: "Visibilite"
+        max_players: "Joueurs max"
+        expected_players: "Nombre de joueurs attendus"
+        expected_players_placeholder: "Ex: 16"
+        swiss_rounds: "Nombre de rondes suisses"
+        top_cut_size: "Taille du Top Cut"
+        description: "Description"
+        description_placeholder: "Informations supplementaires pour les joueurs..."
+        prizes: "Dotations / Lots"
+        prizes_placeholder: "Ex: 1er: Booster box, 2eme: Playmat..."
+        entry_fee: "Prix d'entree (PAF)"
+        entry_fee_placeholder: "Ex: 5 EUR, Gratuit"
+        decklist_transparency: "Transparence des decklists"
+        require_decklist: "Decklist requise"
+        swiss_match_format: "Format des matchs (Suisses)"
+        elimination_match_format: "Format des matchs (Elimination)"
+        altered_gg_link: "Lien Altered.gg (optionnel)"
+        altered_gg_placeholder: "https://altered.gg/..."
+
+    registration:
+        faction: "Faction"
+        faction2: "Seconde Faction"
+        hero: "Heros"
+        decklist_url: "Lien de votre decklist (Altered.gg)"
+        decklist_placeholder: "https://altered.gg/deck/..."
+        decklist_help: "Optionnel. Collez le lien de votre decklist depuis altered.gg"
+        select_faction: "Selectionnez une faction"
+        select_second_faction: "Selectionnez une seconde faction"
+        select_hero: "Selectionnez un heros"
+        select_faction_first: "Selectionnez d'abord une faction"
+        select_both_factions: "Selectionnez d'abord vos deux factions"
+
+    user:
+        email: "Adresse email"
+        email_placeholder: "votre@email.com"
+        pseudo: "Pseudo"
+        pseudo_placeholder: "Votre pseudo public"
+        pseudo_help: "Lettres, chiffres, tirets et underscores uniquement"
+        name: "Nom complet (optionnel)"
+        name_placeholder: "Votre nom"
+        avatar: "Photo de profil (optionnel)"
+        avatar_formats: "JPG, PNG, GIF ou WebP. Max 2 Mo."
+        password: "Mot de passe"
+        password_placeholder: "Minimum 8 caracteres"
+        confirm_password: "Confirmer le mot de passe"
+        confirm_password_placeholder: "Retapez votre mot de passe"
+        current_password: "Mot de passe actuel"
+        new_password: "Nouveau mot de passe"
+        agree_terms: "J'accepte les conditions d'utilisation"
+
+# ----------------------------------------------------------------------------
+# JavaScript / Stimulus Controllers
+# ----------------------------------------------------------------------------
+js:
+    error:
+        connection: "Erreur de connexion"
+        generic: "Une erreur est survenue"
+        save: "Erreur de sauvegarde"
+        calculation: "Erreur de calcul"
+        validation_winner_reason: "Veuillez selectionner un vainqueur et fournir une raison"
+    button:
+        confirm: "Confirmer"
+        saving: "Enregistrement..."
+    label:
+        player1: "Joueur 1"
+        player2: "Joueur 2"
+    message:
+        preferences_saved: "Preferences sauvegardees"
+    tournament:
+        bracket_label: "Bracket de %players% joueurs"
+        bracket_byes_label: "Bracket de %bracket% (%byes% BYEs necessaires)"
+        rounds_recommended: "%rounds% rondes recommandees pour %players% joueurs"

@@ -1,0 +1,51 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:eye', {class: 'w-6 h-6', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step7.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step7.subtitle'|trans }}</p>
+    </div>
+
+    {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-6'}}) }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for child in form.visibility %}
+                <label class="cursor-pointer group" data-action="click->wizard#selectCard">
+                    {{ form_widget(child, {attr: {class: 'sr-only peer', style: 'accent-color: var(--color-primary-600);'}}) }}
+                    <div class="border-2 rounded-2xl p-6 transition-all duration-200
+                                peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-lg
+                                hover:shadow-md" style="border-color: var(--border-default);" onmouseover="this.style.borderColor='var(--color-primary-300)';" onmouseout="if(!this.previousElementSibling.checked) this.style.borderColor='var(--border-default)';">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4
+                                        {% if child.vars.value == 'public' %}
+                                            bg-green-500/20
+                                        {% else %}
+                                            bg-amber-500/20
+                                        {% endif %}">
+                                {% if child.vars.value == 'public' %}
+                                    {{ ux_icon('lucide:globe', {class: 'w-8 h-8 text-green-600 dark:text-green-400'}) }}
+                                {% else %}
+                                    {{ ux_icon('lucide:lock', {class: 'w-8 h-8 text-amber-600 dark:text-amber-400'}) }}
+                                {% endif %}
+                            </div>
+                            <div class="font-semibold text-lg mb-2" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                            <div class="text-sm" style="color: var(--text-muted);">
+                                {{ ('tournament.wizard.step7.visibility_desc.' ~ child.vars.value)|trans }}
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            {% endfor %}
+        </div>
+        {{ form_errors(form.visibility) }}
+
+        <div class="rounded-xl p-4" style="background-color: var(--bg-subtle); border: 1px solid var(--border-default);">
+            <p class="text-sm flex items-start" style="color: var(--text-secondary);">
+                {{ ux_icon('lucide:info', {class: 'w-4 h-4 mr-2 flex-shrink-0 mt-0.5', style: 'color: var(--text-muted);'}) }}
+                <span>{{ 'tournament.wizard.step7.private_info'|trans }}</span>
+            </p>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

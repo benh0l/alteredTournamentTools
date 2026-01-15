@@ -1,0 +1,738 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'dashboard.title'|trans }} - {{ tournament.name }}{% endblock %}
+
+{# Disable Turbo on this page due to SSE connections #}
+{% block meta %}
+    {{ parent() }}
+    <meta name="turbo-visit-control" content="reload">
+{% endblock %}
+
+{% block body %}
+<div data-turbo="false">
+<div class="max-w-7xl mx-auto">
+    {# Header with gradient banner #}
+    <div class="theme-header-gradient rounded-2xl shadow-xl p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="text-white">
+                <div class="flex items-center space-x-3">
+                    {{ ux_icon('lucide:gamepad-2', {class: 'w-8 h-8'}) }}
+                    <div>
+                        <h1 class="text-2xl font-bold">{{ tournament.name }}</h1>
+                        <p class="text-orange-100 flex items-center mt-1">
+                            {% if can_manage %}{{ 'dashboard.title_organizer'|trans }}{% else %}{{ 'dashboard.title'|trans }}{% endif %}
+                            {% if tournament.ongoing %}
+                                <span class="ml-3 px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
+                                    {{ 'enum.tournament_status.ongoing'|trans }}
+                                </span>
+                            {% elseif tournament.completed %}
+                                <span class="ml-3 px-3 py-1 bg-emerald-500/80 text-white text-xs font-semibold rounded-full">
+                                    {{ 'enum.tournament_status.completed'|trans }}
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+               class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5 mr-2'}) }}
+                {{ 'dashboard.back_to_tournament'|trans }}
+            </a>
+        </div>
+    </div>
+
+    {# No rounds yet #}
+    {% if not tournament.hasRounds %}
+        <div class="card-gradient p-8 text-center">
+            <div class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style="background: linear-gradient(to bottom right, var(--color-primary-100), var(--color-primary-200));">
+                <span style="color: var(--color-primary-500);">{{ ux_icon('lucide:clock', {class: 'w-10 h-10'}) }}</span>
+            </div>
+            <p class="text-lg mb-4" style="color: var(--text-secondary);">{{ 'dashboard.no_rounds'|trans }}</p>
+            {% if can_manage %}
+                <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                   class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                   style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {{ ux_icon('lucide:play-circle', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'dashboard.start_tournament'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        {# Main grid layout #}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {# Left column: Timer + Statistics #}
+            <div class="lg:col-span-1 space-y-6">
+                {# Round Timer Card #}
+                {% if display_round %}
+                    <div class="card-orange" id="timer-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
+                                <span class="w-8 h-8 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(to bottom right, var(--color-primary-400), var(--color-primary-500));">
+                                    <span class="text-white text-sm font-bold">{{ display_round.roundNumber }}</span>
+                                </span>
+                                {{ 'dashboard.round.title'|trans({'%number%': display_round.roundNumber}) }}
+                            </h2>
+                            {% if display_round.completed %}
+                                <span class="px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200">
+                                    {{ 'dashboard.round.completed'|trans }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {# Timer display - only show if round is ongoing #}
+                        {% if current_round and current_round.startedAt %}
+                            <div class="text-center py-4">
+                                <div id="round-timer"
+                                     class="text-6xl font-mono font-bold transition-colors duration-500"
+                                     data-started-at="{{ current_round.startedAt.format('c') }}"
+                                     data-round-duration="50">
+                                    --:--
+                                </div>
+                                <p class="text-sm mt-3" style="color: var(--text-muted);">{{ 'dashboard.timer.elapsed'|trans({'%duration%': 50}) }}</p>
+                            </div>
+
+                            {# Timer color legend #}
+                            <div class="mt-4 pt-4 flex justify-center space-x-6 text-xs" style="border-top: 1px solid var(--border-muted);">
+                                <span class="flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500 mr-2 shadow-sm"></span>
+                                    {{ 'dashboard.timer.color_legend.green'|trans }}
+                                </span>
+                                <span class="flex items-center">
+                                    <span class="w-3 h-3 rounded-full mr-2 shadow-sm" style="background-color: var(--color-primary-500);"></span>
+                                    {{ 'dashboard.timer.color_legend.orange'|trans }}
+                                </span>
+                                <span class="flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-red-500 mr-2 shadow-sm"></span>
+                                    {{ 'dashboard.timer.color_legend.red'|trans }}
+                                </span>
+                            </div>
+                        {% elseif display_round.completed %}
+                            <div class="text-center py-4">
+                                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center mb-3">
+                                    {{ ux_icon('lucide:check', {class: 'w-8 h-8 text-emerald-500'}) }}
+                                </div>
+                                <p class="text-emerald-600 font-semibold">{{ 'dashboard.round.all_matches_completed'|trans }}</p>
+                                {% if display_round.completedAt %}
+                                    <p class="text-sm mt-2" style="color: var(--text-muted);">
+                                        {{ 'dashboard.round.completed_at'|trans({'%date%': display_round.completedAt|date('d/m/Y H:i')}) }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {# Statistics Card #}
+                <div class="card-amber" id="statistics-card">
+                    <h2 class="text-lg font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                        <span class="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-lg flex items-center justify-center mr-3">
+                            {{ ux_icon('lucide:bar-chart-3', {class: 'w-4 h-4 text-white'}) }}
+                        </span>
+                        {{ 'dashboard.statistics.title'|trans }}
+                    </h2>
+
+                    {% if display_round %}
+                        {# Progress bar #}
+                        <div class="mb-5">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="font-medium" style="color: var(--text-secondary);">{{ 'dashboard.statistics.progress'|trans }}</span>
+                                <span class="font-bold" style="color: var(--color-primary-600);" id="completion-percentage">{{ statistics.completion_percentage }}%</span>
+                            </div>
+                            <div class="w-full rounded-full h-4 shadow-inner" style="background-color: var(--bg-subtle);">
+                                <div class="h-4 rounded-full transition-all duration-500 shadow-sm theme-primary-gradient"
+                                     id="progress-bar"
+                                     style="width: {{ statistics.completion_percentage }}%"></div>
+                            </div>
+                        </div>
+
+                        {# Match counters #}
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl">
+                                <span class="font-medium flex items-center" style="color: var(--text-secondary);">
+                                    {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2 text-emerald-500'}) }}
+                                    {{ 'dashboard.statistics.completed_matches'|trans }}
+                                </span>
+                                <span class="text-xl font-bold text-emerald-600" id="completed-count">
+                                    {{ statistics.completed_matches }}/{{ statistics.total_matches }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl">
+                                <span class="font-medium flex items-center" style="color: var(--text-secondary);">
+                                    {{ ux_icon('lucide:play', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                                    {{ 'dashboard.statistics.ongoing_matches'|trans }}
+                                </span>
+                                <span class="text-xl font-bold text-blue-600" id="ongoing-count">
+                                    {{ statistics.ongoing_matches }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 rounded-xl" style="background-color: var(--bg-subtle);">
+                                <span class="font-medium flex items-center" style="color: var(--text-secondary);">
+                                    <span style="color: var(--text-muted);">{{ ux_icon('lucide:clock', {class: 'w-5 h-5 mr-2'}) }}</span>
+                                    {{ 'dashboard.statistics.pending_matches'|trans }}
+                                </span>
+                                <span class="text-xl font-bold" style="color: var(--text-muted);" id="pending-count">
+                                    {{ statistics.pending_matches }}
+                                </span>
+                            </div>
+                            {% if statistics.disputed_matches > 0 %}
+                                <div class="flex justify-between items-center p-3 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-xl border border-red-200">
+                                    <span class="font-medium flex items-center" style="color: var(--text-secondary);">
+                                        {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 mr-2 text-red-500'}) }}
+                                        {{ 'dashboard.statistics.disputed_matches'|trans }}
+                                    </span>
+                                    <span class="text-xl font-bold text-red-600" id="dispute-count">
+                                        {{ statistics.disputed_matches }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                            {% if statistics.bye_matches > 0 %}
+                                <div class="flex justify-between items-center p-3 bg-purple-500/10 rounded-xl">
+                                    <span class="font-medium" style="color: var(--text-secondary);">{{ 'dashboard.statistics.bye_matches'|trans }}</span>
+                                    <span class="text-sm text-purple-500 font-medium">
+                                        {{ statistics.bye_matches }}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Quick actions for disputes - only for organizers #}
+                        {% if can_manage and statistics.disputed_matches > 0 %}
+                            <div class="mt-5 pt-4" style="border-top: 1px solid var(--border-muted);">
+                                <a href="{{ path('dispute_list', {tournamentId: tournament.id}) }}"
+                                   class="w-full inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                   style="background: linear-gradient(135deg, #ef4444, #f43f5e);">
+                                    {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'dashboard.statistics.view_disputes'|trans({'%count%': statistics.disputed_matches}) }}
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3" style="background-color: var(--bg-subtle);">
+                                <span style="color: var(--text-muted);">{{ ux_icon('lucide:bar-chart-3', {class: 'w-8 h-8'}) }}</span>
+                            </div>
+                            <p style="color: var(--text-muted);">{{ 'dashboard.statistics.no_round'|trans }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Round navigation #}
+                <div class="card-rose">
+                    <h2 class="text-lg font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                        <span class="w-8 h-8 bg-gradient-to-br from-rose-400 to-pink-400 rounded-lg flex items-center justify-center mr-3">
+                            {{ ux_icon('lucide:list', {class: 'w-4 h-4 text-white'}) }}
+                        </span>
+                        {{ 'dashboard.rounds.title'|trans }}
+                    </h2>
+                    <div class="space-y-2">
+                        {% for round in rounds %}
+                            <a href="{{ path('tournament_dashboard_round', {id: tournament.id, roundNumber: round.roundNumber}) }}"
+                               class="block px-4 py-3 rounded-xl border-2 transition-all hover:shadow-md
+                                      {% if display_round and round.id == display_round.id %}
+                                          shadow-sm
+                                      {% endif %}"
+                               style="{% if display_round and round.id == display_round.id %}background: linear-gradient(to right, var(--color-primary-50), var(--color-primary-100)); border-color: var(--color-primary-300);{% else %}background-color: var(--card-bg); border-color: var(--border-muted);{% endif %}">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold flex items-center" style="color: var(--text-primary);">
+                                        <span class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 text-xs font-bold"
+                                              style="{% if display_round and round.id == display_round.id %}background-color: var(--color-primary-500); color: white;{% else %}background-color: var(--bg-subtle); color: var(--text-secondary);{% endif %}">
+                                            {{ round.roundNumber }}
+                                        </span>
+                                        {{ 'dashboard.round.title'|trans({'%number%': round.roundNumber}) }}
+                                    </span>
+                                    {% if round.completed %}
+                                        <span class="px-2 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 text-xs font-semibold rounded-full">
+                                            {{ 'dashboard.round.completed'|trans }}
+                                        </span>
+                                    {% elseif round.ongoing %}
+                                        <span class="px-2 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-700 text-xs font-semibold rounded-full">
+                                            {{ 'dashboard.round.ongoing'|trans }}
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold" style="background-color: var(--bg-subtle); color: var(--text-secondary);">
+                                            {{ 'dashboard.round.pending'|trans }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {# Right column: Matches list #}
+            <div class="lg:col-span-2">
+                {% if display_round %}
+                    <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);" id="matches-card">
+                        {# Header #}
+                        <div class="theme-header-gradient px-6 py-4">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-lg font-bold text-white flex items-center">
+                                    {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'dashboard.matches.title'|trans({'%number%': display_round.roundNumber}) }}
+                                    {% if display_round.completed %}
+                                        <span class="ml-3 px-2 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
+                                            {{ 'dashboard.round.completed'|trans }}
+                                        </span>
+                                    {% endif %}
+                                </h2>
+                                <a href="{{ path('round_show', {id: tournament.id, roundNumber: display_round.roundNumber}) }}"
+                                   class="text-white/90 hover:text-white text-sm flex items-center transition-colors">
+                                    {{ 'dashboard.matches.full_view'|trans }}
+                                    {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4 ml-1'}) }}
+                                </a>
+                            </div>
+                        </div>
+
+                        {# Table #}
+                        <div class="overflow-x-auto" id="matches-table">
+                            <table class="min-w-full">
+                                <thead style="background-color: var(--bg-subtle); border-bottom: 1px solid var(--border-muted);">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.table'|trans }}</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.player'|trans }} 1</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.score'|trans }}</th>
+                                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.player'|trans }} 2</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.status'|trans }}</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">{{ 'common.actions'|trans }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border-color: var(--border-muted);" class="divide-y">
+                                    {% for match in display_round.matches %}
+                                        <tr id="match-row-{{ match.id }}"
+                                            class="transition-colors
+                                                   {% if match.disputed %}bg-gradient-to-r from-red-500/10 to-rose-500/10{% endif %}"
+                                            style="{% if not match.disputed %}--hover-bg: var(--color-primary-50);{% endif %}">
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold" style="background: linear-gradient(to bottom right, var(--bg-subtle), var(--border-muted)); color: var(--text-secondary);">
+                                                    {{ match.tableNumber }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span class="font-medium" style="color: {% if match.winner and match.winner == match.player1 %}var(--color-emerald-600){% else %}var(--text-primary){% endif %};">
+                                                    {{ match.player1.player.displayName }}
+                                                    {% if match.winner and match.winner == match.player1 %}
+                                                        {{ ux_icon('lucide:check-circle', {class: 'inline w-4 h-4 ml-1 text-emerald-500'}) }}
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                {% if match.completed %}
+                                                    {% if match.winner %}
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-lg font-mono font-bold" style="background-color: var(--bg-subtle); color: var(--text-primary);">
+                                                            {{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="inline-flex items-center px-3 py-1 bg-amber-500/20 rounded-lg font-mono font-bold text-amber-700" title="{{ 'match.submit.draw'|trans }}">
+                                                            {{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}
+                                                        </span>
+                                                    {% endif %}
+                                                {% elseif match.isByeMatch %}
+                                                    <span class="text-purple-500 font-medium">BYE</span>
+                                                {% else %}
+                                                    <span style="color: var(--text-muted);">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-right">
+                                                {% if match.player2 %}
+                                                    <span class="font-medium" style="color: {% if match.winner and match.player2 and match.winner == match.player2 %}var(--color-emerald-600){% else %}var(--text-primary){% endif %};">
+                                                        {% if match.winner and match.player2 and match.winner == match.player2 %}
+                                                            {{ ux_icon('lucide:check-circle', {class: 'inline w-4 h-4 mr-1 text-emerald-500'}) }}
+                                                        {% endif %}
+                                                        {{ match.player2.player.displayName }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-purple-400 italic">BYE</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                {% if match.completed %}
+                                                    <span class="badge-completed">{{ 'enum.match_status.completed'|trans }}</span>
+                                                {% elseif match.ongoing %}
+                                                    <span class="badge-ongoing">{{ 'enum.match_status.ongoing'|trans }}</span>
+                                                {% elseif match.disputed %}
+                                                    <span class="badge-dispute">{{ 'enum.match_status.dispute'|trans }}</span>
+                                                {% else %}
+                                                    <span class="badge-pending">{{ 'enum.match_status.pending'|trans }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                {% if can_manage and match.disputed %}
+                                                    <a href="{{ path('dispute_show', {tournamentId: tournament.id, matchId: match.id}) }}"
+                                                       class="inline-flex items-center px-3 py-1 bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+                                                        {{ ux_icon('lucide:alert-circle', {class: 'w-4 h-4 mr-1'}) }}
+                                                        {{ 'dashboard.matches.resolve'|trans }}
+                                                    </a>
+                                                {% elseif not match.completed and not match.isByeMatch %}
+                                                    {# Check if current user is a player in this match #}
+                                                    {% set isPlayerInMatch = app.user and (
+                                                        (match.player1 and match.player1.player.id == app.user.id) or
+                                                        (match.player2 and match.player2.player.id == app.user.id)
+                                                    ) %}
+                                                    {% if isPlayerInMatch %}
+                                                        <a href="{{ path('match_submit_form', {id: match.id}) }}"
+                                                           class="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all shadow-sm">
+                                                            {{ ux_icon('lucide:check-circle', {class: 'w-4 h-4 mr-1'}) }}
+                                                            {{ 'dashboard.matches.submit'|trans }}
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{{ path('match_show', {id: match.id}) }}"
+                                                           class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+                                                           style="background-color: var(--color-primary-100); color: var(--color-primary-700);">
+                                                            {{ 'common.details'|trans }}
+                                                        </a>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span style="color: var(--text-muted);" class="text-sm">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {# Round actions footer #}
+                        <div class="px-6 py-4" style="background: linear-gradient(to right, var(--bg-subtle), var(--color-primary-50)); border-top: 1px solid var(--border-muted);">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm font-medium" style="color: var(--text-secondary);">
+                                    {{ 'dashboard.matches.completed_count'|trans({'%completed%': statistics.completed_matches, '%total%': statistics.total_matches}) }}
+                                </div>
+                                {% if can_manage and display_round.areAllMatchesCompleted %}
+                                    {% if tournament.hasReachedSwissRoundLimit %}
+                                        {# Round limit reached - show complete tournament button #}
+                                        <div class="flex items-center space-x-4">
+                                            <span class="text-sm font-medium" style="color: var(--color-primary-600);">
+                                                {{ 'dashboard.matches.round_limit_reached'|trans({'%current%': tournament.roundsCount, '%max%': tournament.swissRounds}) }}
+                                            </span>
+                                            <form action="{{ path('round_complete_tournament', {id: tournament.id}) }}" method="POST" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('complete-tournament-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-5 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-indigo-600 transition-all">
+                                                    {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'dashboard.matches.complete_tournament'|trans }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
+                                            <button type="submit"
+                                                    class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                                    style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                                                {{ ux_icon('lucide:arrow-right', {class: 'w-5 h-5 mr-2'}) }}
+                                                {{ 'dashboard.matches.start_next_round'|trans }}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card-gradient p-8 text-center">
+                        <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style="background-color: var(--bg-subtle);">
+                            <span style="color: var(--text-muted);">{{ ux_icon('lucide:archive', {class: 'w-8 h-8'}) }}</span>
+                        </div>
+                        <p class="font-medium" style="color: var(--text-secondary);">{{ 'dashboard.statistics.no_round'|trans }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{# Connection status indicator #}
+<div id="connection-status" class="fixed bottom-4 right-4 hidden">
+    <span class="px-4 py-2 rounded-xl text-sm font-semibold shadow-lg"></span>
+</div>
+</div>{# Close data-turbo="false" div #}
+{% endblock %}
+
+{# Timer and SSE JavaScript #}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tournamentId = {{ tournament.id }};
+            const roundDuration = 50; // minutes
+            const maxTimerMinutes = 90; // Timer stops at 90 minutes
+
+            // Translations for connection status
+            const translations = {
+                connected: '{{ 'dashboard.connection.connected'|trans }}',
+                realtime_active: '{{ 'dashboard.connection.realtime_active'|trans }}',
+                reconnecting: '{{ 'dashboard.connection.reconnecting'|trans }}',
+                disconnected: '{{ 'dashboard.connection.disconnected'|trans }}',
+                polling_active: '{{ 'dashboard.connection.polling_active'|trans }}'
+            };
+
+            // =========================================================================
+            // Timer Management
+            // =========================================================================
+
+            const timerElement = document.getElementById('round-timer');
+            let timerStartTime = null;
+
+            if (timerElement && timerElement.dataset.startedAt) {
+                timerStartTime = new Date(timerElement.dataset.startedAt);
+            }
+
+            function updateTimer() {
+                if (!timerElement || !timerStartTime) return;
+
+                const now = new Date();
+                let elapsed = Math.floor((now - timerStartTime) / 1000);
+
+                // Cap at 90 minutes (5400 seconds)
+                const maxSeconds = maxTimerMinutes * 60;
+                if (elapsed > maxSeconds) {
+                    elapsed = maxSeconds;
+                }
+
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+
+                timerElement.textContent =
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+
+                // Color coding: Green < 35min, Orange 35-50min, Red > 50min
+                timerElement.classList.remove('text-emerald-500', 'text-orange-500', 'text-red-500');
+
+                if (minutes < 35) {
+                    timerElement.classList.add('text-emerald-500');
+                } else if (minutes < roundDuration) {
+                    timerElement.classList.add('text-orange-500');
+                } else {
+                    timerElement.classList.add('text-red-500');
+                }
+            }
+
+            // Update timer every second
+            if (timerElement && timerStartTime) {
+                updateTimer();
+                setInterval(updateTimer, 1000);
+            }
+
+            // =========================================================================
+            // SSE Real-Time Updates (FR47)
+            // =========================================================================
+
+            let eventSource = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            const reconnectDelay = 3000;
+            let isNavigatingAway = false;
+
+            function showConnectionStatus(status, message) {
+                const statusEl = document.getElementById('connection-status');
+                const spanEl = statusEl.querySelector('span');
+
+                statusEl.classList.remove('hidden');
+
+                if (status === 'connected') {
+                    spanEl.className = 'px-4 py-2 rounded-xl text-sm font-semibold shadow-lg bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-800 border border-emerald-200';
+                    spanEl.textContent = message || translations.connected;
+                    setTimeout(() => statusEl.classList.add('hidden'), 2000);
+                } else if (status === 'reconnecting') {
+                    spanEl.className = 'px-4 py-2 rounded-xl text-sm font-semibold shadow-lg bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border border-amber-200';
+                    spanEl.textContent = message || translations.reconnecting;
+                } else if (status === 'error') {
+                    spanEl.className = 'px-4 py-2 rounded-xl text-sm font-semibold shadow-lg bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200';
+                    spanEl.textContent = message || translations.disconnected;
+                }
+            }
+
+            function updateDashboard(data) {
+                // Update statistics
+                const stats = data.statistics;
+
+                const completionEl = document.getElementById('completion-percentage');
+                if (completionEl) completionEl.textContent = stats.completion_percentage + '%';
+
+                const progressBar = document.getElementById('progress-bar');
+                if (progressBar) progressBar.style.width = stats.completion_percentage + '%';
+
+                const completedEl = document.getElementById('completed-count');
+                if (completedEl) completedEl.textContent = stats.completed_matches + '/' + stats.total_matches;
+
+                const ongoingEl = document.getElementById('ongoing-count');
+                if (ongoingEl) ongoingEl.textContent = stats.ongoing_matches;
+
+                const pendingEl = document.getElementById('pending-count');
+                if (pendingEl) pendingEl.textContent = stats.pending_matches;
+
+                const disputeEl = document.getElementById('dispute-count');
+                if (disputeEl) disputeEl.textContent = stats.disputed_matches;
+
+                // Update match rows
+                if (data.matches && data.matches.length > 0) {
+                    data.matches.forEach(function(match) {
+                        const row = document.getElementById('match-row-' + match.id);
+                        if (!row) return;
+
+                        // Update row background for disputes
+                        if (match.status === 'dispute') {
+                            row.classList.add('bg-gradient-to-r', 'from-red-50', 'to-rose-50');
+                        } else {
+                            row.classList.remove('bg-gradient-to-r', 'from-red-50', 'to-rose-50');
+                        }
+
+                        // Update score cell (3rd td)
+                        const scoreCell = row.querySelectorAll('td')[2];
+                        if (scoreCell && match.status === 'completed') {
+                            const p1Score = match.player1_score !== null ? match.player1_score : '-';
+                            const p2Score = match.player2_score !== null ? match.player2_score : '-';
+                            scoreCell.innerHTML = '<span class="inline-flex items-center px-3 py-1 rounded-lg font-mono font-bold" style="background-color: var(--bg-subtle); color: var(--text-primary);">' + p1Score + ' - ' + p2Score + '</span>';
+                        }
+
+                        // Update status badge (5th td)
+                        const statusCell = row.querySelectorAll('td')[4];
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="' + getStatusBadgeClasses(match.status) + '">' + match.status_label + '</span>';
+                        }
+                    });
+                }
+
+                // Update timer if needed
+                if (data.timer && data.timer.started_at && timerElement) {
+                    const newStartTime = new Date(data.timer.started_at);
+                    if (!timerStartTime || newStartTime.getTime() !== timerStartTime.getTime()) {
+                        timerStartTime = newStartTime;
+                    }
+                }
+            }
+
+            function getStatusBadgeClasses(status) {
+                switch (status) {
+                    case 'completed':
+                        return 'badge-completed';
+                    case 'ongoing':
+                        return 'badge-ongoing';
+                    case 'pending':
+                        return 'badge-pending';
+                    case 'dispute':
+                        return 'badge-dispute';
+                    default:
+                        return 'badge-pending';
+                }
+            }
+
+            function connectSSE() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+
+                const streamUrl = '/api/dashboard/' + tournamentId + '/stream';
+
+                try {
+                    eventSource = new EventSource(streamUrl);
+
+                    eventSource.addEventListener('dashboard_update', function(event) {
+                        reconnectAttempts = 0;
+                        const data = JSON.parse(event.data);
+                        updateDashboard(data);
+                    });
+
+                    eventSource.addEventListener('heartbeat', function(event) {
+                        // Connection is alive
+                        reconnectAttempts = 0;
+                    });
+
+                    eventSource.addEventListener('close', function(event) {
+                        console.log('SSE stream closed by server');
+                        eventSource.close();
+                        // Try to reconnect after delay (unless navigating away)
+                        if (!isNavigatingAway) {
+                            setTimeout(function() {
+                                if (!isNavigatingAway) connectSSE();
+                            }, reconnectDelay);
+                        }
+                    });
+
+                    eventSource.onopen = function() {
+                        showConnectionStatus('connected', translations.realtime_active);
+                        reconnectAttempts = 0;
+                    };
+
+                    eventSource.onerror = function(error) {
+                        // Don't reconnect if we're navigating away
+                        if (isNavigatingAway) return;
+
+                        console.error('SSE error:', error);
+                        eventSource.close();
+
+                        reconnectAttempts++;
+                        if (reconnectAttempts <= maxReconnectAttempts) {
+                            showConnectionStatus('reconnecting', translations.reconnecting.replace('%current%', reconnectAttempts).replace('%max%', maxReconnectAttempts));
+                            setTimeout(function() {
+                                if (!isNavigatingAway) connectSSE();
+                            }, reconnectDelay);
+                        } else {
+                            showConnectionStatus('error', translations.polling_active);
+                            // Fall back to polling
+                            if (!isNavigatingAway) startPolling();
+                        }
+                    };
+                } catch (e) {
+                    console.error('Failed to create EventSource:', e);
+                    showConnectionStatus('error', translations.disconnected);
+                    startPolling();
+                }
+            }
+
+            // =========================================================================
+            // Polling Fallback (NFR24)
+            // =========================================================================
+
+            let pollingInterval = null;
+
+            function startPolling() {
+                if (pollingInterval) return;
+
+                const stateUrl = '/api/dashboard/' + tournamentId + '/state';
+
+                pollingInterval = setInterval(function() {
+                    fetch(stateUrl)
+                        .then(response => response.json())
+                        .then(data => updateDashboard(data))
+                        .catch(error => console.error('Polling error:', error));
+                }, 10000); // Poll every 10 seconds
+            }
+
+            // =========================================================================
+            // Initialize SSE connection if tournament is ongoing
+            // =========================================================================
+
+            // =========================================================================
+            // Cleanup function
+            // =========================================================================
+
+            function cleanup() {
+                isNavigatingAway = true;
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+            }
+
+            {% if tournament.ongoing and current_round %}
+                // Use polling only (SSE disabled due to navigation issues on WAMP)
+                startPolling();
+
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', cleanup);
+
+                // Cleanup for Turbo navigation (if Turbo is active)
+                document.addEventListener('turbo:before-visit', cleanup);
+                document.addEventListener('turbo:before-render', cleanup);
+            {% endif %}
+        });
+    </script>
+{% endblock %}

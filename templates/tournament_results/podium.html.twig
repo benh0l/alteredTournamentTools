@@ -1,0 +1,240 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Podium - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    {# Header with gradient banner #}
+    <div class="theme-header-gradient rounded-2xl shadow-xl p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div class="text-white">
+                <div class="flex items-center space-x-3">
+                    {{ ux_icon('lucide:trophy', {class: 'w-8 h-8 text-white'}) }}
+                    <div>
+                        <h1 class="text-2xl font-bold">{{ tournament.name }}</h1>
+                        <p class="text-orange-100">Podium</p>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+               class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5 mr-2'}) }}
+                Retour
+            </a>
+        </div>
+    </div>
+
+    {# Navigation tabs #}
+    <div class="mb-8">
+        <div class="rounded-xl shadow-lg p-1.5 inline-flex space-x-1" style="background-color: var(--card-bg);">
+            <a href="{{ path('tournament_final_standings', {id: tournament.id}) }}"
+               class="px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-orange-500/10 transition-all" style="color: var(--text-secondary);">
+                Classement
+            </a>
+            <a href="{{ path('tournament_podium', {id: tournament.id}) }}"
+               class="px-5 py-2.5 rounded-lg text-sm font-semibold theme-primary-gradient text-white shadow-md">
+                Podium
+            </a>
+            <a href="{{ path('tournament_stats', {id: tournament.id}) }}"
+               class="px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-orange-500/10 transition-all" style="color: var(--text-secondary);">
+                Statistiques
+            </a>
+        </div>
+    </div>
+
+    {# Podium visualization #}
+    <div class="bg-gradient-to-b from-gray-800 via-gray-900 to-gray-950 rounded-2xl p-8 mb-8 shadow-2xl">
+        <div class="flex items-end justify-center space-x-6">
+            {# 2nd place #}
+            <div class="text-center">
+                {% if podium[1] is defined %}
+                    <div class="mb-4 animate-bounce-slow">
+                        <div class="w-20 h-20 mx-auto bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-lg border-4 border-gray-200">
+                            <span class="text-3xl font-bold text-gray-700">2</span>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-t from-gray-500 to-gray-400 rounded-t-xl w-32 h-40 flex items-center justify-center shadow-lg overflow-hidden">
+                        <div class="text-center px-2 w-full">
+                            <p class="text-white font-bold text-base truncate" title="{{ podium[1].registration.player.displayName }}">{{ podium[1].registration.player.displayName }}</p>
+                            <p class="text-gray-200 text-sm">{{ podium[1].matchPoints }} pts</p>
+                            {% if podium[1].registration.hero %}
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50">
+                                        <img src="{{ podium[1].registration.heroImage }}" alt="{{ podium[1].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                    </div>
+                                    <span class="text-xs text-gray-200 mt-1 truncate w-full">{{ podium[1].registration.heroLabel }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-gray-600 rounded-t-xl w-32 h-32 flex items-center justify-center opacity-50">
+                        <span class="text-white text-xl">-</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# 1st place #}
+            <div class="text-center">
+                {% if podium[0] is defined %}
+                    <div class="mb-4">
+                        <div class="w-28 h-28 mx-auto bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-yellow-200 animate-pulse-subtle">
+                            {{ ux_icon('lucide:trophy', {class: 'w-14 h-14 text-yellow-700'}) }}
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-t from-yellow-600 via-yellow-500 to-amber-400 rounded-t-xl w-40 h-52 flex items-center justify-center shadow-2xl overflow-hidden">
+                        <div class="text-center px-2 w-full">
+                            <p class="text-white font-bold text-lg truncate" title="{{ podium[0].registration.player.displayName }}">{{ podium[0].registration.player.displayName }}</p>
+                            <p class="text-yellow-100 text-sm font-medium">{{ podium[0].matchPoints }} pts</p>
+                            <p class="text-yellow-200 text-xs mt-1">{{ podium[0].wins }}V{% if podium[0].draws > 0 %} - {{ podium[0].draws }}N{% endif %} - {{ podium[0].losses }}D</p>
+                            {% if podium[0].registration.hero %}
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-200">
+                                        <img src="{{ podium[0].registration.heroImage }}" alt="{{ podium[0].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                    </div>
+                                    <span class="text-xs text-yellow-100 mt-1 truncate w-full">{{ podium[0].registration.heroLabel }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-yellow-600 rounded-t-xl w-40 h-44 flex items-center justify-center opacity-50">
+                        <span class="text-white text-xl">-</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# 3rd place #}
+            <div class="text-center">
+                {% if podium[2] is defined %}
+                    <div class="mb-4">
+                        <div class="w-18 h-18 mx-auto bg-gradient-to-br from-amber-500 to-amber-700 rounded-full flex items-center justify-center shadow-lg border-4 border-amber-400" style="width: 4.5rem; height: 4.5rem;">
+                            <span class="text-2xl font-bold text-white">3</span>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-t from-amber-800 to-amber-600 rounded-t-xl w-28 h-36 flex items-center justify-center shadow-lg overflow-hidden">
+                        <div class="text-center px-2 w-full">
+                            <p class="text-white font-bold text-sm truncate" title="{{ podium[2].registration.player.displayName }}">{{ podium[2].registration.player.displayName }}</p>
+                            <p class="text-amber-200 text-sm">{{ podium[2].matchPoints }} pts</p>
+                            {% if podium[2].registration.hero %}
+                                <div class="mt-2 flex flex-col items-center">
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-amber-300/50">
+                                        <img src="{{ podium[2].registration.heroImage }}" alt="{{ podium[2].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                    </div>
+                                    <span class="text-xs text-amber-200 mt-1 truncate w-full">{{ podium[2].registration.heroLabel }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-amber-700 rounded-t-xl w-28 h-24 flex items-center justify-center opacity-50">
+                        <span class="text-white text-xl">-</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Winner highlight #}
+    {% if podium[0] is defined %}
+    <div class="bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-orange-500/10 border-2 border-yellow-400 dark:border-yellow-500/50 rounded-2xl p-6 mb-8 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center mr-4 shadow-lg">
+                    {{ ux_icon('lucide:trophy', {class: 'w-8 h-8 text-yellow-800'}) }}
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-yellow-900 dark:text-yellow-400">Vainqueur</h2>
+                    <p class="text-2xl font-bold text-gradient">{{ podium[0].registration.player.displayName }}</p>
+                </div>
+                {% if podium[0].registration.hero %}
+                    <div class="ml-6 flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full overflow-hidden border-3 shadow-md" style="border-color: {{ podium[0].registration.faction ? podium[0].registration.faction.color : '#fbbf24' }};">
+                            <img src="{{ podium[0].registration.heroImage }}" alt="{{ podium[0].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'">
+                        </div>
+                        <span class="text-xs text-yellow-700 dark:text-yellow-500 mt-1 font-medium">{{ podium[0].registration.heroLabel }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-right">
+                <p class="text-lg font-bold text-yellow-800 dark:text-yellow-400">{{ podium[0].matchPoints }} points</p>
+                <p class="text-sm text-yellow-700 dark:text-yellow-500">{{ podium[0].wins }} victoires{% if podium[0].draws > 0 %} - {{ podium[0].draws }} egalite{% if podium[0].draws > 1 %}s{% endif %}{% endif %} - {{ podium[0].losses }} defaites</p>
+                <p class="text-xs text-yellow-600 dark:text-yellow-600 mt-1">OMW: {{ (podium[0].opponentMatchWinPercentage * 100)|number_format(1) }}%</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Top 3 details cards #}
+    <div class="grid md:grid-cols-3 gap-4 mb-8">
+        {% for entry in podium %}
+            {% if loop.index == 1 %}
+                <div class="rounded-2xl shadow-xl p-5 border-2 border-yellow-400 relative overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-yellow-500/20 to-transparent rounded-bl-full"></div>
+            {% elseif loop.index == 2 %}
+                <div class="rounded-2xl shadow-lg p-5 border-l-4 border-gray-400" style="background-color: var(--card-bg);">
+            {% elseif loop.index == 3 %}
+                <div class="rounded-2xl shadow-lg p-5 border-l-4 border-amber-600" style="background-color: var(--card-bg);">
+            {% endif %}
+                <div class="flex items-center mb-4">
+                    {% if loop.index == 1 %}
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 text-white font-bold mr-3 shadow-md">1</span>
+                    {% elseif loop.index == 2 %}
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 text-gray-700 font-bold mr-3 shadow-md">2</span>
+                    {% elseif loop.index == 3 %}
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white font-bold mr-3 shadow-md">3</span>
+                    {% endif %}
+                    <span class="font-bold text-lg" style="color: var(--text-primary);">{{ entry.registration.player.displayName }}</span>
+                </div>
+                {% if entry.registration.hero %}
+                    <div class="flex items-center mb-4 p-3 rounded-xl" style="background-color: var(--bg-subtle);">
+                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 mr-3 flex-shrink-0" style="border-color: {{ entry.registration.faction ? entry.registration.faction.color : 'var(--border-muted)' }};">
+                            <img src="{{ entry.registration.heroImage }}" alt="{{ entry.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span style=\'color: var(--text-muted);\'>?</span></div>'">
+                        </div>
+                        <div>
+                            <p class="text-xs" style="color: var(--text-muted);">Heros</p>
+                            <p class="font-medium text-sm" style="color: var(--text-primary);">{{ entry.registration.heroLabel }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                        <span style="color: var(--text-muted);">Points</span>
+                        <span class="font-bold" style="color: var(--text-primary);">{{ entry.matchPoints }}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-emerald-500/10 rounded-lg">
+                        <span style="color: var(--text-muted);">Victoires</span>
+                        <span class="font-bold text-emerald-600">{{ entry.wins }}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-amber-500/10 rounded-lg">
+                        <span style="color: var(--text-muted);">Egalites</span>
+                        <span class="font-bold text-amber-600">{{ entry.draws }}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-red-500/10 rounded-lg">
+                        <span style="color: var(--text-muted);">Defaites</span>
+                        <span class="font-bold text-red-600">{{ entry.losses }}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-blue-500/10 rounded-lg">
+                        <span style="color: var(--text-muted);">OMW%</span>
+                        <span class="font-medium text-blue-600">{{ (entry.opponentMatchWinPercentage * 100)|number_format(1) }}%</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-500/10 rounded-lg">
+                        <span style="color: var(--text-muted);">GW%</span>
+                        <span class="font-medium text-purple-600">{{ (entry.gameWinPercentage * 100)|number_format(1) }}%</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Link to full standings #}
+    <div class="text-center">
+        <a href="{{ path('tournament_final_standings', {id: tournament.id}) }}"
+           class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+           style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+            Voir le classement complet
+            {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5 ml-2'}) }}
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ tournament.name }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto" data-controller="tournament-form">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg theme-primary-gradient">
+                {{ ux_icon('lucide:edit-3', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Modifier le tournoi</h1>
+            <p class="mt-2" style="color: var(--text-muted);">{{ tournament.name }}</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+        {# ================================================================== #}
+        {# Section 1: Informations générales                                  #}
+        {# ================================================================== #}
+        <div class="rounded-2xl shadow-xl p-6 border" style="background-color: var(--card-bg); border-color: var(--border-muted);">
+            <h2 class="text-xl font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+                <span class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center mr-3">
+                    {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-blue-600'}) }}
+                </span>
+                Informations generales
+            </h2>
+
+            <div class="space-y-5">
+                {# Nom du tournoi #}
+                <div>
+                    <label for="{{ form.name.vars.id }}" class="block form-label mb-2">
+                        {{ ux_icon('lucide:trophy', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        Nom du tournoi
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:type', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.name, {'attr': {
+                            'class': 'form-input w-full pl-10',
+                            'placeholder': 'Nom du tournoi'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.name) }}
+                </div>
+
+                {# Date et heure #}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.date.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Date
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:calendar-days', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.date, {'attr': {
+                                'class': 'form-input w-full pl-10'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.date) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.time.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:clock', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Heure
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:clock', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.time, {'attr': {
+                                'class': 'form-input w-full pl-10'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.time) }}
+                    </div>
+                </div>
+
+                {# Lieu #}
+                <div>
+                    <label for="{{ form.location.vars.id }}" class="block form-label mb-2">
+                        {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        Lieu
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:map-pin', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.location, {'attr': {
+                            'class': 'form-input w-full pl-10',
+                            'placeholder': 'Adresse ou nom du lieu'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.location) }}
+                </div>
+            </div>
+        </div>
+
+        {# ================================================================== #}
+        {# Section 2: Format et structure                                     #}
+        {# ================================================================== #}
+        <div class="rounded-2xl shadow-xl p-6 border" style="background-color: var(--card-bg); border-color: var(--border-muted);">
+            <h2 class="text-xl font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+                <span class="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center mr-3">
+                    {{ ux_icon('lucide:settings', {class: 'w-5 h-5 text-purple-600'}) }}
+                </span>
+                Format et structure
+            </h2>
+
+            <div class="space-y-5">
+                {# Format et Structure en grille #}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.format.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:layers', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Format de jeu
+                        </label>
+                        {{ form_widget(form.format, {'attr': {
+                            'class': 'form-input w-full'
+                        }}) }}
+                        {{ form_errors(form.format) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.structure.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:git-branch', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Structure du tournoi
+                        </label>
+                        {{ form_widget(form.structure, {'attr': {
+                            'class': 'form-input w-full',
+                            'data-tournament-form-target': 'structure',
+                            'data-action': 'change->tournament-form#structureChanged'
+                        }}) }}
+                        {{ form_errors(form.structure) }}
+                    </div>
+                </div>
+
+                {# Formats de match #}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.swissMatchFormat.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:refresh-cw', {class: 'w-4 h-4 inline mr-1 text-blue-500'}) }}
+                            Format matchs suisses
+                        </label>
+                        {{ form_widget(form.swissMatchFormat, {'attr': {
+                            'class': 'form-input w-full',
+                            'data-tournament-form-target': 'swissMatchFormat',
+                            'data-action': 'change->tournament-form#suggestRounds'
+                        }}) }}
+                        {{ form_errors(form.swissMatchFormat) }}
+                    </div>
+                    <div data-tournament-form-target="eliminationFormatContainer">
+                        <label for="{{ form.eliminationMatchFormat.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:trophy', {class: 'w-4 h-4 inline mr-1 text-amber-500'}) }}
+                            Format matchs elimination
+                        </label>
+                        {{ form_widget(form.eliminationMatchFormat, {'attr': {
+                            'class': 'form-input w-full'
+                        }}) }}
+                        {{ form_errors(form.eliminationMatchFormat) }}
+                    </div>
+                </div>
+
+                {# Joueurs, rondes, top cut #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div>
+                        <label for="{{ form.expectedPlayers.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:users', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Joueurs attendus
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:hash', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.expectedPlayers, {'attr': {
+                                'class': 'form-input w-full pl-10',
+                                'data-tournament-form-target': 'expectedPlayers',
+                                'data-action': 'input->tournament-form#suggestRounds'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.expectedPlayers) }}
+                    </div>
+                    <div data-tournament-form-target="swissRoundsContainer">
+                        <label for="{{ form.swissRounds.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Rondes suisses
+                        </label>
+                        {{ form_widget(form.swissRounds, {'attr': {
+                            'class': 'form-input w-full',
+                            'data-tournament-form-target': 'swissRounds'
+                        }}) }}
+                        {{ form_errors(form.swissRounds) }}
+                        <p class="text-xs text-orange-600 mt-1" data-tournament-form-target="roundsSuggestion"></p>
+                    </div>
+                    <div data-tournament-form-target="topCutSizeContainer">
+                        <label for="{{ form.topCutSize.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:award', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Taille Top Cut
+                        </label>
+                        {{ form_widget(form.topCutSize, {'attr': {
+                            'class': 'form-input w-full'
+                        }}) }}
+                        {{ form_errors(form.topCutSize) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ================================================================== #}
+        {# Section 3: Visibilité                                              #}
+        {# ================================================================== #}
+        <div class="rounded-2xl shadow-xl p-6 border" style="background-color: var(--card-bg); border-color: var(--border-muted);">
+            <h2 class="text-xl font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+                <span class="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center mr-3">
+                    {{ ux_icon('lucide:eye', {class: 'w-5 h-5 text-green-600'}) }}
+                </span>
+                Visibilite
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {# Visibilité du tournoi #}
+                <div>
+                    <span class="block form-label mb-3">Visibilite du tournoi</span>
+                    <div class="space-y-3">
+                        {% for child in form.visibility %}
+                            <label class="flex items-center p-4 rounded-xl border-2 border-transparent" style="background-color: var(--bg-subtle); cursor-pointer hover:border-green-300 hover:bg-green-500/10 transition-all group has-[:checked]:border-green-500 has-[:checked]:bg-green-500/10">
+                                {{ form_widget(child, {'attr': {'class': 'form-radio text-green-600 focus:ring-green-500'}}) }}
+                                <div class="ml-3 flex items-center">
+                                    {% if child.vars.value == 'public' %}
+                                        <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center mr-3">
+                                            {{ ux_icon('lucide:globe', {class: 'w-4 h-4 text-green-600'}) }}
+                                        </div>
+                                    {% else %}
+                                        <div class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center mr-3">
+                                            {{ ux_icon('lucide:lock', {class: 'w-4 h-4 text-amber-600'}) }}
+                                        </div>
+                                    {% endif %}
+                                    <span class="form-label">{{ child.vars.label }}</span>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.visibility) }}
+                </div>
+
+                {# Transparence des decklists #}
+                <div>
+                    <span class="block form-label mb-3">Transparence des decklists</span>
+                    <div class="space-y-3">
+                        {% for child in form.decklistTransparency %}
+                            <label class="flex items-center p-4 rounded-xl border-2 border-transparent" style="background-color: var(--bg-subtle); cursor-pointer hover:border-blue-300 hover:bg-blue-500/10 transition-all group has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
+                                {{ form_widget(child, {'attr': {'class': 'form-radio text-blue-600 focus:ring-blue-500'}}) }}
+                                <div class="ml-3 flex items-center">
+                                    {% if child.vars.value == 'open' %}
+                                        <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+                                            {{ ux_icon('lucide:eye', {class: 'w-4 h-4 text-blue-600'}) }}
+                                        </div>
+                                    {% else %}
+                                        <div class="w-8 h-8 bg-gray-500/20 rounded-lg flex items-center justify-center mr-3">
+                                            {{ ux_icon('lucide:eye-off', {class: 'w-4 h-4 text-gray-500'}) }}
+                                        </div>
+                                    {% endif %}
+                                    <span class="form-label">{{ child.vars.label }}</span>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.decklistTransparency) }}
+                </div>
+            </div>
+        </div>
+
+        {# ================================================================== #}
+        {# Section 4: Informations supplémentaires                            #}
+        {# ================================================================== #}
+        <div class="rounded-2xl shadow-xl p-6 border" style="background-color: var(--card-bg); border-color: var(--border-muted);">
+            <h2 class="text-xl font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+                <span class="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center mr-3">
+                    {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 text-orange-600'}) }}
+                </span>
+                Informations supplementaires
+            </h2>
+
+            <div class="space-y-5">
+                {# Description #}
+                <div>
+                    <label for="{{ form.description.vars.id }}" class="block form-label mb-2">
+                        {{ ux_icon('lucide:align-left', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        Description
+                    </label>
+                    {{ form_widget(form.description, {'attr': {
+                        'class': 'form-input w-full resize-none',
+                        'rows': '4',
+                        'placeholder': 'Description du tournoi, regles specifiques...'
+                    }}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                {# Prix d'entrée et lien Altered.gg #}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.entryFee.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:ticket', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Prix d'entree
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:euro', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.entryFee, {'attr': {
+                                'class': 'form-input w-full pl-10',
+                                'placeholder': 'Ex: 10€ ou Gratuit'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.entryFee) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.alteredGgLink.vars.id }}" class="block form-label mb-2">
+                            {{ ux_icon('lucide:link', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                            Lien Altered.gg
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:external-link', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(form.alteredGgLink, {'attr': {
+                                'class': 'form-input w-full pl-10',
+                                'placeholder': 'https://altered.gg/...'
+                            }}) }}
+                        </div>
+                        {{ form_errors(form.alteredGgLink) }}
+                    </div>
+                </div>
+
+                {# Dotations #}
+                <div>
+                    <label for="{{ form.prizes.vars.id }}" class="block form-label mb-2">
+                        {{ ux_icon('lucide:gift', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        Dotations / Prix
+                    </label>
+                    {{ form_widget(form.prizes, {'attr': {
+                        'class': 'form-input w-full resize-none',
+                        'rows': '3',
+                        'placeholder': 'Ex: 1er: Booster box, 2eme: 10 boosters...'
+                    }}) }}
+                    {{ form_errors(form.prizes) }}
+                </div>
+            </div>
+        </div>
+
+        {# ================================================================== #}
+        {# Boutons d'action                                                   #}
+        {# ================================================================== #}
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
+            <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+               class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 text-base font-semibold rounded-xl hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200"
+               style="border-color: var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                {{ ux_icon('lucide:x', {class: 'w-5 h-5 mr-2'}) }}
+                Annuler
+            </a>
+            <button type="submit"
+                    class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 text-base font-semibold rounded-xl text-white shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
+                    style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:save', {class: 'w-5 h-5 mr-2'}) }}
+                Enregistrer les modifications
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

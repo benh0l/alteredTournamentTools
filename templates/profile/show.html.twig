@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:user', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'profile.title'|trans }}</h1>
+        </div>
+
+        {# Profile Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            {# Avatar Section #}
+            <div class="theme-header-gradient px-8 py-6">
+                <div class="flex items-center gap-5">
+                    {% if user.avatar %}
+                        <img src="/uploads/avatars/{{ user.avatar }}" alt="Avatar"
+                             class="h-20 w-20 rounded-full object-cover border-4 border-white shadow-lg">
+                    {% else %}
+                        <div class="h-20 w-20 rounded-full bg-white flex items-center justify-center text-2xl font-bold border-4 border-white shadow-lg" style="color: var(--color-primary-500);">
+                            {{ user.pseudo|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="text-white">
+                        <h2 class="text-2xl font-bold">{{ user.displayName }}</h2>
+                        <p class="text-white/80">{{ 'profile.member_since'|trans }} {{ user.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Info Section #}
+            <div class="p-8">
+                <h3 class="text-lg font-semibold mb-6 flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:id-card', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                    {{ 'profile.personal_info'|trans }}
+                </h3>
+
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                        <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'profile.pseudo'|trans }}</dt>
+                        <dd class="font-medium" style="color: var(--text-primary);">{{ user.pseudo }}</dd>
+                    </div>
+
+                    <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                        <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'profile.team_tag'|trans }}</dt>
+                        <dd class="font-medium" style="color: var(--text-primary);">
+                            {% if user.teamTag %}
+                                <span class="font-mono" style="color: var(--color-primary-600);">[{{ user.teamTag }}]</span>
+                            {% else %}
+                                <span style="color: var(--text-muted);">{{ 'profile.not_defined'|trans }}</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                        <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'profile.email_address'|trans }}</dt>
+                        <dd class="font-medium" style="color: var(--text-primary);">{{ user.email }}</dd>
+                    </div>
+
+                    <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                        <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'profile.full_name'|trans }}</dt>
+                        <dd class="font-medium" style="color: var(--text-primary);">
+                            {{ user.name ?? 'profile.not_provided'|trans }}
+                        </dd>
+                    </div>
+
+                    {% if user.updatedAt %}
+                    <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                        <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'profile.last_update'|trans }}</dt>
+                        <dd class="font-medium" style="color: var(--text-primary);">{{ user.updatedAt|date('d/m/Y H:i') }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            {# Actions Section #}
+            <div class="px-8 py-6 border-t" style="background-color: var(--bg-subtle); border-color: var(--border-muted);">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <a href="{{ path('app_profile_edit') }}"
+                       class="flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:pencil', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.edit_profile'|trans }}
+                    </a>
+
+                    <a href="{{ path('app_profile_change_password') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:key', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.change_password.title'|trans }}
+                    </a>
+
+                    <a href="{{ path('profile_notifications') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:bell', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.notifications.title'|trans }}
+                    </a>
+
+                    <a href="{{ path('app_profile_delete') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 border-red-500/30 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all"
+                       style="background-color: var(--card-bg);">
+                        {{ ux_icon('lucide:trash-2', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.delete.title'|trans }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

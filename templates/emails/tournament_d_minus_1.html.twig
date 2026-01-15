@@ -1,0 +1,97 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}{{ 'email.tournament_reminder_d1.subject'|trans({'%tournament%': tournament.name}) }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #1a365d; margin-bottom: 20px;">{{ 'email.tournament_reminder_d1.title'|trans|default('Rappel : Tournoi demain !') }}</h2>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.common.greeting'|trans({'%name%': user.pseudo}) }}
+</p>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.tournament_reminder_d1.body'|trans({'%tournament%': tournament.name}) }}
+</p>
+
+<div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #166534; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.tournament_details'|trans|default('Details du tournoi') }}
+    </h3>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'common.name'|trans }}:</strong> {{ tournament.name }}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'common.date'|trans }}:</strong> {{ tournament.date|date('l d F Y', 'Europe/Paris') }}{% if tournament.time %} {{ 'common.at'|trans }} {{ tournament.time|date('H:i') }}{% endif %}
+    </p>
+    {% if tournament.location %}
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'common.location'|trans }}:</strong> {{ tournament.location }}
+    </p>
+    {% endif %}
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'form.tournament.format'|trans }}:</strong> {{ tournament.format.label|trans }}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'form.tournament.structure'|trans }}:</strong> {{ tournament.structure.label|trans }}
+    </p>
+    {% if tournament.entryFee %}
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'tournament.show.entry_fee'|trans }}:</strong> {{ tournament.entryFee }}
+    </p>
+    {% endif %}
+</div>
+
+{% if tournament.location %}
+<div style="background-color: #eff6ff; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #1e40af; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.location'|trans|default('Localisation') }}
+    </h3>
+    <p style="margin: 5px 0; color: #4a5568;">
+        {{ tournament.location }}
+    </p>
+    {% if tournament.latitude and tournament.longitude %}
+    <p style="margin-top: 15px;">
+        <a href="https://www.google.com/maps/search/?api=1&query={{ tournament.latitude }},{{ tournament.longitude }}"
+           style="color: #1e40af; text-decoration: underline;">
+            {{ 'email.view_on_maps'|trans|default('Voir sur Google Maps') }}
+        </a>
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div style="background-color: #faf5ff; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #6b46c1; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.organizer_contact'|trans|default('Contact organisateur') }}
+    </h3>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.organizer'|trans }}:</strong> {{ tournament.organizer.pseudo }}
+    </p>
+    <p style="margin: 5px 0; color: #4a5568;">
+        <strong>{{ 'common.email'|trans }}:</strong>
+        <a href="mailto:{{ tournament.organizer.email }}" style="color: #6b46c1;">{{ tournament.organizer.email }}</a>
+    </p>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ calendarUrl }}" class="button" style="display: inline-block; background-color: #22c55e; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">
+        {{ 'email.add_to_calendar'|trans|default('Ajouter au calendrier') }}
+    </a>
+    <a href="{{ tournamentUrl }}" class="button" style="display: inline-block; background-color: #1a56db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 5px;">
+        {{ 'email.view_tournament'|trans|default('Voir le tournoi') }}
+    </a>
+</div>
+
+<div style="background-color: #fef3c7; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #92400e; font-size: 14px;">
+        <strong>{{ 'email.tip'|trans|default('Conseil') }}:</strong> {{ 'email.tournament_reminder_d1.tip'|trans|default('Pensez a preparer votre deck et a verifier votre liste de cartes sur Altered.gg avant le tournoi !') }}
+    </p>
+</div>
+
+{% if unregisterUrl %}
+<p style="font-size: 14px; color: #718096; margin-top: 30px; text-align: center;">
+    {{ 'email.cannot_participate'|trans|default('Vous ne pouvez plus participer ?') }}
+    <a href="{{ unregisterUrl }}" style="color: #e53e3e;">{{ 'email.cancel_registration'|trans|default('Annuler mon inscription') }}</a>
+</p>
+{% endif %}
+{% endblock %}

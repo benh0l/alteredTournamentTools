@@ -1,0 +1,52 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ message.subject }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <div class="mb-6">
+            <a href="{{ path('admin_messaging_history') }}" class="hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour a l'historique
+            </a>
+        </div>
+
+        <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ message.subject }}</h1>
+            </div>
+
+            <div class="px-6 py-4" style="border-bottom: 1px solid var(--border-default); background-color: var(--bg-subtle);">
+                <dl class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <dt class="text-xs font-medium uppercase" style="color: var(--text-muted);">Date d'envoi</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ message.sentAt|date('d/m/Y a H:i') }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase" style="color: var(--text-muted);">Expediteur</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">{{ message.sender.pseudo }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase" style="color: var(--text-muted);">Destinataire(s)</dt>
+                        <dd class="mt-1 text-sm" style="color: var(--text-primary);">
+                            {% if message.toAllOrganizers %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    Tous les organisateurs ({{ message.recipientCount }})
+                                </span>
+                            {% else %}
+                                {{ message.recipientUser.pseudo }} ({{ message.recipientUser.email }})
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="px-6 py-6">
+                <div class="prose max-w-none" style="color: var(--text-primary);">
+                    {{ message.body|nl2br }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

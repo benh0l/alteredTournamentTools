@@ -1,0 +1,70 @@
+# Docker ignore file
+# Files and directories to exclude from Docker build context
+
+# Git
+.git
+.gitignore
+
+# IDE and editors
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# BMAD build system
+_bmad
+_bmad-output
+
+# Node modules (if any)
+node_modules
+
+# Symfony var directory (cache, logs)
+var/cache
+var/log
+var/sessions
+
+# Vendor (will be installed inside container)
+# vendor
+
+# Environment files with secrets
+.env.local
+.env.*.local
+
+# Docker files not needed in container
+docker-compose.override.yaml
+compose.override.yaml
+docker-compose.override.yml
+
+# Test artifacts
+.phpunit.cache
+phpunit.xml
+coverage
+
+# Documentation
+docs
+*.md
+!README.md
+
+# IDE specific
+.claude
+.agent
+.agentvibes
+.augment
+.clinerules
+.crush
+.cursor
+.gemini
+.github
+.iflow
+.kiro
+.opencode
+.qwen
+.roo
+.rovodev
+.trae
+.windsurf

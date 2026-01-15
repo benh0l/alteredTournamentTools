@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.reset_password.reset.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:lock-keyhole', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'auth.reset_password.reset.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">
+                {{ 'auth.reset_password.reset.subtitle'|trans }}
+            </p>
+        </div>
+
+        {# Reset Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8">
+                {{ form_start(resetForm, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}}) }}
+
+                    {# New password #}
+                    <div>
+                        {{ form_label(resetForm.plainPassword.first, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:lock', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(resetForm.plainPassword.first, {
+                                'attr': {'class': 'form-input w-full pl-10'}
+                            }) }}
+                        </div>
+                        <p class="mt-2 text-xs" style="color: var(--text-muted);">
+                            {{ 'auth.reset_password.reset.password_help'|trans }}
+                        </p>
+                        {{ form_errors(resetForm.plainPassword.first) }}
+                    </div>
+
+                    {# Confirm password #}
+                    <div>
+                        {{ form_label(resetForm.plainPassword.second, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                {{ ux_icon('lucide:lock-keyhole', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {{ form_widget(resetForm.plainPassword.second, {
+                                'attr': {'class': 'form-input w-full pl-10'}
+                            }) }}
+                        </div>
+                        {{ form_errors(resetForm.plainPassword.second) }}
+                    </div>
+
+                    {# Global password errors #}
+                    {% if resetForm.plainPassword.vars.errors|length > 0 %}
+                        <div class="alert-danger">
+                            <div class="flex items-center">
+                                {{ ux_icon('lucide:alert-circle', {class: 'w-5 h-5 mr-3 flex-shrink-0'}) }}
+                                <span class="text-sm">{{ form_errors(resetForm.plainPassword) }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="pt-2">
+                        <button type="submit"
+                                class="w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                            {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'auth.reset_password.reset.submit'|trans }}
+                        </button>
+                    </div>
+                {{ form_end(resetForm) }}
+            </div>
+        </div>
+
+        {# Back to login #}
+        <div class="mt-6 text-center">
+            <a href="{{ path('app_login') }}" class="inline-flex items-center font-semibold" style="color: var(--color-primary-600);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'auth.reset_password.reset.back_to_login'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

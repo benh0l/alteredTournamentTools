@@ -1,0 +1,106 @@
+{# Search results partial - can be loaded via AJAX #}
+
+{% if search_performed %}
+    {% if results|length > 0 %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for item in results %}
+                {% set tournament = item.tournament %}
+                {% set distance = item.distance %}
+
+                <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    {# Header with format badge #}
+                    <div class="p-4 border-b" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg" style="color: var(--text-primary);">{{ tournament.name }}</h3>
+                                <p class="text-sm" style="color: var(--text-secondary);">
+                                    {{ tournament.date|date('d/m/Y') }}
+                                    {% if tournament.time %}a {{ tournament.time|date('H:i') }}{% endif %}
+                                </p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                {% if tournament.format.value starts with 'constructed' %}
+                                    bg-blue-500/20 text-blue-800 dark:text-blue-300
+                                {% else %}
+                                    bg-purple-500/20 text-purple-800 dark:text-purple-300
+                                {% endif %}">
+                                {{ tournament.format.label|trans }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {# Body #}
+                    <div class="p-4 space-y-3">
+                        {# Distance #}
+                        <div class="flex items-center text-sm">
+                            {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-blue-600 dark:text-blue-400 mr-2'}) }}
+                            <span class="text-blue-600 dark:text-blue-400 font-medium">{{ distance }} km</span>
+                        </div>
+
+                        {# Location #}
+                        {% if tournament.location %}
+                        <div class="flex items-start text-sm" style="color: var(--text-secondary);">
+                            {{ ux_icon('lucide:building-2', {class: 'w-4 h-4 mr-2 mt-0.5 flex-shrink-0', style: 'color: var(--text-muted);'}) }}
+                            <span>{{ tournament.location }}</span>
+                        </div>
+                        {% endif %}
+
+                        {# Structure #}
+                        <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                            {{ ux_icon('lucide:layers', {class: 'w-4 h-4 mr-2', style: 'color: var(--text-muted);'}) }}
+                            <span>{{ tournament.structure.label|trans }}</span>
+                        </div>
+
+                        {# Registered players #}
+                        <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                            {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-2', style: 'color: var(--text-muted);'}) }}
+                            <span>{{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}</span>
+                            {% if tournament.maxPlayers %}
+                                <span class="ml-1" style="color: var(--text-muted);">/ {{ tournament.maxPlayers }}</span>
+                            {% endif %}
+                        </div>
+
+                        {# Entry fee #}
+                        {% if tournament.entryFee %}
+                        <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                            {{ ux_icon('lucide:circle-dollar-sign', {class: 'w-4 h-4 mr-2', style: 'color: var(--text-muted);'}) }}
+                            <span>PAF: {{ tournament.entryFee }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# Footer with action #}
+                    <div class="p-4 border-t" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                           class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium rounded-lg transition-colors">
+                            Voir les details
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {# No results #}
+        <div class="border rounded-lg p-8 text-center" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+            {{ ux_icon('lucide:frown', {class: 'w-16 h-16 mx-auto mb-4', style: 'color: var(--text-muted);'}) }}
+            <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">Aucun tournoi trouve</h3>
+            <p class="mb-4" style="color: var(--text-secondary);">
+                Essayez d'elargir votre recherche ou de modifier les filtres.
+            </p>
+            <div class="space-x-4">
+                <a href="{{ path('tournament_list') }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    Voir tous les tournois
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    {# Initial state - no search yet #}
+    <div class="bg-blue-500/10 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 rounded-lg p-8 text-center">
+        {{ ux_icon('lucide:search', {class: 'w-16 h-16 text-blue-400 mx-auto mb-4'}) }}
+        <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">Trouvez votre prochain tournoi</h3>
+        <p style="color: var(--text-secondary);">
+            Entrez une ville ou un code postal pour decouvrir les tournois Altered pres de chez vous.
+        </p>
+    </div>
+{% endif %}

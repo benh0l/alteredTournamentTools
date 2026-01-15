@@ -1,0 +1,20 @@
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        envelope:
+            sender: '%env(MAILER_FROM_ADDRESS)%'
+        headers:
+            From: 'Altered Tournament Tools <%env(MAILER_FROM_ADDRESS)%>'
+        message_bus: false  # Set to true for async with Messenger
+
+# Development-only: redirect all emails to a specific address
+when@dev:
+    framework:
+        mailer:
+            envelope:
+                recipients: ['dev@alteredtournamenttools.local']
+
+when@test:
+    framework:
+        mailer:
+            dsn: 'null://null'

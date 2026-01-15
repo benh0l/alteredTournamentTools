@@ -1,0 +1,35 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+
+parameters:
+    # Analysis level (0-9, 6+ required per NFR43)
+    level: 6
+
+    # Paths to analyse
+    paths:
+        - src
+        - tests
+
+    # Symfony container XML path
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+
+    # Excluded paths
+    excludePaths:
+        - src/Kernel.php
+
+    # Error format for CI
+    errorFormat: table
+
+    # Treat phpdoc types as certain
+    treatPhpDocTypesAsCertain: false
+
+    # Symfony specific settings
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+
+    # Ignore specific errors (use sparingly!)
+    ignoreErrors:
+        # Example: ignore specific unavoidable errors
+        # - '#Call to an undefined method Doctrine\\ORM\\EntityRepository#'

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}" data-theme-color="{{ app.user ? app.user.themeColor : 'orange' }}" data-theme-mode="{{ app.user ? app.user.themeMode : 'light' }}">
+<head>
+    {# Theme initialization - prevents flash of wrong theme #}
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if (saved) {
+                try {
+                    const { color, mode } = JSON.parse(saved);
+                    if (color) document.documentElement.setAttribute('data-theme-color', color);
+                    if (mode) document.documentElement.setAttribute('data-theme-mode', mode);
+                } catch (e) {}
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Altered Tournament Tools{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f97316%22 stroke-width=%222%22><rect x=%223%22 y=%223%22 width=%2218%22 height=%2218%22 rx=%222%22/><path d=%22M7 7h10M7 12h10M7 17h10%22/></svg>">
+
+    {# Open Graph meta tags for social sharing (FR63) #}
+    {% block meta %}
+    <meta property="og:title" content="{% block og_title %}Altered Tournament Tools{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ 'home.landing.subtitle'|trans }}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Altered Tournament Tools">
+    <meta name="twitter:card" content="summary">
+    {% endblock %}
+
+    {% block stylesheets %}
+        {# Tailwind CSS via CDN - pour developpement local #}
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'tournament': {
+                                'primary': '#f97316',
+                                'secondary': '#ea580c',
+                                'accent': '#fbbf24',
+                                'highlight': '#f43f5e',
+                                'success': '#10b981',
+                                'warning': '#f59e0b',
+                                'danger': '#ef4444',
+                            }
+                        },
+                        minHeight: { 'touch': '44px' },
+                        minWidth: { 'touch': '44px' },
+                    }
+                }
+            }
+        </script>
+        <style>
+            body {
+                background: linear-gradient(135deg, var(--bg-gradient-from) 0%, var(--bg-gradient-via) 50%, var(--bg-gradient-to) 100%);
+                color: var(--text-primary);
+                min-height: 100vh;
+            }
+        </style>
+    {% endblock %}
+
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</head>
+<body class="min-h-screen flex flex-col">
+    {# Skip link for accessibility (NFR61) #}
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 p-2 z-50" style="background-color: var(--card-bg); color: var(--text-primary);">
+        {% if app.request.locale == 'fr' %}Aller au contenu principal{% else %}Skip to main content{% endif %}
+    </a>
+
+    <header class="shadow-lg theme-header-gradient">
+        {% block header %}
+            <nav class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <a href="/" class="flex items-center space-x-2">
+                        {{ ux_icon('lucide:layers', {class: 'w-8 h-8 text-white'}) }}
+                        <span class="text-xl font-bold text-white drop-shadow-sm">
+                            Altered Tournament Tools
+                        </span>
+                        <span class="px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full bg-white/20 text-white border border-white/30 backdrop-blur-sm">
+                            Beta
+                        </span>
+                    </a>
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ path('tournament_list') }}"
+                           class="px-3 py-2 rounded-lg font-medium transition-all
+                                  {% if app.request.attributes.get('_route') == 'tournament_list' %}
+                                      bg-white/20 text-white
+                                  {% else %}
+                                      text-white/90 hover:bg-white/10 hover:text-white
+                                  {% endif %}">
+                            {{ 'nav.tournaments'|trans }}
+                        </a>
+                        {% if app.user %}
+                            <a href="{{ path('my_tournaments') }}"
+                               class="px-3 py-2 rounded-lg font-medium transition-all
+                                      {% if app.request.attributes.get('_route') starts with 'my_tournaments' %}
+                                          bg-white/20 text-white
+                                      {% else %}
+                                          text-white/90 hover:bg-white/10 hover:text-white
+                                      {% endif %}">
+                                {{ 'nav.my_tournaments'|trans }}
+                            </a>
+                            <a href="{{ path('tournament_my_list') }}"
+                               class="px-3 py-2 rounded-lg font-medium transition-all
+                                      {% if app.request.attributes.get('_route') == 'tournament_my_list' %}
+                                          bg-white/20 text-white
+                                      {% else %}
+                                          text-white/90 hover:bg-white/10 hover:text-white
+                                      {% endif %}">
+                                {% if app.request.locale == 'fr' %}Mes Evenements{% else %}My Events{% endif %}
+                            </a>
+                            <a href="{{ path('tournament_create') }}"
+                               class="bg-white px-4 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all"
+                               style="color: var(--color-primary-600);">
+                                + {{ 'tournament.create.title'|trans }}
+                            </a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('admin_dashboard') }}"
+                                   class="px-3 py-2 rounded-lg font-medium transition-all
+                                          {% if app.request.attributes.get('_route') starts with 'admin_' %}
+                                              bg-white/20 text-white
+                                          {% else %}
+                                              text-white/90 hover:bg-white/10 hover:text-white
+                                          {% endif %}">
+                                    {{ 'nav.admin'|trans }}
+                                </a>
+                            {% endif %}
+
+                            {# Language Switcher #}
+                            <div class="relative" data-controller="dropdown">
+                                <button type="button"
+                                        class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors flex items-center space-x-1"
+                                        data-action="click->dropdown#toggle"
+                                        title="{{ 'nav.language'|trans }}">
+                                    {{ ux_icon('lucide:globe', {class: 'w-5 h-5 text-white'}) }}
+                                    <span class="text-white text-xs font-bold uppercase">{{ app.request.locale }}</span>
+                                </button>
+                                <div data-dropdown-target="menu"
+                                     class="hidden absolute right-0 mt-2 w-32 rounded-xl shadow-xl border z-50"
+                                     style="background-color: var(--card-bg); border-color: var(--border-default);">
+                                    <a href="{{ path('app_locale_switch', {locale: 'fr'}) }}"
+                                       class="flex items-center px-4 py-2 text-sm rounded-t-xl transition-colors {% if app.request.locale == 'fr' %}font-bold{% endif %}"
+                                       style="color: var(--text-primary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="mr-2">🇫🇷</span> Francais
+                                    </a>
+                                    <a href="{{ path('app_locale_switch', {locale: 'en'}) }}"
+                                       class="flex items-center px-4 py-2 text-sm rounded-b-xl transition-colors {% if app.request.locale == 'en' %}font-bold{% endif %}"
+                                       style="color: var(--text-primary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="mr-2">🇬🇧</span> English
+                                    </a>
+                                </div>
+                            </div>
+
+                            {# Theme Selector #}
+                            <div class="relative"
+                                 data-controller="theme-selector"
+                                 data-theme-selector-color-value="{{ app.user ? app.user.themeColor : 'orange' }}"
+                                 data-theme-selector-mode-value="{{ app.user ? app.user.themeMode : 'light' }}"
+                                 data-theme-selector-save-url-value="{{ app.user ? path('api_theme_save') : '' }}">
+                                {# Toggle Button #}
+                                <button type="button"
+                                        class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                                        data-action="click->theme-selector#toggleMenu"
+                                        title="{% if app.request.locale == 'fr' %}Changer le theme{% else %}Change theme{% endif %}">
+                                    {{ ux_icon('lucide:palette', {class: 'w-5 h-5 text-white'}) }}
+                                </button>
+
+                                {# Dropdown Menu #}
+                                <div data-theme-selector-target="menu"
+                                     class="hidden absolute right-0 mt-2 w-64 rounded-xl shadow-xl border p-4 z-50"
+                                     style="background-color: var(--card-bg); border-color: var(--border-default);">
+                                    {# Title #}
+                                    <div class="text-sm font-semibold mb-3" style="color: var(--text-primary);">Theme</div>
+
+                                    {# Color Grid #}
+                                    <div class="grid grid-cols-5 gap-2 mb-4">
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="orange"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 hover:scale-110 transition-transform"
+                                                title="Orange">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="blue"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Bleu{% else %}Blue{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="green"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-teal-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Vert{% else %}Green{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="purple"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Violet{% else %}Purple{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="rose"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-rose-400 to-orange-500 hover:scale-110 transition-transform"
+                                                title="Rose">
+                                        </button>
+                                    </div>
+
+                                    {# Separator #}
+                                    <hr class="mb-3" style="border-color: var(--border-default);">
+
+                                    {# Dark Mode Toggle #}
+                                    <button data-action="click->theme-selector#toggleMode"
+                                            data-theme-selector-target="modeToggle"
+                                            class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors"
+                                            style="color: var(--text-primary);"
+                                            onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                            onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="flex items-center text-sm">
+                                            {{ ux_icon('lucide:moon', {class: 'w-4 h-4 mr-2', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'moon'}) }}
+                                            {{ ux_icon('lucide:sun', {class: 'w-4 h-4 mr-2 hidden', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'sun'}) }}
+                                            {% if app.request.locale == 'fr' %}Mode sombre{% else %}Dark mode{% endif %}
+                                        </span>
+                                        <div class="w-10 h-6 rounded-full relative" style="background-color: var(--bg-muted);">
+                                            <div data-toggle-knob
+                                                 class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform">
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-3 ml-2 pl-4 border-l border-white/30">
+                                <a href="{{ path('app_profile') }}" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                                    {% if app.user.avatar %}
+                                        <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar"
+                                             class="w-8 h-8 rounded-full object-cover border-2 border-white/30">
+                                    {% else %}
+                                        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-semibold text-sm">{{ app.user.pseudo|slice(0,1)|upper }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <span class="text-white font-medium">{{ app.user.displayName }}</span>
+                                </a>
+                                <a href="{{ path('app_logout') }}" class="text-white/80 hover:text-white text-sm transition-colors">
+                                    {{ 'nav.logout'|trans }}
+                                </a>
+                            </div>
+                        {% else %}
+                            {# Language Switcher for anonymous users #}
+                            <div class="relative" data-controller="dropdown">
+                                <button type="button"
+                                        class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors flex items-center space-x-1"
+                                        data-action="click->dropdown#toggle"
+                                        title="{{ 'nav.language'|trans }}">
+                                    {{ ux_icon('lucide:globe', {class: 'w-5 h-5 text-white'}) }}
+                                    <span class="text-white text-xs font-bold uppercase">{{ app.request.locale }}</span>
+                                </button>
+                                <div data-dropdown-target="menu"
+                                     class="hidden absolute right-0 mt-2 w-32 rounded-xl shadow-xl border z-50"
+                                     style="background-color: var(--card-bg); border-color: var(--border-default);">
+                                    <a href="{{ path('app_locale_switch', {locale: 'fr'}) }}"
+                                       class="flex items-center px-4 py-2 text-sm rounded-t-xl transition-colors {% if app.request.locale == 'fr' %}font-bold{% endif %}"
+                                       style="color: var(--text-primary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="mr-2">🇫🇷</span> Francais
+                                    </a>
+                                    <a href="{{ path('app_locale_switch', {locale: 'en'}) }}"
+                                       class="flex items-center px-4 py-2 text-sm rounded-b-xl transition-colors {% if app.request.locale == 'en' %}font-bold{% endif %}"
+                                       style="color: var(--text-primary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="mr-2">🇬🇧</span> English
+                                    </a>
+                                </div>
+                            </div>
+
+                            {# Theme Selector for anonymous users #}
+                            <div class="relative"
+                                 data-controller="theme-selector"
+                                 data-theme-selector-color-value="orange"
+                                 data-theme-selector-mode-value="light"
+                                 data-theme-selector-save-url-value="">
+                                <button type="button"
+                                        class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                                        data-action="click->theme-selector#toggleMenu"
+                                        title="{% if app.request.locale == 'fr' %}Changer le theme{% else %}Change theme{% endif %}">
+                                    {{ ux_icon('lucide:palette', {class: 'w-5 h-5 text-white'}) }}
+                                </button>
+
+                                <div data-theme-selector-target="menu"
+                                     class="hidden absolute right-0 mt-2 w-64 rounded-xl shadow-xl border p-4 z-50"
+                                     style="background-color: var(--card-bg); border-color: var(--border-default);">
+                                    <div class="text-sm font-semibold mb-3" style="color: var(--text-primary);">Theme</div>
+
+                                    <div class="grid grid-cols-5 gap-2 mb-4">
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="orange"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 hover:scale-110 transition-transform"
+                                                title="Orange">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="blue"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Bleu{% else %}Blue{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="green"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-teal-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Vert{% else %}Green{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="purple"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Violet{% else %}Purple{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="rose"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-10 h-10 rounded-lg bg-gradient-to-br from-rose-400 to-orange-500 hover:scale-110 transition-transform"
+                                                title="Rose">
+                                        </button>
+                                    </div>
+
+                                    <hr class="mb-3" style="border-color: var(--border-default);">
+
+                                    <button data-action="click->theme-selector#toggleMode"
+                                            data-theme-selector-target="modeToggle"
+                                            class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors"
+                                            style="color: var(--text-primary);"
+                                            onmouseover="this.style.backgroundColor='var(--bg-muted)'"
+                                            onmouseout="this.style.backgroundColor='transparent'">
+                                        <span class="flex items-center text-sm">
+                                            {{ ux_icon('lucide:moon', {class: 'w-4 h-4 mr-2', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'moon'}) }}
+                                            {{ ux_icon('lucide:sun', {class: 'w-4 h-4 mr-2 hidden', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'sun'}) }}
+                                            {% if app.request.locale == 'fr' %}Mode sombre{% else %}Dark mode{% endif %}
+                                        </span>
+                                        <div class="w-10 h-6 rounded-full relative" style="background-color: var(--bg-muted);">
+                                            <div data-toggle-knob
+                                                 class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform">
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <a href="{{ path('app_login') }}"
+                               class="text-white/90 hover:text-white px-3 py-2 transition-colors">
+                                {{ 'nav.login'|trans }}
+                            </a>
+                            <a href="{{ path('app_register') }}"
+                               class="bg-white px-4 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all"
+                               style="color: var(--color-primary-600);">
+                                {{ 'nav.register'|trans }}
+                            </a>
+                        {% endif %}
+                        {% block navigation %}{% endblock %}
+                    </div>
+                </div>
+            </nav>
+        {% endblock %}
+    </header>
+
+    <main id="main-content" class="flex-1 container mx-auto px-4 py-8">
+        {# Flash messages with theme-aware styling #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="mb-6 {% if label == 'success' %}alert-success{% elseif label == 'error' %}alert-danger{% elseif label == 'warning' %}alert-warning{% else %}alert-info{% endif %}" role="alert">
+                    <div class="flex items-center">
+                        {% if label == 'success' %}
+                            {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-3'}) }}
+                        {% elseif label == 'error' %}
+                            {{ ux_icon('lucide:x-circle', {class: 'w-5 h-5 mr-3'}) }}
+                        {% elseif label == 'warning' %}
+                            {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 mr-3'}) }}
+                        {% else %}
+                            {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-3'}) }}
+                        {% endif %}
+                        <span class="font-medium">{{ message|trans }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="theme-header-gradient">
+        {% block footer %}
+            <div class="container mx-auto px-4 py-8">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                        {{ ux_icon('lucide:layers', {class: 'w-6 h-6 text-white'}) }}
+                        <span class="text-white font-semibold">Altered Tournament Tools</span>
+                    </div>
+                    <div class="text-white/70 text-sm">
+                        &copy; {{ 'now'|date('Y') }} {% if app.request.locale == 'fr' %}Tous droits reserves{% else %}All rights reserved{% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+    </footer>
+</body>
+</html>

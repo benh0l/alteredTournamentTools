@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.reset_password.check_email.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-lg mb-4">
+                {{ ux_icon('lucide:mail-check', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'auth.reset_password.check_email.title'|trans }}</h1>
+        </div>
+
+        {# Confirmation Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8 text-center">
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-full">
+                        {{ ux_icon('lucide:inbox', {class: 'w-10 h-10 text-green-500'}) }}
+                    </div>
+                </div>
+
+                <p class="mb-4" style="color: var(--text-secondary);">
+                    {{ 'auth.reset_password.check_email.message'|trans }}
+                </p>
+
+                <div class="inline-flex items-center px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+                    {{ ux_icon('lucide:clock', {class: 'w-5 h-5 text-amber-500 mr-2'}) }}
+                    <span class="text-sm text-amber-700">{{ 'auth.reset_password.check_email.expiry'|trans }} <strong>{{ 'auth.reset_password.check_email.expiry_time'|trans }}</strong></span>
+                </div>
+
+                <div class="space-y-4">
+                    <a href="{{ path('app_forgot_password_request') }}"
+                       class="w-full flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'auth.reset_password.check_email.resend'|trans }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Back to login #}
+        <div class="mt-6 text-center">
+            <a href="{{ path('app_login') }}" class="inline-flex items-center font-semibold" style="color: var(--color-primary-600);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'auth.reset_password.check_email.back_to_login'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

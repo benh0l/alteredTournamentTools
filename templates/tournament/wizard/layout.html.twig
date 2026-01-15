@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'tournament.create.title'|trans }} - {{ 'tournament.wizard.step'|trans({'%current%': step, '%total%': totalSteps}) }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8" data-controller="wizard">
+    <div class="max-w-2xl mx-auto">
+
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 theme-primary-gradient rounded-2xl shadow-lg mb-4">
+                {{ ux_icon('lucide:trophy', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'tournament.create.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">
+                {{ stepTitle }}
+            </p>
+        </div>
+
+        {# Progress Card #}
+        <div class="rounded-2xl shadow-lg p-6 mb-6" style="background-color: var(--card-bg);">
+            {# Progress bar #}
+            <div class="flex justify-between mb-3">
+                <span class="text-sm font-medium" style="color: var(--text-secondary);">{{ 'tournament.wizard.step'|trans({'%current%': step, '%total%': totalSteps}) }}</span>
+                <span class="text-sm font-medium" style="color: var(--color-primary-600);">{{ ((step / totalSteps) * 100)|round }}%</span>
+            </div>
+            <div class="w-full rounded-full h-2.5 mb-6" style="background-color: var(--border-muted);">
+                <div class="theme-primary-gradient h-2.5 rounded-full transition-all duration-500 ease-out"
+                     style="width: {{ (step / totalSteps) * 100 }}%">
+                </div>
+            </div>
+
+            {# Step indicators #}
+            <div class="flex justify-between">
+                {% for stepNum, config in stepConfig %}
+                    {% if stepNum <= step %}
+                        <a href="{{ path('tournament_wizard_step', {step: stepNum}) }}"
+                           class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 transition-all
+                                  {% if stepNum == step %}
+                                      theme-primary-gradient text-white shadow-md ring-4 ring-orange-100
+                                  {% else %}
+                                      bg-orange-100 text-orange-700 hover:bg-orange-200
+                                  {% endif %}">
+                            {% if stepNum < step %}
+                                {{ ux_icon('lucide:check', {class: 'w-4 h-4'}) }}
+                            {% else %}
+                                {{ stepNum }}
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <span class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0" style="background-color: var(--border-muted); color: var(--text-muted);">
+                            {{ stepNum }}
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Step Content Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8">
+                {% block wizard_content %}{% endblock %}
+            </div>
+        </div>
+
+        {# Navigation Buttons #}
+        <div class="flex justify-between mt-6">
+            {% if step > 1 %}
+                <a href="{{ path('tournament_wizard_step', {step: step - 1}) }}"
+                   class="inline-flex items-center px-5 py-2.5 border-2 text-sm font-medium rounded-xl hover:opacity-80 transition-all shadow-sm" style="border-color: var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'tournament.wizard.back'|trans }}
+                </a>
+            {% else %}
+                <a href="{{ path('tournament_create') }}"
+                   class="inline-flex items-center px-5 py-2.5 border-2 text-sm font-medium rounded-xl hover:opacity-80 transition-all shadow-sm" style="border-color: var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                    {{ ux_icon('lucide:settings', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'tournament.wizard.manual_mode'|trans }}
+                </a>
+            {% endif %}
+
+            {% block wizard_next_button %}
+                <button type="submit" form="wizard-form"
+                        class="inline-flex items-center px-6 py-2.5 text-sm font-semibold rounded-xl text-white shadow-lg hover:shadow-xl transition-all"
+                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {% if step < totalSteps %}
+                        {{ 'tournament.wizard.next'|trans }}
+                        {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-2'}) }}
+                    {% else %}
+                        {{ 'tournament.create.title'|trans }}
+                        {{ ux_icon('lucide:check', {class: 'w-4 h-4 ml-2'}) }}
+                    {% endif %}
+                </button>
+            {% endblock %}
+        </div>
+
+        {# Cancel link #}
+        <div class="mt-6 text-center">
+            <a href="{{ path('tournament_list') }}" class="text-sm hover:opacity-80" style="color: var(--text-muted);">
+                {{ 'tournament.wizard.cancel'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

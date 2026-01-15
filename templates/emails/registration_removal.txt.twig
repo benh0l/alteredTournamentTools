@@ -1,0 +1,25 @@
+{% extends 'emails/base.txt.twig' %}
+
+{% block content %}
+INSCRIPTION RETIREE
+
+Bonjour {{ playerPseudo }},
+
+Nous vous informons que votre inscription au tournoi "{{ tournamentName }}" a ete retiree par l'organisateur.
+
+{% if reason %}
+---
+MOTIF INDIQUE
+---
+{{ reason }}
+
+{% endif %}
+Si vous pensez qu'il s'agit d'une erreur, nous vous invitons a contacter l'organisateur du tournoi.
+
+---
+LIENS UTILES
+---
+Voir le tournoi: {{ tournamentUrl }}
+
+Vous pouvez toujours consulter les autres tournois disponibles sur notre plateforme.
+{% endblock %}

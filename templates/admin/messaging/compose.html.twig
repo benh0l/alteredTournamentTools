@@ -1,0 +1,79 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Envoyer un message - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Envoyer un message</h1>
+            <a href="{{ path('admin_messaging_history') }}"
+               class="hover:underline" style="color: var(--color-primary-600);">
+                Voir l'historique
+            </a>
+        </div>
+
+        <div class="rounded-lg shadow" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <p class="text-sm" style="color: var(--text-secondary);">
+                    {{ organizerCount }} organisateur(s) disponible(s)
+                </p>
+            </div>
+
+            <div class="px-6 py-6"
+                 data-controller="admin-message">
+                {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+                {# Recipient Type Selection #}
+                <div>
+                    {{ form_label(form.recipientType, null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
+                    <div class="space-y-2">
+                        {% for child in form.recipientType %}
+                            <label class="inline-flex items-center mr-6">
+                                {{ form_widget(child, {'attr': {'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500', 'style': 'border-color: var(--border-default);', 'data-action': 'change->admin-message#toggleRecipient'}}) }}
+                                <span class="ml-2 text-sm" style="color: var(--text-secondary);">{{ child.vars.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.recipientType) }}
+                </div>
+
+                {# Individual Recipient Selection #}
+                <div data-admin-message-target="recipientContainer">
+                    {{ form_label(form.recipient, null, {'label_attr': {'class': 'block text-sm font-medium mb-1', 'style': 'color: var(--text-secondary);'}}) }}
+                    {{ form_widget(form.recipient, {'attr': {'class': 'form-input w-full'}}) }}
+                    {{ form_errors(form.recipient) }}
+                </div>
+
+                {# Subject #}
+                <div>
+                    {{ form_label(form.subject, null, {'label_attr': {'class': 'block text-sm font-medium mb-1', 'style': 'color: var(--text-secondary);'}}) }}
+                    {{ form_widget(form.subject, {'attr': {'class': 'form-input w-full'}}) }}
+                    {{ form_errors(form.subject) }}
+                </div>
+
+                {# Body #}
+                <div>
+                    {{ form_label(form.body, null, {'label_attr': {'class': 'block text-sm font-medium mb-1', 'style': 'color: var(--text-secondary);'}}) }}
+                    {{ form_widget(form.body, {'attr': {'class': 'form-input w-full'}}) }}
+                    {{ form_errors(form.body) }}
+                    <p class="mt-1 text-xs" style="color: var(--text-muted);">
+                        Le message sera envoye par email avec le prefixe "[AlteredTournamentTools]" dans le sujet.
+                    </p>
+                </div>
+
+                {# Submit #}
+                <div class="flex justify-end pt-4">
+                    <button type="submit"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {{ ux_icon('lucide:mail', {class: 'h-5 w-5 mr-2'}) }}
+                        Envoyer le message
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

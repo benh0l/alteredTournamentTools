@@ -1,0 +1,21 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Email de test{% endblock %}
+
+{% block content %}
+    <h2>Bonjour {{ recipientName|default('utilisateur') }} !</h2>
+
+    <p>Ceci est un email de test envoye depuis Altered Tournament Tools.</p>
+
+    <p>Si vous recevez cet email, la configuration du mailer fonctionne correctement.</p>
+
+    <p>
+        <a href="{{ testUrl|default('#') }}" class="button">Bouton de test</a>
+    </p>
+
+    <h3>Details techniques :</h3>
+    <ul>
+        <li><strong>Date d'envoi :</strong> {{ 'now'|date('d/m/Y H:i:s') }}</li>
+        <li><strong>Environnement :</strong> {{ app.environment }}</li>
+    </ul>
+{% endblock %}

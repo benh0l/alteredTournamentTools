@@ -1,0 +1,93 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: argon2id  # NFR11: Argon2id for password hashing
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            # Ensure dev tools and static assets are always allowed
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                default_target_path: /
+                # Redirect to previous page after login
+                use_referer: true
+
+            logout:
+                path: app_logout
+                target: /
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800  # 7 days
+                path: /
+                secure: auto
+                httponly: true
+                samesite: lax
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    # Role hierarchy
+    # ROLE_ADMIN inherits all permissions from ROLE_ORGANIZER
+    # ROLE_ORGANIZER inherits all permissions from ROLE_USER
+    # ROLE_PLAYER is an alias for ROLE_USER (for semantic clarity)
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_ORGANIZER, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_ORGANIZER: ROLE_USER
+        ROLE_PLAYER: ROLE_USER
+
+    # Note: Only the *first* matching rule is applied
+    # Routes are checked top to bottom, first match wins
+    access_control:
+        # Public routes (no authentication required)
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/tournaments$, roles: PUBLIC_ACCESS, methods: [GET] }
+
+        # Admin routes (most restrictive first)
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Tournament creation (any authenticated user)
+        - { path: ^/tournament/create, roles: ROLE_USER }
+        - { path: ^/tournaments/create, roles: ROLE_USER }
+
+        # Tournament management (organizer of the tournament - checked in controller)
+        - { path: ^/tournament/\d+/edit, roles: ROLE_USER }
+        - { path: ^/tournament/\d+/dashboard, roles: ROLE_USER }
+        - { path: ^/organizer, roles: ROLE_USER }
+
+        # Authenticated user routes
+        - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/my-tournaments, roles: ROLE_USER }
+        - { path: ^/tournaments/.*/register, roles: ROLE_USER }
+
+        # API routes (if applicable)
+        - { path: ^/api, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            # Password hashers are resource-intensive by design to ensure security.
+            # In tests, it's safe to reduce their cost to improve performance.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

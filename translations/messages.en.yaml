@@ -1,0 +1,1202 @@
+# ============================================================================
+# English Translations - Altered Tournament Tools
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Navigation & Layout
+# ----------------------------------------------------------------------------
+nav:
+    home: "Home"
+    tournaments: "Tournaments"
+    my_tournaments: "My tournaments"
+    profile: "Profile"
+    admin: "Administration"
+    login: "Login"
+    logout: "Logout"
+    register: "Register"
+    language: "Language"
+
+# ----------------------------------------------------------------------------
+# Common Actions
+# ----------------------------------------------------------------------------
+action:
+    save: "Save"
+    cancel: "Cancel"
+    delete: "Delete"
+    edit: "Edit"
+    create: "Create"
+    back: "Back"
+    next: "Next"
+    previous: "Previous"
+    submit: "Submit"
+    confirm: "Confirm"
+    close: "Close"
+    view: "View"
+    search: "Search"
+    filter: "Filter"
+    reset: "Reset"
+    export: "Export"
+    download: "Download"
+    upload: "Upload"
+    refresh: "Refresh"
+    copy: "Copy"
+
+# ----------------------------------------------------------------------------
+# Common Labels
+# ----------------------------------------------------------------------------
+common:
+    yes: "Yes"
+    no: "No"
+    or: "or"
+    and: "and"
+    at: "at"
+    all: "All"
+    none: "None"
+    loading: "Loading..."
+    error: "Error"
+    success: "Success"
+    warning: "Warning"
+    info: "Information"
+    required: "Required"
+    optional: "Optional"
+    date: "Date"
+    time: "Time"
+    location: "Location"
+    description: "Description"
+    name: "Name"
+    email: "Email"
+    password: "Password"
+    status: "Status"
+    actions: "Actions"
+    details: "Details"
+    table: "Table"
+    score: "Score"
+    player: "Player"
+    players: "Players"
+    organizer: "Organizer"
+    round: "Round"
+    rounds: "Rounds"
+    match: "Match"
+    matches: "Matches"
+
+# ----------------------------------------------------------------------------
+# Enums - Tournament Status
+# ----------------------------------------------------------------------------
+enum:
+    tournament_status:
+        draft: "Draft"
+        published: "Published"
+        ongoing: "Ongoing"
+        completed: "Completed"
+        cancelled: "Cancelled"
+
+    tournament_visibility:
+        public: "Public"
+        private: "Private"
+        public_desc: "Public (visible to everyone)"
+        private_desc: "Private (by invitation)"
+
+    tournament_format:
+        constructed_standard: "Constructed Standard"
+        constructed_singleton: "Constructed Singleton"
+        constructed_nuc: "Constructed NUC"
+        constructed_hero_oof: "(Fun) Hero Out of Faction"
+        constructed_bifaction: "(Fun) Bifaction"
+        limited: "Limited"
+
+    tournament_format_description:
+        constructed_standard: "39 cards + Hero minimum. 3 Uniques max, 3 Exalted max, 15 Rares max."
+        constructed_singleton: "Single copy per rarity. 59 cards + Hero deck."
+        constructed_nuc: "No Uniques allowed."
+        constructed_hero_oof: "The hero must belong to a different faction than the deck."
+        constructed_bifaction: "Player chooses two factions and a hero from one of these factions."
+        limited: "Decks are built on-site from booster packs."
+
+    tournament_structure:
+        swiss_only: "Swiss Rounds Only"
+        single_elimination: "Single Elimination"
+        mixed: "Swiss + Top Cut"
+        group_stage_elimination: "Group Stage + Elimination"
+
+    tournament_structure_description:
+        swiss_only: "Multiple rounds, everyone plays all matches"
+        single_elimination: "Direct elimination from the first match"
+        mixed: "Swiss rounds then Top Cut elimination"
+        group_stage_elimination: "Group stage (round-robin) then elimination of qualifiers"
+
+    decklist_transparency:
+        open: "Open Decklists"
+        closed: "Closed Decklists"
+
+    match_format:
+        bo1: "Best of 1"
+        bo3: "Best of 3"
+
+    round_status:
+        pending: "Pending"
+        ongoing: "Ongoing"
+        completed: "Completed"
+
+    match_status:
+        pending: "Pending"
+        ongoing: "Ongoing"
+        completed: "Completed"
+        dispute: "Dispute"
+
+    pairing_mode:
+        random: "Random"
+        registration_order: "Registration Order"
+
+    pairing_mode_description:
+        random: "Players are randomly shuffled"
+        registration_order: "Players are paired in registration order"
+
+    bracket_size:
+        top_4: "Top 4"
+        top_8: "Top 8"
+        top_16: "Top 16"
+        top_32: "Top 32"
+
+    bracket_round:
+        final: "Final"
+        semifinals: "Semi-finals"
+        quarterfinals: "Quarter-finals"
+        round_of_16: "Round of 16"
+        round_of_32: "Round of 32"
+        round: "Round %number%"
+
+    notification_type:
+        d_minus_1: "D-1 Reminder"
+        h_minus_1: "H-1 Reminder"
+        round_start: "Round Start"
+
+    notification_status:
+        pending: "Pending"
+        sent: "Sent"
+        failed: "Failed"
+
+    alert_type:
+        error_rate: "Error Rate"
+        response_time: "Response Time"
+        pairing_failure: "Pairing Failure"
+        mercure_down: "Mercure Disconnected"
+        database_slow: "Slow Database"
+        memory_high: "High Memory"
+
+    alert_severity:
+        info: "Information"
+        warning: "Warning"
+        critical: "Critical"
+
+    group_formation_method:
+        random: "Random Draw"
+        serpentine: "Serpentine (by ranking)"
+
+    group_formation_method_description:
+        random: "Players are randomly distributed into groups"
+        serpentine: "Players are distributed in serpentine order based on ranking (1,2,3,4 then 8,7,6,5...)"
+
+    faction:
+        axiom: "Axiom"
+        bravos: "Bravos"
+        lyra: "Lyra"
+        muna: "Muna"
+        ordis: "Ordis"
+        yzmir: "Yzmir"
+
+# ----------------------------------------------------------------------------
+# Home Page
+# ----------------------------------------------------------------------------
+home:
+    title: "Home - Altered Tournament Tools"
+    current_match: "Current Match"
+    round_number: "Round %d"
+    you: "You"
+    opponent: "Opponent"
+    bye: "BYE"
+    table_number: "Table %d"
+    time_elapsed: "Time elapsed"
+    submit_result: "Submit result"
+    view_decklist: "View decklist"
+    automatic_win: "Automatic win (BYE)"
+    ongoing_tournaments: "Ongoing Tournaments"
+    upcoming_tournaments: "Upcoming Tournaments"
+    discover_tournaments: "Discover Tournaments"
+    view_all: "View all"
+    waiting: "Waiting"
+    join: "Join"
+    register_for: "Register"
+    registered_count: "%count% registered"
+    welcome: "Welcome, %name%!"
+    no_tournaments: "You have no ongoing tournaments. Browse available tournaments to register."
+    view_tournaments: "View tournaments"
+    my_registrations: "My registrations"
+    landing:
+        title: "Altered Tournament Tools"
+        subtitle: "Organize and manage your Altered card game tournaments with ease"
+        create_account: "Create account"
+        sign_in: "Sign in"
+        upcoming: "Upcoming tournaments"
+    features:
+        title: "Features"
+        management:
+            title: "Tournament Management"
+            description: "Create and manage tournaments with various formats (Swiss, elimination)"
+        realtime:
+            title: "Real-time"
+            description: "Follow results and standings live with instant updates"
+        mobile:
+            title: "Mobile-first"
+            description: "Interface optimized for mobile devices and tablets"
+
+# ----------------------------------------------------------------------------
+# Authentication
+# ----------------------------------------------------------------------------
+auth:
+    login:
+        title: "Login"
+        page_title: "Login - Altered Tournament Tools"
+        subtitle: "Sign in to your account"
+        email_label: "Email address"
+        email_placeholder: "your@email.com"
+        password_label: "Password"
+        password_placeholder: "Your password"
+        remember_me: "Remember me"
+        forgot_password: "Forgot password?"
+        submit: "Sign in"
+        no_account: "Don't have an account?"
+        register_link: "Create account"
+        error:
+            invalid_credentials: "Invalid credentials."
+            account_disabled: "Your account has been disabled."
+
+    register:
+        title: "Create account"
+        page_title: "Register - Altered Tournament Tools"
+        subtitle: "Join the Altered Tournament Tools community"
+        avatar_label: "Profile picture (optional)"
+        avatar_choose: "Choose a photo"
+        avatar_formats: "JPG, PNG, GIF or WebP. Max 2 MB."
+        account_info: "Account information"
+        security: "Security"
+        pseudo_help: "Letters, numbers, dashes and underscores only"
+        password_help: "Minimum 8 characters"
+        terms_accept: "I accept the"
+        terms_of_service: "terms of service"
+        privacy_policy: "privacy policy"
+        submit: "Create my account"
+        already_account: "Already have an account?"
+        login_link: "Sign in"
+
+    reset_password:
+        request:
+            title: "Forgot password?"
+            page_title: "Forgot password - Altered Tournament Tools"
+            subtitle: "Don't worry, we'll fix that"
+            instructions: "Enter your email address and we'll send you a link to reset your password."
+            submit: "Send link"
+            remember: "Remember now?"
+            back_to_login: "Sign in"
+        check_email:
+            title: "Check your email"
+            page_title: "Check your email - Altered Tournament Tools"
+            message: "If an account exists with this email address, you will receive a link to reset your password."
+            expiry: "The link will expire in"
+            expiry_time: "1 hour"
+            resend: "Resend email"
+            back_to_login: "Back to login"
+        reset:
+            title: "New password"
+            page_title: "New password - Altered Tournament Tools"
+            subtitle: "Choose a secure password"
+            password_help: "Minimum 12 characters. Use letters, numbers and special characters."
+            submit: "Change password"
+            back_to_login: "Back to login"
+
+# ----------------------------------------------------------------------------
+# Profile
+# ----------------------------------------------------------------------------
+profile:
+    title: "My Profile"
+    page_title: "My Profile - Altered Tournament Tools"
+    personal_info: "Personal information"
+    pseudo: "Username"
+    team_tag: "Team tag"
+    not_defined: "Not defined"
+    email_address: "Email address"
+    full_name: "Full name"
+    not_provided: "Not provided"
+    last_update: "Last update"
+    edit_profile: "Edit profile"
+    back_to_profile: "Back to profile"
+    save: "Save"
+
+    edit:
+        title: "Edit my profile"
+        page_title: "Edit my profile - Altered Tournament Tools"
+        success: "Profile updated successfully."
+        profile_picture: "Profile picture"
+        change_photo: "Change photo"
+        photo_formats: "JPG, PNG, GIF or WebP. Max 2 MB."
+        account_info: "Account information"
+        team_tag_hint: "Your tag will be displayed as"
+        password_confirm_warning: "For security reasons, confirm your password to change your email."
+
+    change_password:
+        title: "Change password"
+        page_title: "Change password - Altered Tournament Tools"
+        subtitle: "Secure your account"
+        current_password: "Current password"
+        new_password: "New password"
+        confirm_password: "Confirm new password"
+        password_hint: "Minimum 12 characters. Letters, numbers and special characters."
+        submit: "Change password"
+        success: "Password changed successfully."
+
+    delete:
+        title: "Delete my account"
+        page_title: "Delete my account - Altered Tournament Tools"
+        warning_title: "Warning: Irreversible action"
+        warning_intro: "Deleting your account will result in:"
+        warning_1: "Permanent deletion of your account"
+        warning_2: "Deletion of all your tournament registrations"
+        warning_3: "Anonymization of your match history"
+        warning_4: "Deletion of your draft tournaments"
+        warning_5: "Anonymization of tournaments you organized"
+        warning_final: "This action is irreversible."
+        export_title: "Export your data"
+        export_desc: "In compliance with GDPR, you can download a copy of your personal data before deleting your account."
+        export_button: "Download my data (JSON)"
+        confirm_title: "Confirm deletion"
+        cancel: "Cancel"
+        submit: "Delete permanently"
+        warning: "Warning: this action is irreversible. All your data will be deleted."
+        confirm: "To confirm, enter your password"
+
+    notifications:
+        title: "Notifications"
+        page_title: "Notification preferences - Altered Tournament Tools"
+        subtitle: "Manage your notification preferences"
+        saved: "Preferences saved"
+        reminders_title: "Tournament reminders"
+        reminders_desc: "Choose when to receive reminders for your tournaments."
+        reminder_d1: "D-1 reminder"
+        reminder_d1_desc: "One day before the tournament"
+        reminder_h1: "H-1 reminder"
+        reminder_h1_desc: "One hour before the tournament"
+        round_start: "Round start"
+        round_start_desc: "When a new round starts"
+        channels_title: "Notification channels"
+        channels_desc: "Choose how to receive your notifications."
+        email: "Email"
+        email_desc: "Receive notifications by email"
+        browser: "Browser notifications"
+        browser_coming_soon: "Coming soon"
+        auto_save_note: "Changes are saved automatically."
+        email_notifications: "Email notifications"
+
+    avatar: "Profile picture"
+    change_avatar: "Change picture"
+    member_since: "Member since"
+    tournaments_participated: "Tournaments participated"
+    tournaments_organized: "Tournaments organized"
+
+# ----------------------------------------------------------------------------
+# Tournaments
+# ----------------------------------------------------------------------------
+tournament:
+    title: "Tournaments"
+    organized_by: "Organized by"
+    list:
+        title: "Tournament List"
+        no_tournaments: "No tournaments available"
+        search_placeholder: "Search tournament..."
+        filter_format: "Filter by format"
+        filter_status: "Filter by status"
+        all_formats: "All formats"
+        all_statuses: "All statuses"
+
+    show:
+        information: "Information"
+        configuration: "Configuration"
+        registration: "Registration"
+        registered: "You are registered!"
+        edit_registration: "Edit my registration"
+        unregister: "Unregister"
+        registrations_closed: "Registrations are closed."
+        registrations_open: "Registrations are open!"
+        register_btn: "Register"
+        login_to_register: "Login to register"
+        back_to_list: "Back to tournament list"
+        players_card:
+            title: "Players"
+            no_players: "No registered players"
+        prizes: "Prizes"
+        view_on_altered: "View on Altered.gg"
+        entry_fee: "Entry fee"
+
+    completed:
+        title: "Tournament completed"
+        completed_at: "%date% - %rounds% round|%date% - %rounds% rounds"
+        final_standings: "Final standings"
+        podium: "Podium"
+        statistics: "Statistics"
+
+    ongoing:
+        title: "Tournament in progress"
+        follow_realtime: "Follow matches in real-time"
+        view_dashboard: "View Dashboard"
+
+    create:
+        title: "Create tournament"
+        subtitle: "Configure your tournament in detail"
+        quick_create: "Quick create"
+        wizard: "Creation wizard"
+        wizard_description: "Configure your tournament step by step"
+        section_general: "General information"
+        section_config: "Tournament configuration"
+        section_visibility: "Visibility and decklists"
+        section_additional: "Additional information"
+        cancel: "Cancel"
+        submit: "Create tournament"
+        choice:
+            title: "Create a new tournament"
+            subtitle: "Choose your creation method"
+            wizard_title: "Guided wizard"
+            wizard_desc: "Step-by-step creation with explanations for each option. Ideal for new organizers."
+            manual_title: "Manual creation"
+            manual_desc: "Complete form on a single page. For experienced organizers."
+            start: "Start"
+            back_to_list: "Back to tournament list"
+
+    edit:
+        title: "Edit tournament"
+        success: "Tournament updated successfully."
+
+    manage:
+        publish: "Publish"
+        publish_confirm: "Publish this tournament? It will be publicly visible."
+        delete: "Delete"
+        delete_confirm: "Delete this tournament? This action is irreversible."
+        manage_registrations: "Manage registrations"
+        manage_groups: "Manage groups"
+        start_tournament: "Start tournament"
+        start_confirm: "Start tournament? This will generate pairings for the first round."
+        min_players: "Min. %count% players to start"
+        config_locked: "Configuration locked"
+
+    registrations:
+        title: "Registration Management"
+        add_player: "Add player"
+        search_player: "Search player..."
+        no_results: "No player found"
+        remove: "Remove"
+        remove_confirm: "Remove this player from the tournament?"
+        close: "Close registrations"
+        reopen: "Reopen registrations"
+        closed_badge: "Registrations closed"
+        player_count: "%count% player|%count% players"
+        export: "Export list"
+
+    wizard:
+        step: "Step %current% of %total%"
+        back: "Back"
+        next: "Next"
+        manual_mode: "Manual mode"
+        cancel: "Cancel and return to list"
+        step1:
+            title: "Tournament Name"
+            question: "What is your tournament called?"
+            subtitle: "Choose a clear and attractive name"
+            name_placeholder: "Ex: Fall 2024 Tournament"
+            tips_title: "Tips for a good name"
+            tip1: "Include the tournament type (Constructed, Draft...)"
+            tip2: "Mention the city or venue if relevant"
+            tip3: "Keep it short and memorable"
+        step2:
+            title: "Date and Location"
+            question: "When and where?"
+            subtitle: "Set the date, time and location of the tournament"
+            date_label: "Tournament date"
+            time_label: "Start time"
+            location_label: "Location"
+            location_placeholder: "Ex: The Goblin Tavern, 12 Game Street, Paris"
+            location_hint: "The location will be displayed publicly if the tournament is public."
+        step3:
+            title: "Game Format"
+            question: "What game format?"
+            subtitle: "Choose how players will build their deck"
+            select_format: "Select format"
+            format_desc:
+                constructed_standard: "Players come with their own deck. 39 cards + Hero minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
+                constructed_singleton: "Players come with their own deck. Single copy per rarity. Deck of 59 cards + Hero."
+                constructed_nuc: "Players come with their own deck. No Uniques allowed."
+                constructed_hero_oof: "Players come with their own deck. Hero must be from a different faction than the deck."
+                constructed_bifaction: "Players come with their own deck. Two factions chosen. Hero from one of the two."
+                draft: "Decks are built on-site from boosters."
+        step4:
+            title: "Tournament Structure"
+            question: "What tournament structure?"
+            subtitle: "Define how matches will be organized"
+            select_structure: "Select structure"
+            swiss_rounds: "Number of Swiss rounds"
+            top_cut_size: "Top Cut size"
+            group_count: "Number of groups"
+            players_per_group: "Players per group"
+            qualifiers_per_group: "Qualifiers per group"
+            structure_desc:
+                swiss_only: "Multiple rounds, everyone plays all matches. Ideal for small tournaments."
+                single_elimination: "Direct elimination from the first match. Fast and intense."
+                mixed: "Swiss rounds then Top Cut elimination. The best of both worlds."
+                group_stage_elimination: "Group stage (round-robin) then elimination of qualifiers."
+        step5:
+            title: "Match Format"
+            question: "What match format?"
+            subtitle: "Choose the number of games per match"
+            swiss_matches: "Swiss phase matches"
+            elimination_matches: "Elimination matches"
+            swiss_rounds: "Swiss Rounds"
+            elimination_phase: "Elimination Phase"
+            elimination_hint: "Applicable for Top Cut or direct elimination"
+            bo1_info: "In BO1, an additional round will be automatically added (official Altered TCG rule)"
+            match_desc:
+                bo1: "Single game match"
+                bo3: "Best of 3 games"
+        step6:
+            title: "Number of Players"
+            question: "How many players?"
+            question_groups: "Group Configuration"
+            subtitle: "Estimate the number of participants"
+            subtitle_groups: "Define the structure of your groups"
+            expected_players: "Expected players"
+            swiss_rounds: "Swiss rounds"
+            swiss_rounds_hint: "Leave empty for automatic suggestion"
+            top_cut_size: "Top Cut size"
+            top_cut_hint: "Number of players advancing to elimination phase"
+            group_structure: "Group Structure"
+            group_count: "Number of groups"
+            players_per_group: "Players per group"
+            qualifiers_per_group: "Qualifiers per group"
+            formation_method: "Formation method"
+            summary: "Summary"
+            total_players: "Total players"
+            rounds_per_group: "Rounds/group"
+            qualifiers: "Qualifiers"
+            bracket: "Bracket"
+            max_players: "Maximum number of players"
+            max_players_help: "Leave empty for unlimited"
+        step7:
+            title: "Visibility"
+            question: "Who can see your tournament?"
+            subtitle: "Choose the visibility of your event"
+            select_visibility: "Select visibility"
+            public_help: "Visible to everyone, open registrations"
+            private_help: "Visible only to you, by invitation"
+            visibility_desc:
+                public: "Visible to all players in the tournament list"
+                private: "Accessible only via direct link or invitation"
+            private_info: "A private tournament can be shared via its unique link. Only people with the link will be able to see it."
+        step8:
+            title: "Decklists"
+            question: "Are decklists visible?"
+            subtitle: "Define the transparency of deck compositions"
+            select_transparency: "Select transparency"
+            open_help: "Players can see opponent decklists"
+            closed_help: "Decklists remain private"
+            require_decklist: "Require decklist"
+            require_decklist_help: "Players must provide their decklist when registering"
+            transparency_desc:
+                open: "Players can see their opponents' decklists"
+                closed: "Deck compositions remain secret until the end"
+            transparency_info: "Open decklists allow players to prepare their strategies, while closed decklists add an element of surprise."
+        step9:
+            title: "Additional Details"
+            question: "Additional details"
+            subtitle: "This information is optional"
+            description_label: "Tournament description"
+            description_placeholder: "Describe your tournament, specific rules, etc."
+            prizes_label: "Prizes / Awards"
+            prizes_placeholder: "Ex: 1st: Booster Box, 2nd: 10 boosters..."
+            entry_fee_label: "Entry fee"
+            entry_fee_placeholder: "Ex: 10 EUR or Free"
+            altered_gg_link: "Altered.gg link"
+            altered_gg_placeholder: "https://altered.gg/..."
+            altered_gg_hint: "Link to the event on Altered.gg if exists."
+            optional_info: "All these fields are optional. You can modify them after creating the tournament."
+        step10:
+            title: "Summary"
+            question: "Your tournament summary"
+            subtitle: "Verify the information before creating"
+            confirm_create: "Create tournament"
+            basic_info: "Basic information"
+            name: "Name"
+            date: "Date"
+            location: "Location"
+            configuration: "Configuration"
+            format: "Format"
+            structure: "Structure"
+            swiss_matches: "Swiss Matches"
+            elim_matches: "Elim. Matches"
+            players_rounds: "Players and rounds"
+            expected_players: "Expected players"
+            swiss_rounds: "Swiss rounds"
+            top_cut: "Top Cut"
+            group_config: "Group configuration"
+            group_count: "Number of groups"
+            players_per_group: "Players/group"
+            total_players: "Total players"
+            qualifiers_per_group: "Qualifiers/group"
+            total_qualifiers: "Total qualifiers"
+            formation: "Formation"
+            visibility_section: "Visibility"
+            tournament: "Tournament"
+            decklists: "Decklists"
+            details: "Details"
+            description: "Description"
+            entry_fee: "Entry fee"
+            prizes: "Prizes"
+            view_on_altered: "View on Altered.gg"
+            draft_warning: "The tournament will be created in draft mode. You can modify and publish it when you're ready."
+            auto: "(auto)"
+
+# ----------------------------------------------------------------------------
+# Dashboard
+# ----------------------------------------------------------------------------
+dashboard:
+    title: "Dashboard"
+    title_organizer: "Organizer Dashboard"
+    back_to_tournament: "Back to tournament"
+    no_rounds: "Tournament has not started yet. No rounds in progress."
+    start_tournament: "Start tournament"
+
+    round:
+        title: "Round %number%"
+        completed: "Completed"
+        ongoing: "Ongoing"
+        pending: "Pending"
+        completed_at: "Completed on %date%"
+        all_matches_completed: "All matches are completed"
+        page_title: "Round %number% - Dashboard - %tournament%"
+        back_to_dashboard: "Back to dashboard"
+        info:
+            status: "Status"
+            started: "Started"
+            completed: "Completed"
+            total_matches: "Total matches"
+            completed_count: "Completed"
+            disputes: "Disputes"
+            duration: "Total duration"
+            min: "min"
+        no_matches: "No matches in this round"
+        matches_completed: "%completed%/%total% matches completed"
+
+    timer:
+        elapsed: "Time elapsed (%duration% min recommended)"
+        color_legend:
+            green: "< 35 min"
+            orange: "35-50 min"
+            red: "> 50 min"
+
+    statistics:
+        title: "Statistics"
+        progress: "Progress"
+        completed_matches: "Completed matches"
+        ongoing_matches: "Ongoing"
+        pending_matches: "Pending"
+        disputed_matches: "Disputes"
+        bye_matches: "BYE"
+        no_round: "No round in progress"
+        view_disputes: "View disputes (%count%)"
+
+    rounds:
+        title: "Rounds"
+        current: "(current)"
+
+    matches:
+        title: "Matches - Round %number%"
+        full_view: "Full view"
+        completed_count: "%completed%/%total% matches completed"
+        resolve: "Resolve"
+        submit: "Submit"
+        start_next_round: "Start next round"
+        complete_tournament: "Complete tournament"
+        round_limit_reached: "Round limit reached (%current%/%max%)"
+        player1: "Player 1"
+        player2: "Player 2"
+        draw: "Draw"
+        standings: "Standings"
+
+    connection:
+        connected: "Connected"
+        realtime_active: "Real-time active"
+        reconnecting: "Reconnecting %current%/%max%"
+        disconnected: "Disconnected"
+        polling_active: "Polling mode active"
+
+# ----------------------------------------------------------------------------
+# Match
+# ----------------------------------------------------------------------------
+match:
+    title: "Match"
+    back_to_round: "Back to round"
+    bye_automatic_win: "BYE - Automatic win"
+    tie: "Tie"
+    completed_on: "Completed on %date%"
+    dispute_message: "This match is disputed. Contact the organizer for resolution."
+
+    show:
+        title: "Match details"
+        page_title: "Match - Table %number%"
+        round: "Round %number%"
+        table: "Table %number%"
+        vs: "VS"
+        score: "Score"
+        status: "Status"
+        result_pending: "Awaiting result"
+        submit_result: "Submit Result"
+
+    submit:
+        title: "Submit result"
+        page_title: "Submit Result - Table %number%"
+        validate_title: "Validate Result"
+        organizer_mode: "Organizer Mode"
+        organizer_mode_desc: "You can directly validate the result of this match."
+        already_completed: "Match already completed"
+        current_result: "Current result"
+        winner: "Winner"
+        correct_result: "You can correct this result if necessary."
+        what_result: "What is the match result?"
+        victory: "Victory"
+        tie: "Tie"
+        draw: "Draw"
+        player1: "Player 1"
+        player2: "Player 2"
+        score_optional: "Score (optional)"
+        score_help: "For BO1, leave 0-0. For BO3, enter the score (e.g., 2-1)."
+        validate_organizer: "Validate Result (Organizer)"
+        submit_result: "Submit Result"
+        organizer_note: "As an organizer, the result will be validated immediately."
+        result_note: "The result will be automatically validated if your opponent submits the same result."
+        your_score: "Your score"
+        opponent_score: "Opponent score"
+        you_won: "You won"
+        you_lost: "You lost"
+        confirm: "Confirm result"
+        warning: "Warning: the result cannot be modified after submission."
+
+    waiting:
+        title: "Waiting"
+        page_title: "Waiting - Table %number%"
+        waiting_confirmation: "Waiting for confirmation"
+        opponent_not_submitted: "Your opponent has not yet submitted their result."
+        your_submission: "Your submission"
+        declared_result: "Declared result"
+        victory: "%player% Victory"
+        submitted_on: "Submitted on %date%"
+        view_round: "View round"
+        organizer_mode: "Organizer Mode"
+        organizer_validate: "You can validate this result immediately."
+        validate_now: "Validate now"
+        validate_confirm: "Validate this result immediately without waiting for the opponent?"
+        no_auto_refresh: "This page does not auto-refresh. Come back later to check the status."
+        waiting_for_opponent: "Waiting for opponent submission"
+        opponent_submission: "Opponent submission"
+        not_submitted: "Not yet submitted"
+
+    dispute:
+        title: "Dispute"
+        description: "Both players submitted different results."
+        your_result: "Your result"
+        opponent_result: "Opponent result"
+        contact_organizer: "Please contact the organizer to resolve this dispute."
+
+# ----------------------------------------------------------------------------
+# Dispute
+# ----------------------------------------------------------------------------
+dispute:
+    list:
+        title: "Disputes"
+        page_title: "Disputes - %tournament%"
+        back_to_rounds: "Back to rounds"
+        no_disputes: "No ongoing disputes"
+        all_results_ok: "All results are in order."
+        disputes_to_resolve: "%count% dispute(s) to resolve"
+
+    show:
+        title: "Dispute Resolution"
+        page_title: "Resolve Dispute - Table %number%"
+        back_to_disputes: "Back to disputes"
+        resolve_dispute: "Resolve Dispute"
+        badge: "Dispute"
+        match_info: "Match information"
+        player1: "Player 1"
+        player2: "Player 2"
+        player_submissions: "Player submissions"
+        submitted_by: "Submitted by"
+        declared_winner: "Declared winner"
+        no_submissions: "No submissions available."
+        organizer_decision: "Organizer's decision"
+        who_won: "Who won this match?"
+        final_score: "Final score"
+        warning: "Warning"
+        warning_message: "This decision is final and will be recorded in the match history."
+        resolve_button: "Resolve Dispute"
+        history: "History"
+        history_submission: "Player %submittedBy% declared victory for %claimedWinner%"
+        history_created: "Dispute created"
+        history_resolved: "Resolved by organizer"
+        player1_claim: "%player%'s claim"
+        player2_claim: "%player%'s claim"
+        resolve: "Resolve dispute"
+        select_winner: "Select winner"
+        declare_draw: "Declare draw"
+        confirm_resolution: "Confirm resolution"
+
+# ----------------------------------------------------------------------------
+# Standings & Results
+# ----------------------------------------------------------------------------
+standings:
+    title: "Standings"
+    rank: "Rank"
+    player: "Player"
+    points: "Points"
+    omw: "OMW%"
+    gw: "GW%"
+    ogw: "OGW%"
+    wins: "W"
+    losses: "L"
+    draws: "D"
+
+    final:
+        title: "Final Standings"
+        champion: "Champion"
+
+    podium:
+        title: "Podium"
+        first: "1st"
+        second: "2nd"
+        third: "3rd"
+
+# ----------------------------------------------------------------------------
+# Statistics
+# ----------------------------------------------------------------------------
+stats:
+    title: "Tournament Statistics"
+    total_matches: "Total matches"
+    total_players: "Total players"
+    total_rounds: "Total rounds"
+    average_match_duration: "Average match duration"
+    faction_distribution: "Faction distribution"
+    hero_popularity: "Hero popularity"
+
+# ----------------------------------------------------------------------------
+# Admin
+# ----------------------------------------------------------------------------
+admin:
+    title: "Administration"
+    dashboard:
+        title: "Dashboard"
+        total_users: "Users"
+        total_tournaments: "Tournaments"
+        active_tournaments: "Active tournaments"
+        recent_alerts: "Recent alerts"
+
+    users:
+        title: "Users"
+        search: "Search user..."
+        email: "Email"
+        pseudo: "Username"
+        created_at: "Created on"
+        last_login: "Last login"
+        roles: "Roles"
+        actions: "Actions"
+        view: "View"
+        edit: "Edit"
+        delete: "Delete"
+        ban: "Ban"
+
+    alerts:
+        title: "Alerts"
+        no_alerts: "No alerts"
+        acknowledge: "Acknowledge"
+        acknowledged: "Acknowledged"
+        severity: "Severity"
+        type: "Type"
+        message: "Message"
+        created_at: "Date"
+
+    logs:
+        title: "Logs"
+        filter_level: "Level"
+        filter_channel: "Channel"
+
+# ----------------------------------------------------------------------------
+# Emails
+# ----------------------------------------------------------------------------
+email:
+    common:
+        greeting: "Hello %name%,"
+        footer: "The Altered Tournament Tools Team"
+        do_not_reply: "This is an automated email, please do not reply."
+
+    welcome:
+        subject: "Welcome to Altered Tournament Tools!"
+        body: "Your account has been created successfully. You can now register for tournaments and organize your own."
+
+    registration_confirmation:
+        subject: "Registration confirmed - %tournament%"
+        body: "Your registration for %tournament% has been confirmed."
+
+    registration_removal:
+        subject: "Registration cancelled - %tournament%"
+        body: "Your registration for %tournament% has been cancelled."
+
+    tournament_reminder_d1:
+        subject: "Reminder: %tournament% tomorrow!"
+        body: "The %tournament% tournament will take place tomorrow. Don't forget to prepare your deck!"
+
+    tournament_reminder_h1:
+        subject: "Reminder: %tournament% in 1 hour!"
+        body: "The %tournament% tournament starts in 1 hour. See you there!"
+
+    round_start:
+        subject: "New round - %tournament%"
+        body: "A new round has just started. Check your pairings."
+
+    password_reset:
+        subject: "Reset your password"
+        body: "Click the link below to reset your password."
+        link_text: "Reset my password"
+        expiry: "This link expires in 1 hour."
+
+    password_changed:
+        subject: "Password changed"
+        body: "Your password has been changed successfully."
+
+    notification:
+        subject:
+            d_minus_1: "Reminder: %tournament% tournament tomorrow!"
+            h_minus_1: "Reminder: %tournament% tournament in 1 hour!"
+            round_start: "New round - %tournament%"
+
+# ----------------------------------------------------------------------------
+# Flash Messages
+# ----------------------------------------------------------------------------
+flash:
+    success:
+        tournament_created: "Tournament created successfully!"
+        tournament_updated: "Tournament updated successfully!"
+        tournament_deleted: "Tournament deleted successfully."
+        tournament_published: "Tournament published successfully!"
+        tournament_started: "Tournament started successfully."
+        tournament_completed: "Tournament completed! Final results are available."
+        registration_success: "Registration successful! You are now registered for the tournament."
+        registration_updated: "Your registration has been updated."
+        unregistration_success: "You have been unregistered from the tournament."
+        player_added: "Player added successfully."
+        player_removed: "Player removed successfully."
+        match_result_submitted: "Result submitted successfully."
+        match_result_confirmed: "Result confirmed!"
+        match_result_validated: "Result validated by organizer."
+        match_result_forced: "Result forced successfully."
+        dispute_resolved: "Dispute resolved successfully."
+        round_started: "New round started."
+        profile_updated: "Profile updated successfully."
+        password_changed: "Password changed successfully."
+        password_reset: "Your password has been changed successfully. You can now log in."
+        settings_saved: "Settings saved."
+        account_created: "Your account has been created successfully! Welcome to Altered Tournament Tools."
+        account_deleted: "Your account has been deleted successfully."
+        alert_acknowledged: "Alert has been acknowledged."
+        alert_check_complete: "Verification complete. No issues detected."
+        message_sent: "Message sent to %count% organizer(s)."
+        message_sent_to_user: "Message sent to %pseudo%."
+        registrations_closed: "Registrations are closed."
+        registrations_reopened: "Registrations are reopened."
+        results_published: "Tournament results have been published."
+        user_roles_updated: "User roles have been updated."
+        user_deleted_gdpr: "User has been deleted in compliance with GDPR."
+
+    error:
+        tournament_not_found: "Tournament not found."
+        registration_failed: "Registration failed."
+        unregistration_failed: "Unregistration failed."
+        match_result_failed: "Failed to submit result."
+        invalid_token: "Invalid token. Please try again."
+        invalid_csrf_token: "Invalid CSRF token."
+        invalid_security_token: "Invalid security token. Please try again."
+        access_denied: "Access denied."
+        already_registered: "You are already registered for this tournament."
+        registrations_closed: "Registrations are closed for this tournament."
+        registrations_not_accepted: "This tournament is not accepting registrations."
+        tournament_full: "Tournament is full."
+        invalid_decklist: "Invalid decklist."
+        player_not_found: "Player not found."
+        player_not_registered: "This player is not registered for this tournament."
+        player_already_registered: "This player is already registered for the tournament."
+        cannot_start_tournament: "Cannot start tournament."
+        min_players_required: "Minimum number of players required: %count%."
+        invalid_winner: "Invalid winner."
+        not_match_participant: "You are not a participant in this match."
+        no_validate_rights: "You do not have the rights to validate this match."
+        password_required_for_email: "Please enter your current password to change your email."
+        current_password_incorrect: "Current password is incorrect."
+        password_incorrect: "Incorrect password."
+        cannot_edit_own_roles: "You cannot edit your own roles."
+        cannot_delete_own_account: "You cannot delete your own account."
+        reset_link_invalid: "This reset link is invalid or has expired."
+        select_recipient: "Please select a recipient."
+        select_player: "Please select a player."
+        groups_not_supported: "This tournament does not support group stages."
+        groups_already_formed: "Groups have already been formed."
+        groups_not_formed: "Groups have not yet been formed."
+        wizard_incomplete: "Please complete all wizard steps."
+        not_registered: "You are not registered for this tournament."
+        cannot_edit_after_start: "Cannot edit your registration once the tournament has started."
+        cannot_unregister_after_start: "Cannot unregister once the tournament has started."
+        tournament_not_completed: "Tournament must be completed to publish results."
+
+    warning:
+        match_not_in_dispute: "This match is not in dispute."
+        cannot_force_bye: "Cannot force result for a BYE."
+        cannot_submit_bye: "Cannot submit a result for a BYE."
+        dispute_created: "Dispute created - results do not match. Contact the organizer."
+        wizard_steps_incomplete: "Some steps are not completed."
+        results_not_available: "Results for this tournament are not yet available."
+        stats_not_available: "Statistics for this tournament are not yet available."
+
+    info:
+        match_already_completed: "This match is already completed."
+        results_already_published: "Results are already published."
+
+# ----------------------------------------------------------------------------
+# Validation Messages
+# ----------------------------------------------------------------------------
+validation:
+    not_blank: "This field cannot be empty."
+    email: "Please enter a valid email address."
+    min_length: "This field must contain at least %limit% characters."
+    max_length: "This field cannot exceed %limit% characters."
+    password_mismatch: "Passwords do not match."
+    invalid_date: "Invalid date."
+    invalid_url: "Invalid URL."
+    unique_email: "This email address is already in use."
+    unique_pseudo: "This username is already taken."
+    url_invalid: "Please enter a valid URL"
+    decklist_url_invalid: "Link must be from altered.gg"
+
+    tournament:
+        name_required: "Tournament name is required"
+        name_min: "Name must be at least {{ limit }} characters"
+        name_max: "Name cannot exceed {{ limit }} characters"
+        date_required: "Tournament date is required"
+        format_required: "Game format is required"
+        structure_required: "Tournament structure is required"
+        swiss_format_required: "Swiss match format is required"
+        players_range: "Number of players must be between {{ min }} and {{ max }}"
+        rounds_range: "Number of rounds must be between {{ min }} and {{ max }}"
+        visibility_required: "Visibility is required"
+        decklist_transparency_required: "Decklist transparency is required"
+
+    user:
+        email_required: "Please enter your email"
+        email_invalid: "Please enter a valid email"
+        pseudo_required: "Please choose a username"
+        pseudo_min: "Username must be at least {{ limit }} characters"
+        pseudo_max: "Username cannot exceed {{ limit }} characters"
+        pseudo_format: "Username can only contain letters, numbers, dashes and underscores"
+        name_max: "Name cannot exceed {{ limit }} characters"
+        password_required: "Please enter a password"
+        password_min: "Password must be at least {{ limit }} characters"
+        passwords_mismatch: "Passwords do not match"
+        terms_required: "You must accept the terms of service"
+        avatar_invalid: "Please upload a valid image (JPG, PNG, GIF or WebP)"
+
+# ----------------------------------------------------------------------------
+# Form Labels
+# ----------------------------------------------------------------------------
+form:
+    common:
+        select: "Select..."
+
+    tournament:
+        name: "Tournament name"
+        name_placeholder: "Ex: Winter Tournament 2026"
+        date: "Date"
+        time: "Start time"
+        location: "Location"
+        location_placeholder: "Address or venue name"
+        format: "Game format"
+        structure: "Tournament structure"
+        visibility: "Visibility"
+        max_players: "Max players"
+        expected_players: "Expected number of players"
+        expected_players_placeholder: "Ex: 16"
+        swiss_rounds: "Number of Swiss rounds"
+        top_cut_size: "Top Cut size"
+        description: "Description"
+        description_placeholder: "Additional information for players..."
+        prizes: "Prizes / Awards"
+        prizes_placeholder: "Ex: 1st: Booster box, 2nd: Playmat..."
+        entry_fee: "Entry fee"
+        entry_fee_placeholder: "Ex: 5 EUR, Free"
+        decklist_transparency: "Decklist transparency"
+        require_decklist: "Decklist required"
+        swiss_match_format: "Match format (Swiss)"
+        elimination_match_format: "Match format (Elimination)"
+        altered_gg_link: "Altered.gg link (optional)"
+        altered_gg_placeholder: "https://altered.gg/..."
+
+    registration:
+        faction: "Faction"
+        faction2: "Second Faction"
+        hero: "Hero"
+        decklist_url: "Your decklist link (Altered.gg)"
+        decklist_placeholder: "https://altered.gg/deck/..."
+        decklist_help: "Optional. Paste your decklist link from altered.gg"
+        select_faction: "Select a faction"
+        select_second_faction: "Select a second faction"
+        select_hero: "Select a hero"
+        select_faction_first: "Select a faction first"
+        select_both_factions: "Select both factions first"
+
+    user:
+        email: "Email address"
+        email_placeholder: "your@email.com"
+        pseudo: "Username"
+        pseudo_placeholder: "Your public username"
+        pseudo_help: "Letters, numbers, dashes and underscores only"
+        name: "Full name (optional)"
+        name_placeholder: "Your name"
+        avatar: "Profile picture (optional)"
+        avatar_formats: "JPG, PNG, GIF or WebP. Max 2 MB."
+        password: "Password"
+        password_placeholder: "Minimum 8 characters"
+        confirm_password: "Confirm password"
+        confirm_password_placeholder: "Re-enter your password"
+        current_password: "Current password"
+        new_password: "New password"
+        agree_terms: "I accept the terms of service"
+
+# ----------------------------------------------------------------------------
+# JavaScript / Stimulus Controllers
+# ----------------------------------------------------------------------------
+js:
+    error:
+        connection: "Connection error"
+        generic: "An error occurred"
+        save: "Save error"
+        calculation: "Calculation error"
+        validation_winner_reason: "Please select a winner and provide a reason"
+    button:
+        confirm: "Confirm"
+        saving: "Saving..."
+    label:
+        player1: "Player 1"
+        player2: "Player 2"
+    message:
+        preferences_saved: "Preferences saved"
+    tournament:
+        bracket_label: "Bracket of %players% players"
+        bracket_byes_label: "Bracket of %bracket% (%byes% BYEs needed)"
+        rounds_recommended: "%rounds% rounds recommended for %players% players"

@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'tournament.create.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold mb-3" style="color: var(--text-primary);">{{ 'tournament.create.choice.title'|trans }}</h1>
+        <p style="color: var(--text-secondary);">{{ 'tournament.create.choice.subtitle'|trans }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {# Tile: Assistant Guide #}
+        <a href="{{ path('tournament_wizard_start') }}"
+           class="group block rounded-2xl shadow-lg border-2 border-transparent hover:border-orange-400 hover:shadow-xl transition-all duration-300 overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="h-2 theme-primary-gradient"></div>
+            <div class="p-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    {{ ux_icon('lucide:lightbulb', {class: 'w-8 h-8 text-orange-600'}) }}
+                </div>
+                <h2 class="text-xl font-bold mb-3 group-hover:text-orange-600 transition-colors" style="color: var(--text-primary);">
+                    {{ 'tournament.create.choice.wizard_title'|trans }}
+                </h2>
+                <p class="mb-4" style="color: var(--text-secondary);">
+                    {{ 'tournament.create.choice.wizard_desc'|trans }}
+                </p>
+                <div class="flex items-center font-semibold" style="color: var(--color-primary-600);">
+                    <span>{{ 'tournament.create.choice.start'|trans }}</span>
+                    {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform'}) }}
+                </div>
+            </div>
+        </a>
+
+        {# Tile: Manual Creation #}
+        <a href="{{ path('tournament_create_manual') }}"
+           class="group block rounded-2xl shadow-lg border-2 border-transparent hover:border-blue-400 hover:shadow-xl transition-all duration-300 overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            <div class="p-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    {{ ux_icon('lucide:square-pen', {class: 'w-8 h-8 text-blue-600'}) }}
+                </div>
+                <h2 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition-colors" style="color: var(--text-primary);">
+                    {{ 'tournament.create.choice.manual_title'|trans }}
+                </h2>
+                <p class="mb-4" style="color: var(--text-secondary);">
+                    {{ 'tournament.create.choice.manual_desc'|trans }}
+                </p>
+                <div class="flex items-center text-blue-600 font-semibold">
+                    <span>{{ 'tournament.create.choice.start'|trans }}</span>
+                    {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform'}) }}
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="mt-8 text-center">
+        <a href="{{ path('tournament_list') }}" class="transition-colors hover:opacity-80" style="color: var(--text-muted);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 inline-block mr-1'}) }}
+            {{ 'tournament.create.choice.back_to_list'|trans }}
+        </a>
+    </div>
+</div>
+{% endblock %}

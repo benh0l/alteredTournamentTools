@@ -1,0 +1,81 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:swords', {class: 'w-6 h-6', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step5.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step5.subtitle'|trans }}</p>
+    </div>
+
+    {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-8'}}) }}
+        {# Swiss Match Format #}
+        <div>
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                {{ 'tournament.wizard.step5.swiss_rounds'|trans }}
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+                {% for child in form.swissMatchFormat %}
+                    <label class="cursor-pointer group" data-action="click->wizard#selectCard">
+                        {{ form_widget(child, {attr: {class: 'sr-only peer', style: 'accent-color: var(--color-primary-600);'}}) }}
+                        <div class="border-2 rounded-2xl p-5 transition-all duration-200
+                                    peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-lg
+                                    hover:shadow-md text-center" style="border-color: var(--border-default);" onmouseover="this.style.borderColor='var(--color-primary-300)';" onmouseout="if(!this.previousElementSibling.checked) this.style.borderColor='var(--border-default)';">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
+                                {% if child.vars.value == 'bo1' %}
+                                    <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">1</span>
+                                {% else %}
+                                    <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">3</span>
+                                {% endif %}
+                            </div>
+                            <div class="font-semibold text-lg" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                            <div class="text-sm mt-1" style="color: var(--text-muted);">
+                                {{ ('tournament.wizard.step5.match_desc.' ~ child.vars.value)|trans }}
+                            </div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.swissMatchFormat) }}
+            <div class="mt-3 p-3 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 rounded-xl">
+                <p class="text-xs text-blue-700 dark:text-blue-300 flex items-start">
+                    {{ ux_icon('lucide:info', {class: 'w-4 h-4 mr-2 flex-shrink-0 mt-0.5'}) }}
+                    <span>{{ 'tournament.wizard.step5.bo1_info'|trans }}</span>
+                </p>
+            </div>
+        </div>
+
+        <hr style="border-color: var(--border-default);">
+
+        {# Elimination Match Format #}
+        <div>
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
+                {{ 'tournament.wizard.step5.elimination_phase'|trans }}
+            </h3>
+            <p class="text-sm mb-4" style="color: var(--text-muted);">{{ 'tournament.wizard.step5.elimination_hint'|trans }}</p>
+            <div class="grid grid-cols-2 gap-4">
+                {% for child in form.eliminationMatchFormat %}
+                    <label class="cursor-pointer group" data-action="click->wizard#selectCard">
+                        {{ form_widget(child, {attr: {class: 'sr-only peer', style: 'accent-color: var(--color-primary-600);'}}) }}
+                        <div class="border-2 rounded-2xl p-5 transition-all duration-200
+                                    peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-lg
+                                    hover:shadow-md text-center" style="border-color: var(--border-default);" onmouseover="this.style.borderColor='var(--color-primary-300)';" onmouseout="if(!this.previousElementSibling.checked) this.style.borderColor='var(--border-default)';">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mx-auto mb-3">
+                                {% if child.vars.value == 'bo1' %}
+                                    <span class="text-2xl font-bold text-amber-600 dark:text-amber-400">1</span>
+                                {% else %}
+                                    <span class="text-2xl font-bold text-amber-600 dark:text-amber-400">3</span>
+                                {% endif %}
+                            </div>
+                            <div class="font-semibold text-lg" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.eliminationMatchFormat) }}
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

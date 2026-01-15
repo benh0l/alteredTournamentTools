@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'match.waiting.page_title'|trans({'%number%': match.tableNumber}) }}{% endblock %}
+
+{% block body %}
+<div class="max-w-lg mx-auto px-4 py-6">
+    <div class="mb-6">
+        <a href="{{ path('round_show', {id: match.round.tournament.id, roundNumber: match.round.roundNumber}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+            &larr; {{ 'match.back_to_round'|trans }}
+        </a>
+    </div>
+
+    <div class="rounded-lg shadow-lg p-6 text-center" style="background-color: var(--card-bg);">
+        <div class="mb-6">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                {{ ux_icon('lucide:loader-2', {class: 'w-8 h-8 text-blue-600 animate-spin'}) }}
+            </div>
+            <h1 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">{{ 'match.waiting.waiting_confirmation'|trans }}</h1>
+            <p style="color: var(--text-secondary);">{{ 'match.waiting.opponent_not_submitted'|trans }}</p>
+        </div>
+
+        <div class="rounded-lg p-4 mb-6" style="background-color: var(--bg-subtle);">
+            <h2 class="text-sm font-medium mb-3" style="color: var(--text-muted);">{{ 'match.waiting.your_submission'|trans }}</h2>
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</span>
+                <span class="text-xl font-bold" style="color: var(--text-primary);">{{ submission.player1Score }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="font-semibold" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</span>
+                <span class="text-xl font-bold" style="color: var(--text-primary);">{{ submission.player2Score }}</span>
+            </div>
+            <div class="mt-3 pt-3" style="border-top: 1px solid var(--border-default);">
+                <p class="text-sm" style="color: var(--text-primary);">
+                    {{ 'match.waiting.declared_result'|trans }}:
+                    <span class="font-semibold {% if submission.claimedWinnerId %}text-green-600{% else %}text-amber-600{% endif %}">
+                        {% if submission.claimedWinnerId is null %}
+                            {{ 'match.tie'|trans }}
+                        {% elseif submission.claimedWinnerId == match.player1.id %}
+                            {{ 'match.waiting.victory'|trans({'%player%': match.player1.player.displayName}) }}
+                        {% else %}
+                            {{ 'match.waiting.victory'|trans({'%player%': match.player2.player.displayName}) }}
+                        {% endif %}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <p class="text-sm mb-4" style="color: var(--text-muted);">
+            {{ 'match.waiting.submitted_on'|trans({'%date%': submission.submittedAt|date('d/m/Y H:i')}) }}
+        </p>
+
+        <a href="{{ path('round_show', {id: match.round.tournament.id, roundNumber: match.round.roundNumber}) }}"
+           class="inline-block px-6 py-3 border-2 font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
+           style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+            {{ 'match.waiting.view_round'|trans }}
+        </a>
+
+        {% if is_organizer|default(false) %}
+            <div class="mt-6 pt-6" style="border-top: 1px solid var(--border-default);">
+                <p class="text-sm text-purple-700 mb-3">
+                    <strong>{{ 'match.waiting.organizer_mode'|trans }} :</strong> {{ 'match.waiting.organizer_validate'|trans }}
+                </p>
+                <form method="POST" action="{{ path('match_submit', {id: match.id}) }}" class="inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('match_submit_' ~ match.id) }}">
+                    <input type="hidden" name="organizer_override" value="1">
+                    <input type="hidden" name="winner_id" value="{{ submission.claimedWinnerId }}">
+                    <input type="hidden" name="player1_score" value="{{ submission.player1Score }}">
+                    <input type="hidden" name="player2_score" value="{{ submission.player2Score }}">
+                    <button type="submit"
+                            class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+                            onclick="return confirm('{{ 'match.waiting.validate_confirm'|trans }}')">
+                        {{ 'match.waiting.validate_now'|trans }}
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        <p class="text-xs mt-6" style="color: var(--text-muted);">
+            {{ 'match.waiting.no_auto_refresh'|trans }}
+        </p>
+    </div>
+</div>
+{% endblock %}

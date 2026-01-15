@@ -1,0 +1,67 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}{{ 'email.round_start.subject'|trans({'%tournament%': tournament.name}) }}{% endblock %}
+
+{% block content %}
+<div style="background-color: #dbeafe; border-radius: 8px; padding: 25px; margin-bottom: 25px; text-align: center; border-left: 4px solid #3b82f6;">
+    <p style="font-size: 28px; margin: 0 0 10px 0;">&#127918;</p>
+    <h2 style="color: #1e40af; margin: 0; font-size: 24px;">
+        {{ 'email.round_start.title'|trans({'%round%': roundNumber})|default('Ronde ' ~ roundNumber ~ ' a commence !') }}
+    </h2>
+</div>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.common.greeting'|trans({'%name%': user.pseudo}) }}
+</p>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.round_start.body'|trans({'%round%': roundNumber, '%tournament%': tournament.name})|default('La ronde ' ~ roundNumber ~ ' du tournoi ' ~ tournament.name ~ ' vient de commencer !') }}
+</p>
+
+<div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
+    <h3 style="color: #166534; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.round_start.your_match'|trans|default('Votre match') }}
+    </h3>
+    <p style="margin: 8px 0; color: #4a5568; font-size: 18px;">
+        {{ 'email.round_start.go_to_table'|trans|default('Rendez-vous a votre table pour affronter votre adversaire !') }}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        {{ 'email.round_start.check_pairings'|trans|default('Consultez vos appariements sur la page du tournoi.') }}
+    </p>
+</div>
+
+<div style="background-color: #f7fafc; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #2d3748; margin-bottom: 15px; font-size: 18px; margin-top: 0;">
+        {{ 'email.round_start.round_info'|trans|default('Informations de la ronde') }}
+    </h3>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'tournament.title'|trans }}:</strong> {{ tournament.name }}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'common.round'|trans }}:</strong> {{ roundNumber }}{% if tournament.swissRounds %} / {{ tournament.swissRounds }}{% endif %}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'form.tournament.format'|trans }}:</strong> {{ tournament.format.label|trans }}
+    </p>
+    <p style="margin: 8px 0; color: #4a5568;">
+        <strong>{{ 'email.round_start.match_format'|trans|default('Format de match') }}:</strong>
+        {% if tournament.swissMatchFormat %}
+            {{ tournament.swissMatchFormat.label|trans }}
+        {% else %}
+            Standard
+        {% endif %}
+    </p>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ tournamentUrl }}" class="button" style="display: inline-block; background-color: #1a56db; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+        {{ 'email.round_start.view_pairings'|trans|default('Voir mes appariements') }}
+    </a>
+</div>
+
+<div style="background-color: #fef3c7; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #92400e; font-size: 14px;">
+        <strong>{{ 'email.reminder'|trans|default('Rappel') }}:</strong> {{ 'email.round_start.submit_reminder'|trans|default('Pensez a soumettre vos resultats a la fin du match pour que la ronde suivante puisse commencer !') }}
+    </p>
+</div>
+{% endblock %}

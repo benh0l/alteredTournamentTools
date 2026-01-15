@@ -1,0 +1,302 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Poules - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto">
+    {# Header Card #}
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 px-8 py-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <div class="text-white/80 text-sm mb-1">
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:text-white">
+                            {{ tournament.name }}
+                        </a>
+                    </div>
+                    <h1 class="text-3xl font-bold text-white drop-shadow-sm flex items-center gap-3">
+                        {{ ux_icon('lucide:layout-grid', {class: 'w-8 h-8'}) }}
+                        Phase de poules
+                    </h1>
+                    <div class="mt-3 flex items-center space-x-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm">
+                            {{ tournament.groupCount }} poules
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm">
+                            {{ tournament.qualifiersPerGroup }} qualifies/poule
+                        </span>
+                    </div>
+                </div>
+
+                {# Progress #}
+                <div class="mt-4 md:mt-0 text-white/90">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">{{ completedMatches }}/{{ totalMatches }}</div>
+                        <div class="text-xs uppercase tracking-wide">Matchs joues</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Action bar for organizer #}
+        {% if is_granted('TOURNAMENT_MANAGE', tournament) %}
+            <div class="px-8 py-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-t border-green-500/20 dark:border-green-500/30">
+                <div class="flex flex-wrap gap-3 items-center">
+                    {% if not groupsFormed %}
+                        <form action="{{ path('tournament_form_groups', {id: tournament.id}) }}" method="POST" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('form-groups-' ~ tournament.id) }}">
+                            <button type="submit"
+                                    class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all shadow-md"
+                                    onclick="return confirm('Former les poules ? Les joueurs seront repartis selon la methode choisie.')">
+                                {{ ux_icon('lucide:shuffle', {class: 'w-5 h-5 mr-2'}) }}
+                                Former les poules
+                            </button>
+                        </form>
+                    {% elseif not allMatchesComplete %}
+                        <form action="{{ path('tournament_next_group_round', {id: tournament.id}) }}" method="POST" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('next-group-round-' ~ tournament.id) }}">
+                            <button type="submit"
+                                    class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all shadow-md">
+                                {{ ux_icon('lucide:play', {class: 'w-5 h-5 mr-2'}) }}
+                                Prochaine ronde
+                            </button>
+                        </form>
+                    {% else %}
+                        <form action="{{ path('tournament_start_elimination', {id: tournament.id}) }}" method="POST" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('start-elimination-' ~ tournament.id) }}">
+                            <button type="submit"
+                                    class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md"
+                                    onclick="return confirm('Lancer la phase eliminatoire ? Les qualifies seront determines par leur classement.')">
+                                {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2'}) }}
+                                Lancer l'elimination
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}"
+                       class="inline-flex items-center px-4 py-2 bg-white border-2 border-green-200 text-green-600 rounded-xl font-medium hover:bg-green-50 hover:border-green-300 transition-all shadow-sm">
+                        {{ ux_icon('lucide:bar-chart-3', {class: 'w-4 h-4 mr-2'}) }}
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not groupsFormed %}
+        {# Groups not formed yet #}
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                {{ ux_icon('lucide:layout-grid', {class: 'w-8 h-8 text-green-500'}) }}
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Poules non formees</h2>
+            <p class="text-gray-600 mb-4">
+                Les poules n'ont pas encore ete formees.
+                {{ tournament.registrations|length }} joueurs inscrits sur {{ tournament.groupCount * tournament.playersPerGroup }} attendus.
+            </p>
+            {% if tournament.registrations|length < tournament.groupCount * tournament.playersPerGroup %}
+                <p class="text-amber-600 text-sm">
+                    {{ ux_icon('lucide:alert-triangle', {class: 'w-4 h-4 inline mr-1'}) }}
+                    Il manque {{ (tournament.groupCount * tournament.playersPerGroup) - tournament.registrations|length }} joueurs pour remplir toutes les poules.
+                </p>
+            {% endif %}
+        </div>
+    {% else %}
+        {# Tab navigation for groups #}
+        <div class="mb-6" data-controller="tabs">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px space-x-4 overflow-x-auto" aria-label="Poules">
+                    {% for group in groups %}
+                        <button type="button"
+                                class="py-3 px-4 border-b-2 font-medium text-sm whitespace-nowrap transition-colors
+                                       {{ loop.first ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}"
+                                data-tabs-target="tab"
+                                data-action="click->tabs#showTab"
+                                data-tab-index="{{ loop.index0 }}">
+                            {{ group.name }}
+                            <span class="ml-2 py-0.5 px-2 rounded-full text-xs {{ loop.first ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-gray-500/20 text-gray-600 dark:text-gray-400' }}">
+                                {{ group.players|length }}
+                            </span>
+                        </button>
+                    {% endfor %}
+                </nav>
+            </div>
+
+            {# Group content panels #}
+            {% for group in groups %}
+                <div class="mt-6 {{ loop.first ? '' : 'hidden' }}" data-tabs-target="panel" data-panel-index="{{ loop.index0 }}">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {# Standings table #}
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="px-6 py-4 bg-gradient-to-r from-green-500/10 to-transparent border-b border-green-500/20">
+                                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                                    {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2 text-green-500'}) }}
+                                    Classement {{ group.name }}
+                                </h3>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead class="bg-gray-500/10">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joueur</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">V</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">N</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">D</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">+/-</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        {% for standing in standings[group.letter] %}
+                                            {% set isQualified = loop.index <= tournament.qualifiersPerGroup %}
+                                            <tr class="{{ isQualified ? 'bg-green-500/10' : '' }}">
+                                                <td class="px-4 py-4 whitespace-nowrap">
+                                                    <span class="flex items-center justify-center w-7 h-7 rounded-full {{ isQualified ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600' }} font-semibold text-sm">
+                                                        {{ loop.index }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        {% if standing.registration.player.avatar %}
+                                                            <img src="/uploads/avatars/{{ standing.registration.player.avatar }}" alt="Avatar"
+                                                                 class="w-8 h-8 rounded-full object-cover mr-3">
+                                                        {% else %}
+                                                            <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center mr-3">
+                                                                <span class="text-white font-semibold text-sm">{{ standing.registration.player.pseudo|slice(0,1)|upper }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="font-medium text-gray-900">{{ standing.registration.player.displayName }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-4 text-center whitespace-nowrap font-semibold text-green-600">{{ standing.wins }}</td>
+                                                <td class="px-4 py-4 text-center whitespace-nowrap text-gray-500">{{ standing.draws }}</td>
+                                                <td class="px-4 py-4 text-center whitespace-nowrap font-semibold text-red-600">{{ standing.losses }}</td>
+                                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                    <span class="font-bold text-lg {{ isQualified ? 'text-green-700' : 'text-gray-900' }}">
+                                                        {{ standing.matchPoints }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                    {% set diff = standing.pointDifferential %}
+                                                    <span class="{{ diff > 0 ? 'text-green-600' : (diff < 0 ? 'text-red-600' : 'text-gray-500') }}">
+                                                        {{ diff > 0 ? '+' : '' }}{{ diff }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                                    Aucun match joue dans cette poule
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if tournament.qualifiersPerGroup %}
+                                <div class="px-6 py-3 bg-green-500/10 border-t border-green-500/20 text-sm text-green-700 dark:text-green-400">
+                                    {{ ux_icon('lucide:info', {class: 'w-4 h-4 inline mr-1'}) }}
+                                    Les {{ tournament.qualifiersPerGroup }} premiers sont qualifies pour la phase eliminatoire
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Matches list for this group #}
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="px-6 py-4 bg-gradient-to-r from-blue-500/10 to-transparent border-b border-blue-500/20">
+                                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                                    {{ ux_icon('lucide:swords', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                                    Matchs
+                                </h3>
+                            </div>
+                            <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                                {% for match in groupMatches[group.letter]|default([]) %}
+                                    <div class="px-4 py-3 hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="font-medium {{ match.isCompleted and match.winner == match.player1 ? 'text-green-600' : 'text-gray-900' }}">
+                                                {{ match.player1.player.displayName }}
+                                            </span>
+                                            {% if match.isCompleted %}
+                                                <span class="px-2 py-1 bg-gray-500/20 rounded text-xs font-mono">
+                                                    {{ match.player1Score }} - {{ match.player2Score }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-gray-400 text-xs">vs</span>
+                                            {% endif %}
+                                            <span class="font-medium {{ match.isCompleted and match.winner == match.player2 ? 'text-green-600' : 'text-gray-900' }}">
+                                                {{ match.player2 ? match.player2.player.displayName : 'BYE' }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-xs text-gray-400">
+                                            Ronde {{ match.round.roundNumber }} - Table {{ match.tableNumber }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="px-4 py-8 text-center text-gray-500">
+                                        Aucun match genere
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# Back link #}
+    <div class="mt-8">
+        <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="inline-flex items-center text-green-600 hover:text-green-700 font-medium">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+            Retour au tournoi
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Simple tabs controller
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('[data-tabs-target="tab"]');
+    const panels = document.querySelectorAll('[data-tabs-target="panel"]');
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            const index = this.getAttribute('data-tab-index');
+
+            // Update tab styles
+            tabs.forEach(function(t) {
+                t.classList.remove('border-green-500', 'text-green-600');
+                t.classList.add('border-transparent', 'text-gray-500');
+                const badge = t.querySelector('span');
+                if (badge) {
+                    badge.classList.remove('bg-green-500/20', 'text-green-700', 'dark:text-green-400');
+                    badge.classList.add('bg-gray-500/20', 'text-gray-600', 'dark:text-gray-400');
+                }
+            });
+            this.classList.remove('border-transparent', 'text-gray-500');
+            this.classList.add('border-green-500', 'text-green-600');
+            const badge = this.querySelector('span');
+            if (badge) {
+                badge.classList.remove('bg-gray-500/20', 'text-gray-600', 'dark:text-gray-400');
+                badge.classList.add('bg-green-500/20', 'text-green-700', 'dark:text-green-400');
+            }
+
+            // Show/hide panels
+            panels.forEach(function(p) {
+                if (p.getAttribute('data-panel-index') === index) {
+                    p.classList.remove('hidden');
+                } else {
+                    p.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

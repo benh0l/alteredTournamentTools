@@ -1,0 +1,270 @@
+/* ============================================= */
+/* Theme System - CSS Custom Properties          */
+/* ============================================= */
+
+:root {
+    /* Default theme: Orange Light */
+    --color-primary-50: #fff7ed;
+    --color-primary-100: #ffedd5;
+    --color-primary-200: #fed7aa;
+    --color-primary-300: #fdba74;
+    --color-primary-400: #fb923c;
+    --color-primary-500: #f97316;
+    --color-primary-600: #ea580c;
+    --color-primary-700: #c2410c;
+    --color-primary-800: #9a3412;
+    --color-primary-900: #7c2d12;
+
+    --color-accent-400: #fbbf24;
+    --color-accent-500: #f59e0b;
+
+    /* Background colors */
+    --bg-base: #ffffff;
+    --bg-subtle: #f9fafb;
+    --bg-muted: #f3f4f6;
+    --bg-gradient-from: #fffbeb;
+    --bg-gradient-via: #fff7ed;
+    --bg-gradient-to: #fef2f2;
+
+    /* Text colors - darker for better readability in light mode */
+    --text-primary: #000000;
+    --text-secondary: #1f2937;
+    --text-muted: #4b5563;
+    --text-inverted: #ffffff;
+
+    /* Border colors */
+    --border-default: #e5e7eb;
+    --border-muted: #f3f4f6;
+
+    /* Card colors */
+    --card-bg: #ffffff;
+    --card-border: #e5e7eb;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+
+    /* Header gradient */
+    --header-from: #f97316;
+    --header-via: #f59e0b;
+    --header-to: #ea580c;
+}
+
+/* ============================================= */
+/* Dark Mode Base                                */
+/* ============================================= */
+[data-theme-mode="dark"] {
+    --bg-base: #111827;
+    --bg-subtle: #1f2937;
+    --bg-muted: #374151;
+    --bg-gradient-from: #1f2937;
+    --bg-gradient-via: #111827;
+    --bg-gradient-to: #0f172a;
+
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-muted: #6b7280;
+
+    --border-default: #374151;
+    --border-muted: #1f2937;
+
+    --card-bg: #1f2937;
+    --card-border: #374151;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+
+    /* Override light primary colors for dark mode - use darker versions */
+    --color-primary-50: #1c1917;
+    --color-primary-100: #292524;
+}
+
+/* Dark mode overrides per color theme */
+[data-theme-mode="dark"][data-theme-color="orange"] {
+    --color-primary-50: #1c1917;
+    --color-primary-100: #292524;
+}
+
+[data-theme-mode="dark"][data-theme-color="blue"] {
+    --color-primary-50: #0f172a;
+    --color-primary-100: #1e293b;
+}
+
+[data-theme-mode="dark"][data-theme-color="green"] {
+    --color-primary-50: #052e16;
+    --color-primary-100: #14532d;
+}
+
+[data-theme-mode="dark"][data-theme-color="purple"] {
+    --color-primary-50: #2e1065;
+    --color-primary-100: #3b0764;
+}
+
+[data-theme-mode="dark"][data-theme-color="rose"] {
+    --color-primary-50: #1c1917;
+    --color-primary-100: #292524;
+}
+
+/* ============================================= */
+/* Color Themes                                  */
+/* ============================================= */
+
+/* Orange Theme (default - already in :root) */
+[data-theme-color="orange"] {
+    --color-primary-50: #fff7ed;
+    --color-primary-100: #ffedd5;
+    --color-primary-200: #fed7aa;
+    --color-primary-300: #fdba74;
+    --color-primary-400: #fb923c;
+    --color-primary-500: #f97316;
+    --color-primary-600: #ea580c;
+    --color-primary-700: #c2410c;
+    --color-primary-800: #9a3412;
+    --color-primary-900: #7c2d12;
+    --color-accent-400: #fbbf24;
+    --color-accent-500: #f59e0b;
+    --header-from: #f97316;
+    --header-via: #f59e0b;
+    --header-to: #ea580c;
+}
+
+/* Blue Theme */
+[data-theme-color="blue"] {
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #3b82f6;
+    --color-primary-600: #2563eb;
+    --color-primary-700: #1d4ed8;
+    --color-primary-800: #1e40af;
+    --color-primary-900: #1e3a8a;
+    --color-accent-400: #38bdf8;
+    --color-accent-500: #0ea5e9;
+    --header-from: #3b82f6;
+    --header-via: #0ea5e9;
+    --header-to: #2563eb;
+}
+
+/* Green Theme */
+[data-theme-color="green"] {
+    --color-primary-50: #f0fdf4;
+    --color-primary-100: #dcfce7;
+    --color-primary-200: #bbf7d0;
+    --color-primary-300: #86efac;
+    --color-primary-400: #4ade80;
+    --color-primary-500: #22c55e;
+    --color-primary-600: #16a34a;
+    --color-primary-700: #15803d;
+    --color-primary-800: #166534;
+    --color-primary-900: #14532d;
+    --color-accent-400: #2dd4bf;
+    --color-accent-500: #14b8a6;
+    --header-from: #22c55e;
+    --header-via: #14b8a6;
+    --header-to: #16a34a;
+}
+
+/* Purple Theme */
+[data-theme-color="purple"] {
+    --color-primary-50: #faf5ff;
+    --color-primary-100: #f3e8ff;
+    --color-primary-200: #e9d5ff;
+    --color-primary-300: #d8b4fe;
+    --color-primary-400: #c084fc;
+    --color-primary-500: #a855f7;
+    --color-primary-600: #9333ea;
+    --color-primary-700: #7e22ce;
+    --color-primary-800: #6b21a8;
+    --color-primary-900: #581c87;
+    --color-accent-400: #f472b6;
+    --color-accent-500: #ec4899;
+    --header-from: #a855f7;
+    --header-via: #ec4899;
+    --header-to: #9333ea;
+}
+
+/* Rose Theme */
+[data-theme-color="rose"] {
+    --color-primary-50: #fff1f2;
+    --color-primary-100: #ffe4e6;
+    --color-primary-200: #fecdd3;
+    --color-primary-300: #fda4af;
+    --color-primary-400: #fb7185;
+    --color-primary-500: #f43f5e;
+    --color-primary-600: #e11d48;
+    --color-primary-700: #be123c;
+    --color-primary-800: #9f1239;
+    --color-primary-900: #881337;
+    --color-accent-400: #fb923c;
+    --color-accent-500: #f97316;
+    --header-from: #f43f5e;
+    --header-via: #f97316;
+    --header-to: #e11d48;
+}
+
+/* ============================================= */
+/* Theme-aware utility classes                   */
+/* ============================================= */
+
+/* Primary color utilities */
+.theme-primary-bg {
+    background-color: var(--color-primary-500);
+}
+
+.theme-primary-text {
+    color: var(--color-primary-600);
+}
+
+.theme-primary-border {
+    border-color: var(--color-primary-500);
+}
+
+/* Background utilities */
+.theme-bg-base {
+    background-color: var(--bg-base);
+}
+
+.theme-bg-subtle {
+    background-color: var(--bg-subtle);
+}
+
+.theme-bg-muted {
+    background-color: var(--bg-muted);
+}
+
+/* Text utilities */
+.theme-text-primary {
+    color: var(--text-primary);
+}
+
+.theme-text-secondary {
+    color: var(--text-secondary);
+}
+
+.theme-text-muted {
+    color: var(--text-muted);
+}
+
+/* Card utilities */
+.theme-card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+}
+
+/* Header gradient */
+.theme-header-gradient {
+    background: linear-gradient(to right, var(--header-from), var(--header-via), var(--header-to));
+}
+
+/* Primary gradient (buttons, etc) */
+.theme-primary-gradient {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+}
+
+/* Body gradient background */
+.theme-body-gradient {
+    background: linear-gradient(135deg, var(--bg-gradient-from) 0%, var(--bg-gradient-via) 50%, var(--bg-gradient-to) 100%);
+}
+
+/* Focus ring */
+.theme-focus-ring:focus {
+    --tw-ring-color: var(--color-primary-500);
+    border-color: var(--color-primary-500);
+}

@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes événements - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Mes événements en tant qu'organisateur</h1>
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('tournament_create') }}"
+               class="mt-4 md:mt-0 inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+               style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:plus', {class: 'w-5 h-5 mr-2'}) }}
+                Creer un tournoi
+            </a>
+        {% endif %}
+    </div>
+
+    {% if tournaments is empty %}
+        <div class="card p-8 text-center">
+            <p class="mb-4" style="color: var(--text-muted);">Vous n'avez pas encore organisé de tournoi.</p>
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('tournament_create') }}" class="hover:opacity-80" style="color: var(--color-primary-600);">
+                    Creer votre premier tournoi &rarr;
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card overflow-hidden">
+            <table class="min-w-full" style="border-color: var(--border-default);">
+                <thead style="background-color: var(--bg-subtle);">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                            Tournoi
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                            Date
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                            Statut
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                            Format
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for tournament in tournaments %}
+                        <tr class="hover:opacity-90 transition-opacity" style="border-color: var(--border-default);">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium" style="color: var(--text-primary);">
+                                    <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:opacity-80" style="color: var(--color-primary-600);">
+                                        {{ tournament.name }}
+                                    </a>
+                                </div>
+                                {% if tournament.location %}
+                                    <div class="text-sm" style="color: var(--text-muted);">{{ tournament.location }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                {{ tournament.date|date('d/m/Y') }}
+                                {% if tournament.time %}
+                                    <br>{{ tournament.time|date('H:i') }}
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% set statusColors = {
+                                    'draft': 'bg-gray-500/20 text-gray-800 dark:text-gray-300',
+                                    'published': 'bg-green-500/20 text-green-800 dark:text-green-300',
+                                    'ongoing': 'bg-blue-500/20 text-blue-800 dark:text-blue-300',
+                                    'completed': 'bg-purple-500/20 text-purple-800 dark:text-purple-300'
+                                } %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusColors[tournament.status.value] }}">
+                                    {{ tournament.status.label|trans }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                {{ tournament.format.label|trans }}<br>
+                                <span class="text-xs">{{ tournament.structure.label|trans }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="mr-3 hover:opacity-80" style="color: var(--color-primary-600);">
+                                    Voir
+                                </a>
+                                {% if tournament.editable %}
+                                    <a href="{{ path('tournament_edit', {id: tournament.id}) }}" class="text-indigo-600 hover:text-indigo-900">
+                                        Modifier
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

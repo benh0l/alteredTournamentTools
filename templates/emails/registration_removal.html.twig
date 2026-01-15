@@ -1,0 +1,40 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}{{ 'email.registration_removal.subject'|trans({'%tournament%': tournamentName}) }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #c53030; margin-bottom: 20px;">{{ 'email.registration_removal.title'|trans|default('Inscription retiree') }}</h2>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.common.greeting'|trans({'%name%': playerPseudo}) }}
+</p>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.registration_removal.body'|trans({'%tournament%': tournamentName})|default('Nous vous informons que votre inscription au tournoi ' ~ tournamentName ~ ' a ete retiree par l\'organisateur.') }}
+</p>
+
+{% if reason %}
+<div style="background-color: #fff5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #c53030;">
+    <h3 style="color: #c53030; margin-bottom: 10px; font-size: 16px; margin-top: 0;">
+        {{ 'email.registration_removal.reason'|trans|default('Motif indique') }}
+    </h3>
+    <p style="margin: 0; color: #4a5568;">
+        {{ reason }}
+    </p>
+</div>
+{% endif %}
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.registration_removal.if_error'|trans|default('Si vous pensez qu\'il s\'agit d\'une erreur, nous vous invitons a contacter l\'organisateur du tournoi.') }}
+</p>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ tournamentUrl }}" class="button" style="display: inline-block; background-color: #718096; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        {{ 'email.registration_removal.view_tournament'|trans|default('Voir le tournoi') }}
+    </a>
+</div>
+
+<p style="font-size: 14px; color: #718096; margin-top: 30px; text-align: center;">
+    {{ 'email.registration_removal.browse_other'|trans|default('Vous pouvez toujours consulter les autres tournois disponibles sur notre plateforme.') }}
+</p>
+{% endblock %}

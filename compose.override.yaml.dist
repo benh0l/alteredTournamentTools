@@ -1,0 +1,48 @@
+# Docker Compose Override File Template
+# Copy this file to compose.override.yaml for local customizations
+# compose.override.yaml is ignored by git
+#
+# Usage:
+#   cp compose.override.yaml.dist compose.override.yaml
+#   # Edit compose.override.yaml as needed
+#   docker compose up -d
+
+services:
+  # Example: Change PHP port binding
+  # php:
+  #   ports:
+  #     - "9001:9000"
+
+  # Example: Change database port (if 5432 is already in use)
+  # database:
+  #   ports:
+  #     - "5433:5432"
+
+  # Example: Change Nginx port
+  # nginx:
+  #   ports:
+  #     - "8081:80"
+
+  # Example: Add Mailhog for email testing
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   container_name: altered_mailhog
+  #   ports:
+  #     - "1025:1025"
+  #     - "8025:8025"
+  #   networks:
+  #     - altered_network
+
+  # Example: Add pgAdmin for database management
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: altered_pgadmin
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "5050:80"
+  #   networks:
+  #     - altered_network
+  #   depends_on:
+  #     - database

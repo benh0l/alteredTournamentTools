@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'match.show.page_title'|trans({'%number%': match.tableNumber}) }}{% endblock %}
+
+{% block body %}
+<div class="max-w-lg mx-auto px-4 py-6">
+    <div class="mb-6">
+        <a href="{{ path('round_show', {id: match.round.tournament.id, roundNumber: match.round.roundNumber}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+            &larr; {{ 'match.back_to_round'|trans }}
+        </a>
+    </div>
+
+    <div class="rounded-lg shadow-lg p-6" style="background-color: var(--card-bg);">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'common.table'|trans }} {{ match.tableNumber }}</h1>
+            <span class="px-3 py-1 rounded-full text-sm font-medium {{ match.status.badgeClasses }}">
+                {{ match.status.label|trans }}
+            </span>
+        </div>
+
+        <div class="text-sm mb-6" style="color: var(--text-muted);">
+            {{ match.round.tournament.name }} - {{ 'dashboard.round.title'|trans({'%number%': match.round.roundNumber}) }}
+        </div>
+
+        {% if match.isByeMatch %}
+            <div class="rounded-lg p-6 text-center" style="background-color: var(--bg-subtle);">
+                <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</p>
+                <p class="mt-2" style="color: var(--text-muted);">{{ 'match.bye_automatic_win'|trans }}</p>
+            </div>
+        {% else %}
+            <div class="rounded-lg p-6" style="background-color: var(--bg-subtle);">
+                {# Show tie banner if completed without winner #}
+                {% if match.isCompleted and not match.winner %}
+                    <div class="text-center mb-4 pb-4" style="border-bottom: 1px solid var(--border-default);">
+                        <span class="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 rounded-full font-semibold">
+                            {{ ux_icon('lucide:equal', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'match.tie'|trans }}
+                        </span>
+                    </div>
+                {% endif %}
+                <div class="flex justify-between items-center">
+                    <div class="text-center flex-1">
+                        <p class="font-semibold text-lg {{ match.winner and match.winner.id == match.player1.id ? 'text-green-600' : '' }}" style="{% if not (match.winner and match.winner.id == match.player1.id) %}color: var(--text-primary);{% endif %}">
+                            {{ match.player1.player.displayName }}
+                            {% if match.winner and match.winner.id == match.player1.id %}
+                                {{ ux_icon('lucide:trophy', {class: 'inline w-5 h-5 ml-1 text-amber-500'}) }}
+                            {% endif %}
+                        </p>
+                        {% if match.isCompleted %}
+                            <p class="text-3xl font-bold mt-2" style="color: var(--text-primary);">{{ match.player1Score }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="px-4">
+                        {% if match.isCompleted %}
+                            <span class="text-2xl" style="color: var(--text-muted);">-</span>
+                        {% else %}
+                            <span class="text-2xl font-bold" style="color: var(--text-muted);">{{ 'match.show.vs'|trans }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center flex-1">
+                        <p class="font-semibold text-lg {{ match.winner and match.winner.id == match.player2.id ? 'text-green-600' : '' }}" style="{% if not (match.winner and match.winner.id == match.player2.id) %}color: var(--text-primary);{% endif %}">
+                            {{ match.player2.player.displayName }}
+                            {% if match.winner and match.winner.id == match.player2.id %}
+                                {{ ux_icon('lucide:trophy', {class: 'inline w-5 h-5 ml-1 text-amber-500'}) }}
+                            {% endif %}
+                        </p>
+                        {% if match.isCompleted %}
+                            <p class="text-3xl font-bold mt-2" style="color: var(--text-primary);">{{ match.player2Score }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if match.isDisputed %}
+                <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 font-medium">
+                        {{ 'match.dispute_message'|trans }}
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if not match.isCompleted and not match.isByeMatch and is_granted('ROLE_USER') %}
+                <div class="mt-6">
+                    <a href="{{ path('match_submit_form', {id: match.id}) }}"
+                       class="block w-full text-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ 'match.show.submit_result'|trans }}
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if match.completedAt %}
+            <p class="text-xs text-center mt-6" style="color: var(--text-muted);">
+                {{ 'match.completed_on'|trans({'%date%': match.completedAt|date('d/m/Y H:i')}) }}
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

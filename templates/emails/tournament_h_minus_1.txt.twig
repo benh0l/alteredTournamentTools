@@ -1,0 +1,46 @@
+LE TOURNOI COMMENCE DANS 1 HEURE !
+
+Bonjour {{ user.pseudo }},
+
+Le tournoi "{{ tournament.name }}" commence bientot !
+Preparez-vous et partez maintenant pour arriver a l'heure.
+
+INFORMATIONS ESSENTIELLES
+=========================
+Heure de debut: {% if tournament.time %}{{ tournament.time|date('H:i') }}{% else %}Voir avec l'organisateur{% endif %}
+
+Format: {{ tournament.format.label|trans }}
+Structure: {{ tournament.structure.label|trans }}
+
+{% if tournament.location %}
+ADRESSE DU TOURNOI
+==================
+{{ tournament.location }}
+
+{% if tournament.latitude and tournament.longitude %}
+Google Maps: https://www.google.com/maps/search/?api=1&query={{ tournament.latitude }},{{ tournament.longitude }}
+OpenStreetMap: https://www.openstreetmap.org/?mlat={{ tournament.latitude }}&mlon={{ tournament.longitude }}&zoom=17
+{% else %}
+Rechercher sur Google Maps: https://www.google.com/maps/search/{{ tournament.location|url_encode }}
+{% endif %}
+{% endif %}
+
+CONTACT ORGANISATEUR
+====================
+{{ tournament.organizer.pseudo }}
+Email: {{ tournament.organizer.email }}
+
+Rappel: N'oubliez pas d'apporter votre deck et votre bonne humeur !
+
+---
+Voir le tournoi: {{ tournamentUrl }}
+{% if unregisterUrl %}
+
+---
+Vous ne pouvez plus participer ?
+Annuler mon inscription: {{ unregisterUrl }}
+{% endif %}
+
+---
+(c) {{ 'now'|date('Y') }} Altered Tournament Tools
+Cet email vous a ete envoye automatiquement. Merci de ne pas y repondre.

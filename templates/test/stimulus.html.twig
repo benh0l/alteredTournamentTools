@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Stimulus Test{% endblock %}
+
+{% block body %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Stimulus Controller Test</h1>
+
+    {# Basic controller connection test #}
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Basic Connection</h2>
+        <div data-controller="hello" class="card">
+            <p class="mb-2">Check browser console for "Hello controller connected!" message.</p>
+            <p class="text-sm text-gray-500">Controller Status: <span id="status">Checking...</span></p>
+        </div>
+    </section>
+
+    {# Targets and actions test #}
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Targets & Actions</h2>
+        <div data-controller="hello" data-hello-name-value="Stimulus" class="card space-y-4">
+            <div>
+                <label class="form-label" for="greeting-input">Your Name</label>
+                <input
+                    id="greeting-input"
+                    data-hello-target="input"
+                    type="text"
+                    class="form-input"
+                    placeholder="Enter your name"
+                >
+            </div>
+
+            <button
+                data-action="click->hello#greet"
+                class="btn-primary"
+            >
+                Greet
+            </button>
+
+            <p class="text-lg font-medium">
+                <span data-hello-target="output">Waiting...</span>
+            </p>
+        </div>
+    </section>
+
+    {# Values test #}
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Values (Typed Data Attributes)</h2>
+        <div data-controller="hello" data-hello-name-value="Custom Name" data-hello-count-value="10" class="card">
+            <p class="mb-2">Initial name: <strong>Custom Name</strong></p>
+            <p class="mb-4">Initial count: <strong>10</strong></p>
+            <button data-action="click->hello#greet" class="btn-secondary">
+                Greet (starts at 10)
+            </button>
+            <p class="mt-2"><span data-hello-target="output"></span></p>
+        </div>
+    </section>
+
+    {# Keyboard events test #}
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Keyboard Events</h2>
+        <div data-controller="hello" class="card">
+            <label class="form-label" for="keyboard-input">Type and press Enter</label>
+            <input
+                id="keyboard-input"
+                data-hello-target="input"
+                data-action="keydown.enter->hello#greet"
+                type="text"
+                class="form-input"
+                placeholder="Press Enter to greet"
+            >
+            <p class="mt-2"><span data-hello-target="output"></span></p>
+        </div>
+    </section>
+
+    {# Mercure controller test (from Story 1-5) #}
+    <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Mercure Controller (SSE)</h2>
+        <div data-controller="mercure"
+             data-mercure-url-value="http://localhost:3000/.well-known/mercure"
+             data-mercure-topic-value="/test/messages"
+             class="card">
+            <p class="mb-2">Status: <span data-mercure-target="status" class="font-medium">Connecting...</span></p>
+            <p class="text-sm text-gray-500">This connects to the Mercure hub for real-time updates.</p>
+        </div>
+    </section>
+</div>
+
+<script>
+// Verify Stimulus is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const statusEl = document.getElementById('status');
+        if (window.Stimulus) {
+            statusEl.textContent = 'Stimulus loaded successfully!';
+            statusEl.className = 'text-green-600 font-semibold';
+        } else {
+            statusEl.textContent = 'Stimulus NOT loaded - check console for errors';
+            statusEl.className = 'text-red-600 font-semibold';
+        }
+    }, 500);
+});
+</script>
+{% endblock %}

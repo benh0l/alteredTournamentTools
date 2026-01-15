@@ -1,0 +1,28 @@
+RONDE {{ roundNumber }} A COMMENCE !
+
+Bonjour {{ user.pseudo }},
+
+La ronde {{ roundNumber }} du tournoi "{{ tournament.name }}" vient de commencer !
+
+VOTRE MATCH
+===========
+Rendez-vous a votre table pour affronter votre adversaire !
+Consultez vos appariements sur la page du tournoi.
+
+INFORMATIONS DE LA RONDE
+========================
+Tournoi: {{ tournament.name }}
+Ronde: {{ roundNumber }}{% if tournament.swissRounds %} / {{ tournament.swissRounds }}{% endif %}
+
+Format: {{ tournament.format.label|trans }}
+Format de match: {% if tournament.swissMatchFormat %}{{ tournament.swissMatchFormat.label|trans }}{% else %}Standard{% endif %}
+
+
+Rappel: Pensez a soumettre vos resultats a la fin du match pour que la ronde suivante puisse commencer !
+
+---
+Voir mes appariements: {{ tournamentUrl }}
+
+---
+(c) {{ 'now'|date('Y') }} Altered Tournament Tools
+Cet email vous a ete envoye automatiquement. Merci de ne pas y repondre.

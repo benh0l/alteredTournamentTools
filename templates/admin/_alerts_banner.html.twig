@@ -1,0 +1,49 @@
+{# Admin alerts banner (FR75) - Include in admin/base.html.twig #}
+{% if alerts is defined and alerts|length > 0 %}
+    <div class="bg-gray-800" style="border-bottom: 1px solid var(--border-default);" data-controller="admin-alerts">
+        <div class="container mx-auto px-4">
+            {% for alert in alerts %}
+                <div class="py-2 flex items-center justify-between
+                    {% if alert.severity.value == 'critical' %}text-red-300
+                    {% elseif alert.severity.value == 'warning' %}text-yellow-300
+                    {% else %}text-blue-300{% endif %}"
+                    id="alert-banner-{{ alert.id }}">
+
+                    <div class="flex items-center space-x-3">
+                        {# Severity icon #}
+                        {% if alert.severity.value == 'critical' %}
+                            {{ ux_icon('lucide:alert-triangle', {class: 'h-5 w-5 text-red-400'}) }}
+                        {% elseif alert.severity.value == 'warning' %}
+                            {{ ux_icon('lucide:alert-triangle', {class: 'h-5 w-5 text-yellow-400'}) }}
+                        {% else %}
+                            {{ ux_icon('lucide:info', {class: 'h-5 w-5 text-blue-400'}) }}
+                        {% endif %}
+
+                        <span class="text-sm font-medium uppercase">{{ alert.severity.label|trans }}</span>
+
+                        <span class="text-sm">{{ alert.message }}</span>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <a href="{{ path('admin_alert_view', {id: alert.id}) }}"
+                           class="text-xs underline hover:no-underline">
+                            Details
+                        </a>
+
+                        <form action="{{ path('admin_alert_acknowledge', {id: alert.id}) }}"
+                              method="POST"
+                              class="inline"
+                              data-action="submit->admin-alerts#acknowledge">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_alert_acknowledge') }}">
+                            <button type="submit"
+                                    class="transition-colors" style="color: var(--text-muted);"
+                                    title="Acquitter">
+                                {{ ux_icon('lucide:x', {class: 'h-4 w-4'}) }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,408 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    {# Header #}
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ tournament.name }}</h1>
+                <p style="color: var(--text-secondary);">Statistiques du tournoi</p>
+            </div>
+            <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
+                &larr; Retour
+            </a>
+        </div>
+    </div>
+
+    {# Navigation tabs #}
+    <div class="mb-6" style="border-bottom: 1px solid var(--border-default);">
+        <nav class="flex space-x-8">
+            <a href="{{ path('tournament_final_standings', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 border-transparent hover:border-gray-300" style="color: var(--text-muted);">
+                Classement
+            </a>
+            <a href="{{ path('tournament_podium', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 border-transparent hover:border-gray-300" style="color: var(--text-muted);">
+                Podium
+            </a>
+            <a href="{{ path('tournament_stats', {id: tournament.id}) }}"
+               class="py-2 px-1 border-b-2 font-medium" style="border-color: var(--color-primary-600); color: var(--color-primary-600);">
+                Statistiques
+            </a>
+        </nav>
+    </div>
+
+    {# Tournament overview stats #}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Apercu du tournoi</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <p class="text-3xl font-bold text-blue-600">{{ meta_stats.player_count }}</p>
+                <p class="text-sm" style="color: var(--text-muted);">Joueurs</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold text-green-600">{{ meta_stats.rounds_played }}</p>
+                <p class="text-sm" style="color: var(--text-muted);">Rondes</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold text-purple-600">{{ meta_stats.total_matches }}</p>
+                <p class="text-sm" style="color: var(--text-muted);">Matchs joues</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold" style="color: var(--color-primary-600);">{{ meta_stats.total_games }}</p>
+                <p class="text-sm" style="color: var(--text-muted);">Games jouees</p>
+            </div>
+        </div>
+    </div>
+
+    {# Faction Champions #}
+    {% if faction_champions|length > 0 %}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+            {{ ux_icon('lucide:crown', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
+            Champions par Faction
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {% for key, champion in faction_champions %}
+            <div class="relative rounded-xl p-4 text-center transition-all hover:shadow-lg"
+                 style="background: linear-gradient(135deg, {{ champion.faction.color }}15, {{ champion.faction.color }}25); border: 2px solid {{ champion.faction.color }}40;">
+                {# Rank badge #}
+                <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md"
+                     style="background-color: {{ champion.faction.color }};">
+                    #{{ champion.rank }}
+                </div>
+
+                {# Hero or Player avatar #}
+                <div class="w-16 h-16 mx-auto rounded-full overflow-hidden border-3 shadow-lg mb-3"
+                     style="border-color: {{ champion.faction.color }};">
+                    {% if champion.heroImage %}
+                        <img src="{{ champion.heroImage }}" alt="{{ champion.heroLabel }}" class="w-full h-full object-cover">
+                    {% elseif champion.playerAvatar %}
+                        <img src="/uploads/avatars/{{ champion.playerAvatar }}" alt="{{ champion.player }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-white text-xl font-bold"
+                             style="background-color: {{ champion.faction.color }};">
+                            {{ champion.player|slice(0,1)|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Player name #}
+                <p class="font-bold text-sm truncate mb-1" style="color: var(--text-primary);" title="{{ champion.player }}">
+                    {{ champion.player }}
+                </p>
+
+                {# Faction label #}
+                <p class="text-xs font-medium mb-2" style="color: {{ champion.faction.color }};">
+                    {{ champion.faction.label|trans }}
+                </p>
+
+                {# Hero name if available #}
+                {% if champion.heroLabel %}
+                    <p class="text-xs truncate mb-2" style="color: var(--text-muted);" title="{{ champion.heroLabel }}">
+                        {{ champion.heroLabel }}
+                    </p>
+                {% endif %}
+
+                {# Stats #}
+                <div class="flex justify-center gap-2 text-xs">
+                    <span class="text-green-600 font-medium">{{ champion.wins }}V</span>
+                    <span style="color: var(--text-muted);">-</span>
+                    <span class="text-red-600 font-medium">{{ champion.losses }}D</span>
+                </div>
+                <p class="text-xs mt-1" style="color: var(--text-muted);">{{ champion.matchPoints }} pts</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Faction & Hero Distribution #}
+    {% if faction_distribution|length > 0 or hero_distribution|length > 0 %}
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+        {# Faction Distribution Pie Chart #}
+        {% if faction_distribution|length > 0 %}
+        <div class="border rounded-lg p-6" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h2 class="text-lg font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-2'}) }}
+                Repartition des Factions
+            </h2>
+            <div class="flex flex-col items-center">
+                {# Pie Chart using conic-gradient #}
+                {% set gradientParts = [] %}
+                {% set currentAngle = 0 %}
+                {% for key, data in faction_distribution %}
+                    {% set nextAngle = currentAngle + (data.percentage * 3.6) %}
+                    {% set gradientParts = gradientParts|merge([data.color ~ ' ' ~ currentAngle ~ 'deg ' ~ nextAngle ~ 'deg']) %}
+                    {% set currentAngle = nextAngle %}
+                {% endfor %}
+                <div class="w-48 h-48 rounded-full shadow-lg mb-4" style="background: conic-gradient({{ gradientParts|join(', ') }});"></div>
+
+                {# Legend #}
+                <div class="w-full space-y-2">
+                    {% for key, data in faction_distribution %}
+                    <div class="flex items-center justify-between p-2 rounded" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            <span class="w-4 h-4 rounded-full mr-3 flex-shrink-0" style="background-color: {{ data.color }};"></span>
+                            <span class="font-medium text-sm" style="color: var(--text-primary);">{{ data.label|trans }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-sm" style="color: var(--text-primary);">{{ data.count }}</span>
+                            <span class="text-xs ml-1" style="color: var(--text-muted);">({{ data.percentage }}%)</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Hero Distribution Pie Chart #}
+        {% if hero_distribution|length > 0 %}
+        <div class="border rounded-lg p-6" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h2 class="text-lg font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2'}) }}
+                Repartition des Heros
+            </h2>
+            <div class="flex flex-col items-center">
+                {# Pie Chart using conic-gradient #}
+                {% set gradientParts = [] %}
+                {% set currentAngle = 0 %}
+                {% for key, data in hero_distribution %}
+                    {% set nextAngle = currentAngle + (data.percentage * 3.6) %}
+                    {% set gradientParts = gradientParts|merge([data.color ~ ' ' ~ currentAngle ~ 'deg ' ~ nextAngle ~ 'deg']) %}
+                    {% set currentAngle = nextAngle %}
+                {% endfor %}
+                <div class="w-48 h-48 rounded-full shadow-lg mb-4" style="background: conic-gradient({{ gradientParts|join(', ') }});"></div>
+
+                {# Legend with hero images #}
+                <div class="w-full space-y-2 max-h-64 overflow-y-auto">
+                    {% for key, data in hero_distribution %}
+                    <div class="flex items-center justify-between p-2 rounded" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {% if data.image %}
+                                <div class="w-8 h-8 rounded-full overflow-hidden border-2 mr-2 flex-shrink-0" style="border-color: {{ data.color }};">
+                                    <img src="{{ data.image }}" alt="{{ data.label }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full rounded-full\' style=\'background-color: {{ data.color }};\'></div>'">
+                                </div>
+                            {% else %}
+                                <span class="w-4 h-4 rounded-full mr-3 flex-shrink-0" style="background-color: {{ data.color }};"></span>
+                            {% endif %}
+                            <span class="font-medium text-sm truncate" style="color: var(--text-primary);">{{ data.label }}</span>
+                        </div>
+                        <div class="text-right flex-shrink-0 ml-2">
+                            <span class="font-bold text-sm" style="color: var(--text-primary);">{{ data.count }}</span>
+                            <span class="text-xs ml-1" style="color: var(--text-muted);">({{ data.percentage }}%)</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Hero Win Rates Infographic #}
+    {% if hero_winrates|length > 0 %}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-6 flex items-center" style="color: var(--text-primary);">
+            {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2'}) }}
+            Winrate par Heros
+        </h2>
+        <div class="space-y-3">
+            {% for key, data in hero_winrates %}
+            <div class="flex items-center gap-4">
+                {# Hero image and name #}
+                <div class="flex items-center w-48 flex-shrink-0">
+                    {% if data.image %}
+                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 mr-3 flex-shrink-0" style="border-color: {{ data.color }};">
+                            <img src="{{ data.image }}" alt="{{ data.label }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full rounded-full\' style=\'background-color: {{ data.color }};\'></div>'">
+                        </div>
+                    {% else %}
+                        <div class="w-10 h-10 rounded-full mr-3 flex-shrink-0" style="background-color: {{ data.color }};"></div>
+                    {% endif %}
+                    <span class="font-medium text-sm truncate" style="color: var(--text-primary);">{{ data.label }}</span>
+                </div>
+
+                {# Progress bar #}
+                <div class="flex-grow">
+                    <div class="h-8 rounded-full overflow-hidden" style="background-color: var(--bg-subtle);">
+                        <div class="h-full rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                             style="width: {{ data.winrate }}%; background: linear-gradient(90deg, {{ data.color }}99, {{ data.color }});">
+                            {% if data.winrate >= 15 %}
+                                <span class="text-white text-sm font-bold drop-shadow">{{ data.winrate }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {# Winrate value (if bar is too small) #}
+                {% if data.winrate < 15 %}
+                    <span class="text-sm font-bold w-14 text-right" style="color: {{ data.color }};">{{ data.winrate }}%</span>
+                {% else %}
+                    <span class="w-14"></span>
+                {% endif %}
+
+                {# Stats details #}
+                <div class="flex items-center gap-2 text-xs flex-shrink-0 w-32 justify-end">
+                    <span class="text-green-600 font-medium">{{ data.wins }}V</span>
+                    <span style="color: var(--text-muted);">-</span>
+                    {% if data.draws > 0 %}
+                        <span class="text-amber-600 font-medium">{{ data.draws }}N</span>
+                        <span style="color: var(--text-muted);">-</span>
+                    {% endif %}
+                    <span class="text-red-600 font-medium">{{ data.losses }}D</span>
+                    <span style="color: var(--text-muted);">({{ data.total }})</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Legend #}
+        <div class="mt-6 pt-4 border-t text-xs" style="border-color: var(--border-default); color: var(--text-muted);">
+            <p>V = Victoires | N = Nuls | D = Defaites | Winrate = (Victoires + 0.5 × Nuls) / Total × 100</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Match statistics #}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Statistiques de match</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 rounded" style="background-color: var(--bg-subtle);">
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Moyenne de games par match</p>
+                    <p class="text-sm" style="color: var(--text-muted);">Nombre moyen de games pour decider un match</p>
+                </div>
+                <div class="text-2xl font-bold text-blue-600">{{ meta_stats.avg_games_per_match }}</div>
+            </div>
+
+            {% set swissFormat = tournament.swissMatchFormat %}
+            <div class="flex items-center justify-between p-4 rounded" style="background-color: var(--bg-subtle);">
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Format Swiss</p>
+                    <p class="text-sm" style="color: var(--text-muted);">Format des matchs en phase Swiss</p>
+                </div>
+                <div class="text-lg font-medium" style="color: var(--text-primary);">{{ swissFormat.label|trans }}</div>
+            </div>
+
+            {% if tournament.eliminationMatchFormat %}
+            <div class="flex items-center justify-between p-4 rounded" style="background-color: var(--bg-subtle);">
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Format Elimination</p>
+                    <p class="text-sm" style="color: var(--text-muted);">Format des matchs en phase elimination</p>
+                </div>
+                <div class="text-lg font-medium" style="color: var(--text-primary);">{{ tournament.eliminationMatchFormat.label|trans }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Tournament configuration #}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Configuration</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="flex items-center justify-between p-3" style="border-bottom: 1px solid var(--border-default);">
+                <span style="color: var(--text-secondary);">Format</span>
+                <span class="font-medium">{{ tournament.format.label|trans }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3" style="border-bottom: 1px solid var(--border-default);">
+                <span style="color: var(--text-secondary);">Structure</span>
+                <span class="font-medium">{{ tournament.structure.label|trans }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3" style="border-bottom: 1px solid var(--border-default);">
+                <span style="color: var(--text-secondary);">Visibilite</span>
+                <span class="font-medium">{{ tournament.visibility.label|trans }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3" style="border-bottom: 1px solid var(--border-default);">
+                <span style="color: var(--text-secondary);">Date</span>
+                <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
+            </div>
+            {% if tournament.location %}
+            <div class="flex items-center justify-between p-3 md:col-span-2" style="border-bottom: 1px solid var(--border-default);">
+                <span style="color: var(--text-secondary);">Lieu</span>
+                <span class="font-medium">{{ tournament.location }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Top performers #}
+    <div class="border rounded-lg p-6 mb-8" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Top performers</h2>
+        <div class="space-y-3">
+            {% for entry in standings|slice(0, 5) %}
+            <div class="flex items-center justify-between p-3 rounded" style="background-color: {% if loop.index <= 3 %}var(--bg-yellow-50, #fefce8){% else %}var(--bg-subtle){% endif %};">
+                <div class="flex items-center">
+                    {% if loop.index == 1 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400 text-white font-bold mr-3">1</span>
+                    {% elseif loop.index == 2 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-white font-bold mr-3">2</span>
+                    {% elseif loop.index == 3 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-600 text-white font-bold mr-3">3</span>
+                    {% else %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold mr-3" style="background-color: var(--bg-subtle); color: var(--text-secondary);">{{ loop.index }}</span>
+                    {% endif %}
+                    <span class="font-medium">{{ entry.registration.player.pseudo }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-green-600 font-medium">{{ entry.wins }}V</span>
+                    <span class="mx-1" style="color: var(--text-muted);">-</span>
+                    <span class="text-red-600">{{ entry.losses }}D</span>
+                    <span class="ml-2 text-sm" style="color: var(--text-muted);">({{ entry.matchPoints }} pts)</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Timeline #}
+    <div class="border rounded-lg p-6" style="background-color: var(--card-bg); border-color: var(--border-default);">
+        <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">Chronologie</h2>
+        <div class="space-y-4">
+            {% if tournament.createdAt %}
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-gray-400 mr-4"></div>
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Tournoi cree</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ tournament.createdAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if tournament.publishedAt %}
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-blue-400 mr-4"></div>
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Tournoi publie</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ tournament.publishedAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if tournament.startedAt %}
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-green-400 mr-4"></div>
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Tournoi demarre</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ tournament.startedAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if tournament.completedAt %}
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full bg-purple-400 mr-4"></div>
+                <div>
+                    <p class="font-medium" style="color: var(--text-primary);">Tournoi termine</p>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ tournament.completedAt|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

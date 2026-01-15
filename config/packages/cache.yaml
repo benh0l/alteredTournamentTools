@@ -1,0 +1,46 @@
+framework:
+    cache:
+        # Unique namespace prefix for this application
+        prefix_seed: altered_tournament_%kernel.environment%
+
+        # Use Redis for caching
+        app: cache.adapter.redis
+        system: cache.adapter.redis
+
+        # Redis connection from environment
+        default_redis_provider: '%env(REDIS_URL)%'
+
+        pools:
+            # Main application cache (custom pool - cache.app is reserved)
+            app.cache:
+                adapter: cache.adapter.redis
+                default_lifetime: 3600  # 1 hour
+                tags: true
+
+            # Doctrine query result cache
+            doctrine.result_cache_pool:
+                adapter: cache.adapter.redis
+                default_lifetime: 3600
+
+            # Doctrine metadata/system cache
+            doctrine.system_cache_pool:
+                adapter: cache.adapter.redis
+                default_lifetime: 86400  # 24 hours
+
+            # Tournament-specific cache pool
+            tournament.cache:
+                adapter: cache.adapter.redis
+                default_lifetime: 300  # 5 minutes
+                tags: true
+
+            # Standings cache pool (short TTL for real-time)
+            standings.cache:
+                adapter: cache.adapter.redis
+                default_lifetime: 60  # 1 minute
+                tags: true
+
+            # Real-time cache for dashboard updates
+            realtime.cache:
+                adapter: cache.adapter.redis
+                default_lifetime: 10  # 10 seconds
+                tags: false  # Disable tags for speed

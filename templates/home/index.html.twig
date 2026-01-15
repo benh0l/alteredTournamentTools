@@ -1,0 +1,570 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'home.title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="max-w-7xl mx-auto px-4">
+    {% if app.user %}
+        {# ========================================================================= #}
+        {# ACTION-FIRST: Current Match Display (FR48, NFR30)                         #}
+        {# ========================================================================= #}
+        {% if current_match %}
+            <section class="mb-8">
+                <div class="theme-header-gradient rounded-2xl shadow-2xl p-6 text-white">
+                    <div class="text-center mb-6">
+                        <span class="inline-block px-4 py-1 bg-white/20 rounded-full text-white/80 text-sm uppercase tracking-wide mb-2">{{ 'home.current_match'|trans }}</span>
+                        <a href="{{ path('tournament_dashboard', {id: current_match.round.tournament.id}) }}"
+                           class="block text-3xl font-bold hover:underline hover:text-white/90 transition-colors">
+                            {{ current_match.round.tournament.name }}
+                        </a>
+                        <p class="text-white/80 mt-1">{{ 'common.round'|trans }} {{ current_match.round.roundNumber }}</p>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-white/10 backdrop-blur rounded-xl p-5 mb-6">
+                        {# Player 1 (current user side) #}
+                        {% set isPlayer1 = current_match.player1.player.id == app.user.id %}
+                        {% set opponent = isPlayer1 ? current_match.player2 : current_match.player1 %}
+
+                        <div class="text-center flex-1">
+                            {% if app.user.avatar %}
+                                <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar"
+                                     class="w-16 h-16 mx-auto rounded-full object-cover border-2 border-white/30 mb-2">
+                            {% else %}
+                                <div class="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-2">
+                                    <span class="text-2xl font-bold">{{ app.user.pseudo|slice(0,1)|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <p class="text-lg font-bold">{{ 'home.you'|trans }}</p>
+                            <p class="text-white/80 text-sm">{{ app.user.displayName }}</p>
+                        </div>
+
+                        <div class="px-6">
+                            <span class="text-4xl font-bold text-white/80">VS</span>
+                        </div>
+
+                        <div class="text-center flex-1">
+                            {% if opponent %}
+                                {% if opponent.player.avatar %}
+                                    <img src="/uploads/avatars/{{ opponent.player.avatar }}" alt="Avatar"
+                                         class="w-16 h-16 mx-auto rounded-full object-cover border-2 border-white/30 mb-2">
+                                {% else %}
+                                    <div class="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-2">
+                                        <span class="text-2xl font-bold">{{ opponent.player.pseudo|slice(0,1)|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-2">
+                                    <span class="text-2xl">-</span>
+                                </div>
+                            {% endif %}
+                            <p class="text-lg font-bold">
+                                {% if opponent %}
+                                    {{ opponent.player.displayName }}
+                                {% else %}
+                                    {{ 'home.bye'|trans }}
+                                {% endif %}
+                            </p>
+                            {% if opponent %}
+                                <p class="text-white/80 text-sm">{{ 'home.opponent'|trans }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Table number #}
+                    <div class="text-center mb-6">
+                        <span class="inline-flex items-center bg-white px-8 py-3 rounded-2xl font-bold text-2xl shadow-lg" style="color: var(--color-primary-600);">
+                            {{ ux_icon('lucide:map-pin', {class: 'w-6 h-6 mr-2'}) }}
+                            {{ 'common.table'|trans }} {{ current_match.tableNumber }}
+                        </span>
+                    </div>
+
+                    {# Round timer - use startedAt if available, otherwise createdAt as fallback #}
+                    {% set roundStartTime = current_match.round.startedAt ?? current_match.round.createdAt %}
+                    <div class="text-center mb-6">
+                        <div id="match-timer"
+                             class="text-4xl font-mono font-bold"
+                             data-started-at="{{ roundStartTime.format('c') }}">
+                            --:--
+                        </div>
+                        <p class="text-white/80 text-xs mt-1">{{ 'home.time_elapsed'|trans }}</p>
+                    </div>
+
+                    {# Action buttons #}
+                    <div class="flex gap-4 justify-center">
+                        {% if current_match.isByeMatch %}
+                            <span class="inline-flex items-center bg-emerald-500 text-white px-8 py-3 rounded-xl text-lg font-semibold shadow-lg">
+                                {{ ux_icon('lucide:check', {class: 'w-6 h-6 mr-2'}) }}
+                                {{ 'home.automatic_win'|trans }}
+                            </span>
+                        {% else %}
+                            <a href="{{ path('match_submit', {id: current_match.id}) }}"
+                               class="inline-flex items-center bg-white px-8 py-3 rounded-xl text-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                               style="color: var(--color-primary-600);">
+                                {{ ux_icon('lucide:check-circle', {class: 'w-6 h-6 mr-2'}) }}
+                                {{ 'home.submit_result'|trans }}
+                            </a>
+                            {% if current_match.round.tournament.decklistTransparency.value == 'open' and opponent %}
+                                <a href="{{ opponent.decklistUrl ?? '#' }}"
+                                   target="_blank"
+                                   class="inline-flex items-center bg-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-all {% if not opponent.decklistUrl %}opacity-50 cursor-not-allowed{% endif %}">
+                                    {{ ux_icon('lucide:eye', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'home.view_decklist'|trans }}
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        {# ========================================================================= #}
+        {# Ongoing Tournaments (without current match)                               #}
+        {# ========================================================================= #}
+        {% if ongoing_tournaments|length > 0 and not current_match %}
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                    <span class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-lg flex items-center justify-center mr-3">
+                        {{ ux_icon('lucide:play', {class: 'w-4 h-4 text-white'}) }}
+                    </span>
+                    {{ 'home.ongoing_tournaments'|trans }}
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {% for registration in ongoing_tournaments %}
+                        {% set tournament = registration.tournament %}
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                           class="group block border-2 border-emerald-200 rounded-2xl p-5 hover:shadow-xl hover:border-emerald-400 transition-all duration-200 hover:-translate-y-1" style="background-color: var(--card-bg);">
+                            {# Header with live badge #}
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center shadow-lg">
+                                    {{ ux_icon('lucide:swords', {class: 'w-6 h-6 text-white'}) }}
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>
+                                    {{ 'enum.tournament_status.ongoing'|trans }}
+                                </span>
+                            </div>
+
+                            {# Tournament name #}
+                            <h3 class="font-bold text-lg mb-3 group-hover:text-emerald-600 transition-colors line-clamp-2" style="color: var(--text-primary);">
+                                {{ tournament.name }}
+                            </h3>
+
+                            {# Current round info #}
+                            <div class="mb-4">
+                                {% if tournament.currentRound %}
+                                    <div class="flex items-center text-sm">
+                                        <div class="w-7 h-7 bg-emerald-500/20 rounded-lg flex items-center justify-center mr-2">
+                                            {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 text-emerald-500'}) }}
+                                        </div>
+                                        <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ 'common.round'|trans }} {{ tournament.currentRound.roundNumber }}</span>
+                                    </div>
+                                {% else %}
+                                    <div class="flex items-center text-sm" style="color: var(--text-muted);">
+                                        <div class="w-7 h-7 rounded-lg flex items-center justify-center mr-2" style="background-color: var(--bg-muted);">
+                                            {{ ux_icon('lucide:clock', {class: 'w-4 h-4', style: 'color: var(--text-muted);'}) }}
+                                        </div>
+                                        <span>{{ 'home.waiting'|trans }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Footer #}
+                            <div class="flex items-center justify-between pt-3 border-t" style="border-color: var(--border-muted);">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                                    {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
+                                </span>
+                                <span class="inline-flex items-center text-emerald-500 group-hover:text-emerald-600 text-sm font-medium">
+                                    {{ 'home.join'|trans }}
+                                    {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform'}) }}
+                                </span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {# ========================================================================= #}
+        {# Upcoming Tournaments                                                      #}
+        {# ========================================================================= #}
+        {% if upcoming_tournaments|length > 0 %}
+            <section class="mb-8">
+                <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                    <span class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 theme-primary-gradient">
+                        {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 text-white'}) }}
+                    </span>
+                    {{ 'home.upcoming_tournaments'|trans }}
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {% for registration in upcoming_tournaments %}
+                        {% set tournament = registration.tournament %}
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                           class="group block border rounded-2xl p-5 hover:shadow-xl transition-all duration-200 hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                            {# Header with format badge #}
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg theme-primary-gradient">
+                                    {{ ux_icon('lucide:trophy', {class: 'w-6 h-6 text-white'}) }}
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold" style="background-color: var(--color-primary-100); color: var(--color-primary-700);">
+                                    {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
+                                </span>
+                            </div>
+
+                            {# Tournament name #}
+                            <h3 class="font-bold text-lg mb-3 transition-colors line-clamp-2" style="color: var(--text-primary);">
+                                {{ tournament.name }}
+                            </h3>
+
+                            {# Date and location #}
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center mr-2" style="background-color: var(--color-primary-50);">
+                                        {{ ux_icon('lucide:calendar', {class: 'w-4 h-4', style: 'color: var(--color-primary-500);'}) }}
+                                    </div>
+                                    <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
+                                    {% if tournament.time %}
+                                        <span class="mx-1" style="color: var(--text-muted);">-</span>
+                                        <span>{{ tournament.time|date('H:i') }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                    <div class="w-7 h-7 bg-rose-500/20 rounded-lg flex items-center justify-center mr-2">
+                                        {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
+                                    </div>
+                                    <span class="truncate">{{ tournament.location ?? (app.request.locale == 'fr' ? 'Lieu non precise' : 'Location not specified') }}</span>
+                                </div>
+                            </div>
+
+                            {# Footer with structure badge and arrow #}
+                            <div class="flex items-center justify-between pt-3 border-t" style="border-color: var(--border-muted);">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-500/20 text-purple-600 dark:text-purple-400">
+                                    {{ ('enum.tournament_structure.' ~ tournament.structure.value)|trans }}
+                                </span>
+                                <span class="inline-flex items-center text-sm font-medium" style="color: var(--color-primary-500);">
+                                    {{ 'action.view'|trans }}
+                                    {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform'}) }}
+                                </span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {# ========================================================================= #}
+        {# Discover Public Tournaments                                               #}
+        {# ========================================================================= #}
+        {% if public_tournaments|length > 0 %}
+            {% set userTournamentIds = [] %}
+            {% for reg in upcoming_tournaments %}
+                {% set userTournamentIds = userTournamentIds|merge([reg.tournament.id]) %}
+            {% endfor %}
+            {% for reg in ongoing_tournaments %}
+                {% set userTournamentIds = userTournamentIds|merge([reg.tournament.id]) %}
+            {% endfor %}
+
+            {% set filteredPublicTournaments = [] %}
+            {% for tournament in public_tournaments %}
+                {% if tournament.id not in userTournamentIds %}
+                    {% set filteredPublicTournaments = filteredPublicTournaments|merge([tournament]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% if filteredPublicTournaments|length > 0 %}
+            <section class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center" style="color: var(--text-primary);">
+                        <span class="w-8 h-8 bg-gradient-to-br from-indigo-400 to-violet-400 rounded-lg flex items-center justify-center mr-3">
+                            {{ ux_icon('lucide:compass', {class: 'w-4 h-4 text-white'}) }}
+                        </span>
+                        {{ 'home.discover_tournaments'|trans }}
+                    </h2>
+                    <a href="{{ path('tournament_list') }}" class="text-sm font-medium hover:underline" style="color: var(--color-primary-600);">
+                        {{ 'home.view_all'|trans }} &rarr;
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {% for tournament in filteredPublicTournaments|slice(0, 8) %}
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                           class="group block border rounded-2xl p-5 hover:shadow-xl transition-all duration-200 hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                            {# Header with format badge #}
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-violet-400 rounded-xl flex items-center justify-center shadow-lg">
+                                    {{ ux_icon('lucide:trophy', {class: 'w-6 h-6 text-white'}) }}
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+                                    {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
+                                </span>
+                            </div>
+
+                            {# Tournament name #}
+                            <h3 class="font-bold text-lg mb-3 transition-colors line-clamp-2" style="color: var(--text-primary);">
+                                {{ tournament.name }}
+                            </h3>
+
+                            {# Date and location #}
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 bg-indigo-500/20">
+                                        {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 text-indigo-500'}) }}
+                                    </div>
+                                    <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
+                                    {% if tournament.time %}
+                                        <span class="mx-1" style="color: var(--text-muted);">-</span>
+                                        <span>{{ tournament.time|date('H:i') }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if tournament.location %}
+                                <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                    <div class="w-7 h-7 bg-rose-500/20 rounded-lg flex items-center justify-center mr-2">
+                                        {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
+                                    </div>
+                                    <span class="truncate">{{ tournament.location }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {# Players count and arrow #}
+                            <div class="flex items-center justify-between pt-3 border-t" style="border-color: var(--border-muted);">
+                                <span class="inline-flex items-center text-xs" style="color: var(--text-muted);">
+                                    {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-1'}) }}
+                                    {{ tournament.registrationCount }} {{ app.request.locale == 'fr' ? 'inscrit' : 'registered' }}{% if tournament.registrationCount > 1 and app.request.locale == 'fr' %}s{% endif %}
+                                    {% if tournament.maxPlayers %} / {{ tournament.maxPlayers }}{% endif %}
+                                </span>
+                                <span class="inline-flex items-center text-sm font-medium text-indigo-500 group-hover:text-indigo-600">
+                                    {{ 'home.register_for'|trans }}
+                                    {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform'}) }}
+                                </span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        {% endif %}
+
+        {# ========================================================================= #}
+        {# Welcome section when no matches                                           #}
+        {# ========================================================================= #}
+        {% if not current_match and ongoing_tournaments|length == 0 and upcoming_tournaments|length == 0 and (public_tournaments|length == 0 or filteredPublicTournaments|default([])|length == 0) %}
+            <section class="text-center py-12">
+                <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style="background: linear-gradient(to bottom right, var(--color-primary-100), var(--color-accent-400) / 0.3);">
+                    {{ ux_icon('lucide:hand', {class: 'w-12 h-12', style: 'color: var(--color-primary-500);'}) }}
+                </div>
+                <h1 class="text-3xl font-bold mb-4" style="color: var(--text-primary);">
+                    {{ 'home.welcome'|trans({'%name%': app.user.displayName}) }}
+                </h1>
+                <p class="mb-8 text-lg" style="color: var(--text-secondary);">
+                    {{ 'home.no_tournaments'|trans }}
+                </p>
+                <div class="flex justify-center gap-4">
+                    <a href="{{ path('tournament_list') }}"
+                       class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:archive', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'home.view_tournaments'|trans }}
+                    </a>
+                    <a href="{{ path('my_tournaments') }}"
+                       class="inline-flex items-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:user', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'home.my_registrations'|trans }}
+                    </a>
+                </div>
+            </section>
+        {% endif %}
+
+    {% else %}
+        {# ========================================================================= #}
+        {# Landing page for non-authenticated users                                  #}
+        {# ========================================================================= #}
+        <section class="text-center py-16">
+            <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-8 shadow-2xl theme-primary-gradient">
+                {{ ux_icon('lucide:layers', {class: 'w-16 h-16 text-white'}) }}
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--text-primary);">
+                <span class="text-gradient">{{ 'home.landing.title'|trans }}</span>
+            </h1>
+            <p class="text-xl mb-10 max-w-2xl mx-auto" style="color: var(--text-secondary);">
+                {{ 'home.landing.subtitle'|trans }}
+            </p>
+
+            <div class="flex justify-center gap-4">
+                <a href="{{ path('app_register') }}"
+                   class="inline-flex items-center text-lg px-8 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                   style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'home.landing.create_account'|trans }}
+                </a>
+                <a href="{{ path('app_login') }}"
+                   class="inline-flex items-center text-lg px-8 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                   style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                    {{ ux_icon('lucide:log-in', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'home.landing.sign_in'|trans }}
+                </a>
+            </div>
+        </section>
+
+        {# Upcoming Public Tournaments for non-logged users #}
+        {% if public_tournaments|length > 0 %}
+        <section class="py-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold" style="color: var(--text-primary);">
+                    {{ 'home.landing.upcoming'|trans }}
+                </h2>
+                <a href="{{ path('tournament_list') }}" class="text-sm font-medium hover:underline" style="color: var(--color-primary-600);">
+                    {{ 'home.view_all'|trans }} &rarr;
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {% for tournament in public_tournaments|slice(0, 8) %}
+                    <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                       class="group block border rounded-2xl p-5 hover:shadow-xl transition-all duration-200 hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                        {# Header with format badge #}
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-violet-400 rounded-xl flex items-center justify-center shadow-lg">
+                                {{ ux_icon('lucide:trophy', {class: 'w-6 h-6 text-white'}) }}
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+                                {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
+                            </span>
+                        </div>
+
+                        {# Tournament name #}
+                        <h3 class="font-bold text-lg mb-3 transition-colors line-clamp-2" style="color: var(--text-primary);">
+                            {{ tournament.name }}
+                        </h3>
+
+                        {# Date and location #}
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center mr-2 bg-indigo-500/20">
+                                    {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 text-indigo-500'}) }}
+                                </div>
+                                <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
+                                {% if tournament.time %}
+                                    <span class="mx-1" style="color: var(--text-muted);">-</span>
+                                    <span>{{ tournament.time|date('H:i') }}</span>
+                                {% endif %}
+                            </div>
+                            {% if tournament.location %}
+                            <div class="flex items-center text-sm" style="color: var(--text-secondary);">
+                                <div class="w-7 h-7 bg-rose-500/20 rounded-lg flex items-center justify-center mr-2">
+                                    {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
+                                </div>
+                                <span class="truncate">{{ tournament.location }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {# Players count and arrow #}
+                        <div class="flex items-center justify-between pt-3 border-t" style="border-color: var(--border-muted);">
+                            <span class="inline-flex items-center text-xs" style="color: var(--text-muted);">
+                                {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-1'}) }}
+                                {{ tournament.registrationCount }} {{ app.request.locale == 'fr' ? 'inscrit' : 'registered' }}{% if tournament.registrationCount > 1 and app.request.locale == 'fr' %}s{% endif %}
+                                {% if tournament.maxPlayers %} / {{ tournament.maxPlayers }}{% endif %}
+                            </span>
+                            <span class="inline-flex items-center text-sm font-medium text-indigo-500 group-hover:text-indigo-600">
+                                {{ 'action.view'|trans }}
+                                {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform'}) }}
+                            </span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {# Features section #}
+        <section class="py-12">
+            <h2 class="text-2xl font-bold text-center mb-10" style="color: var(--text-primary);">
+                {{ 'home.features.title'|trans }}
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 rounded-xl flex items-center justify-center mb-4 shadow-lg theme-primary-gradient">
+                        {{ ux_icon('lucide:layers', {class: 'w-8 h-8 text-white'}) }}
+                    </div>
+                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.management.title'|trans }}</h3>
+                    <p class="text-sm" style="color: var(--text-secondary);">
+                        {{ 'home.features.management.description'|trans }}
+                    </p>
+                </div>
+
+                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                        {{ ux_icon('lucide:zap', {class: 'w-8 h-8 text-white'}) }}
+                    </div>
+                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.realtime.title'|trans }}</h3>
+                    <p class="text-sm" style="color: var(--text-secondary);">
+                        {{ 'home.features.realtime.description'|trans }}
+                    </p>
+                </div>
+
+                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-gradient-to-br from-rose-400 to-pink-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                        {{ ux_icon('lucide:smartphone', {class: 'w-8 h-8 text-white'}) }}
+                    </div>
+                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.mobile.title'|trans }}</h3>
+                    <p class="text-sm" style="color: var(--text-secondary);">
+                        {{ 'home.features.mobile.description'|trans }}
+                    </p>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+</div>
+
+{# Timer JavaScript for current match #}
+{% if current_match %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timerElement = document.getElementById('match-timer');
+            if (!timerElement) return;
+
+            const startedAt = timerElement.dataset.startedAt;
+            if (!startedAt) return;
+
+            const startTime = new Date(startedAt);
+            const maxTimerMinutes = 90; // Timer stops at 90 minutes
+
+            function updateTimer() {
+                const now = new Date();
+                let elapsed = Math.floor((now - startTime) / 1000);
+
+                // Cap at 90 minutes (5400 seconds)
+                const maxSeconds = maxTimerMinutes * 60;
+                if (elapsed > maxSeconds) {
+                    elapsed = maxSeconds;
+                }
+
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+
+                timerElement.textContent =
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+
+                // Color coding
+                timerElement.classList.remove('text-emerald-200', 'text-yellow-200', 'text-red-200');
+
+                if (minutes < 35) {
+                    timerElement.classList.add('text-emerald-200');
+                } else if (minutes < 50) {
+                    timerElement.classList.add('text-yellow-200');
+                } else {
+                    timerElement.classList.add('text-red-200');
+                }
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        });
+    </script>
+{% endblock %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:layers', {class: 'w-6 h-6', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.wizard.step3.question'|trans }}</h2>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step3.subtitle'|trans }}</p>
+    </div>
+
+    {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-6'}}) }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for child in form.format %}
+                <label class="cursor-pointer group" data-action="click->wizard#selectCard">
+                    {{ form_widget(child, {attr: {class: 'sr-only peer', style: 'accent-color: var(--color-primary-600);'}}) }}
+                    <div class="border-2 rounded-2xl p-6 transition-all duration-200
+                                peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-lg
+                                hover:shadow-md" style="border-color: var(--border-default);" onmouseover="this.style.borderColor='var(--color-primary-300)';" onmouseout="if(!this.previousElementSibling.checked) this.style.borderColor='var(--border-default)';">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors
+                                        {% if child.vars.value == 'constructed_standard' %}
+                                            bg-blue-500/20 group-hover:bg-blue-500/30 peer-checked:bg-blue-500/30
+                                        {% elseif child.vars.value == 'constructed_singleton' %}
+                                            bg-emerald-500/20 group-hover:bg-emerald-500/30 peer-checked:bg-emerald-500/30
+                                        {% elseif child.vars.value == 'constructed_nuc' %}
+                                            bg-amber-500/20 group-hover:bg-amber-500/30 peer-checked:bg-amber-500/30
+                                        {% elseif child.vars.value == 'constructed_hero_oof' %}
+                                            bg-pink-500/20 group-hover:bg-pink-500/30 peer-checked:bg-pink-500/30
+                                        {% elseif child.vars.value == 'constructed_bifaction' %}
+                                            bg-cyan-500/20 group-hover:bg-cyan-500/30 peer-checked:bg-cyan-500/30
+                                        {% else %}
+                                            bg-purple-500/20 group-hover:bg-purple-500/30 peer-checked:bg-purple-500/30
+                                        {% endif %}">
+                                {% if child.vars.value == 'constructed_standard' %}
+                                    {{ ux_icon('lucide:hammer', {class: 'w-8 h-8 text-blue-600 dark:text-blue-400'}) }}
+                                {% elseif child.vars.value == 'constructed_singleton' %}
+                                    {{ ux_icon('lucide:sparkles', {class: 'w-8 h-8 text-emerald-600 dark:text-emerald-400'}) }}
+                                {% elseif child.vars.value == 'constructed_nuc' %}
+                                    {{ ux_icon('lucide:ban', {class: 'w-8 h-8 text-amber-600 dark:text-amber-400'}) }}
+                                {% elseif child.vars.value == 'constructed_hero_oof' %}
+                                    {{ ux_icon('lucide:shuffle', {class: 'w-8 h-8 text-pink-600 dark:text-pink-400'}) }}
+                                {% elseif child.vars.value == 'constructed_bifaction' %}
+                                    {{ ux_icon('lucide:git-merge', {class: 'w-8 h-8 text-cyan-600 dark:text-cyan-400'}) }}
+                                {% else %}
+                                    {{ ux_icon('lucide:dice-5', {class: 'w-8 h-8 text-purple-600 dark:text-purple-400'}) }}
+                                {% endif %}
+                            </div>
+                            <div class="font-semibold text-lg mb-2" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                            <div class="text-sm" style="color: var(--text-muted);">
+                                {{ ('tournament.wizard.step3.format_desc.' ~ child.vars.value)|trans }}
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            {% endfor %}
+        </div>
+        {{ form_errors(form.format) }}
+    {{ form_end(form) }}
+{% endblock %}

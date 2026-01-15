@@ -1,0 +1,138 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Logs - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8"
+     data-controller="logs-filter"
+     data-logs-filter-url-value="{{ path('admin_logs') }}">
+
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-8" style="color: var(--text-primary);">Logs applicatifs</h1>
+
+        {# Filters #}
+        <div class="rounded-lg shadow mb-6" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4">
+                <form id="log-filters" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    {# Level Filter #}
+                    <div>
+                        <label for="level" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Niveau</label>
+                        <select id="level"
+                                name="level"
+                                data-logs-filter-target="level"
+                                data-action="change->logs-filter#filter"
+                                class="form-input w-full">
+                            <option value="">Tous les niveaux</option>
+                            {% for lvl in availableLevels %}
+                                <option value="{{ lvl }}" {% if filters.level == lvl %}selected{% endif %}>
+                                    {{ lvl }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {# Start Date #}
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Date debut</label>
+                        <input type="date"
+                               id="start_date"
+                               name="start_date"
+                               value="{{ filters.start_date }}"
+                               data-logs-filter-target="startDate"
+                               data-action="change->logs-filter#filter"
+                               class="form-input w-full">
+                    </div>
+
+                    {# End Date #}
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Date fin</label>
+                        <input type="date"
+                               id="end_date"
+                               name="end_date"
+                               value="{{ filters.end_date }}"
+                               data-logs-filter-target="endDate"
+                               data-action="change->logs-filter#filter"
+                               class="form-input w-full">
+                    </div>
+
+                    {# Keyword Search #}
+                    <div>
+                        <label for="keyword" class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">Recherche</label>
+                        <input type="text"
+                               id="keyword"
+                               name="keyword"
+                               value="{{ filters.keyword }}"
+                               placeholder="Mot-cle..."
+                               data-logs-filter-target="keyword"
+                               data-action="input->logs-filter#debounceFilter"
+                               class="form-input w-full">
+                    </div>
+
+                    {# Actions #}
+                    <div class="flex items-end">
+                        <button type="button"
+                                data-action="click->logs-filter#reset"
+                                class="px-4 py-2 rounded-md shadow-sm text-sm font-medium" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
+                            Reinitialiser
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Stats Bar #}
+        <div class="rounded-lg px-4 py-2 mb-4 flex items-center justify-between" style="background-color: var(--bg-subtle);">
+            <div class="text-sm" style="color: var(--text-secondary);">
+                <span data-logs-filter-target="totalCount">{{ pagination.total }}</span> entrees trouvees
+                {% if pagination.totalPages > 1 %}
+                    - Page {{ pagination.current }} / {{ pagination.totalPages }}
+                {% endif %}
+            </div>
+            <div data-logs-filter-target="loading" class="hidden">
+                {{ ux_icon('lucide:loader-2', {class: 'animate-spin h-5 w-5 text-blue-600'}) }}
+            </div>
+        </div>
+
+        {# Log Entries Table #}
+        <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+            <div data-logs-filter-target="entriesContainer">
+                {% include 'admin/logs/_entries.html.twig' %}
+            </div>
+        </div>
+
+        {# Pagination #}
+        {% if pagination.totalPages > 1 %}
+            <div class="mt-6 flex justify-center">
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    {% if pagination.current > 1 %}
+                        <a href="{{ path('admin_logs', filters|merge({page: pagination.current - 1})) }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium" style="border: 1px solid var(--border-default); background-color: var(--card-bg); color: var(--text-muted);"
+                           data-action="click->logs-filter#paginate"
+                           data-page="{{ pagination.current - 1 }}">
+                            Precedent
+                        </a>
+                    {% endif %}
+
+                    {% for i in max(1, pagination.current - 2)..min(pagination.totalPages, pagination.current + 2) %}
+                        <a href="{{ path('admin_logs', filters|merge({page: i})) }}"
+                           class="relative inline-flex items-center px-4 py-2 text-sm font-medium {% if i == pagination.current %}bg-blue-50 text-blue-600 z-10{% endif %}" style="border: 1px solid var(--border-default); {% if i != pagination.current %}background-color: var(--card-bg); color: var(--text-secondary);{% endif %}"
+                           data-action="click->logs-filter#paginate"
+                           data-page="{{ i }}">
+                            {{ i }}
+                        </a>
+                    {% endfor %}
+
+                    {% if pagination.current < pagination.totalPages %}
+                        <a href="{{ path('admin_logs', filters|merge({page: pagination.current + 1})) }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium" style="border: 1px solid var(--border-default); background-color: var(--card-bg); color: var(--text-muted);"
+                           data-action="click->logs-filter#paginate"
+                           data-page="{{ pagination.current + 1 }}">
+                            Suivant
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

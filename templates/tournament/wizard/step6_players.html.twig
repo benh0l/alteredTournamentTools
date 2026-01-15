@@ -1,0 +1,181 @@
+{% extends 'tournament/wizard/layout.html.twig' %}
+
+{% block wizard_content %}
+    {% set structure = (wizard_data is defined and wizard_data[4] is defined and wizard_data[4].structure is defined) ? wizard_data[4].structure : null %}
+    {% set hasGroupStage = structure is not null and structure.value == 'group_stage_elimination' %}
+    {% set hasSwiss = structure is not null and structure.hasSwiss() %}
+    {% set hasElimination = structure is not null and structure.hasElimination() %}
+
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:users', {class: 'w-6 h-6', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <h2 class="text-2xl font-bold" style="color: var(--text-primary);">
+            {% if hasGroupStage %}
+                {{ 'tournament.wizard.step6.question_groups'|trans }}
+            {% else %}
+                {{ 'tournament.wizard.step6.question'|trans }}
+            {% endif %}
+        </h2>
+        <p class="mt-2" style="color: var(--text-muted);">
+            {% if hasGroupStage %}
+                {{ 'tournament.wizard.step6.subtitle_groups'|trans }}
+            {% else %}
+                {{ 'tournament.wizard.step6.subtitle'|trans }}
+            {% endif %}
+        </p>
+    </div>
+
+    {{ form_start(form, {attr: {
+        id: 'wizard-form',
+        class: 'space-y-6',
+        'data-controller': 'tournament-form',
+        'data-tournament-form-structure-value': structure ? structure.value : '',
+        'data-tournament-form-has-group-stage-value': hasGroupStage ? 'true' : 'false',
+        'data-tournament-form-has-swiss-value': hasSwiss ? 'true' : 'false',
+        'data-tournament-form-has-elimination-value': hasElimination ? 'true' : 'false'
+    }}) }}
+
+        {# Standard players section (non-group stage) #}
+        <div data-tournament-form-target="standardPlayersSection" class="{{ hasGroupStage ? 'hidden' : '' }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ form.expectedPlayers.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:users', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.wizard.step6.expected_players'|trans }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:hash', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.expectedPlayers, {attr: {
+                            'class': 'form-input w-full pl-10 rounded-xl',
+                            'data-tournament-form-target': 'expectedPlayers',
+                            'data-action': 'input->tournament-form#suggestRounds',
+                            'placeholder': 'Ex: 16'
+                        }}) }}
+                    </div>
+                    {{ form_errors(form.expectedPlayers) }}
+                </div>
+
+                <div class="{{ hasSwiss ? '' : 'hidden' }}" data-tournament-form-target="swissRoundsWrapper">
+                    <label for="{{ form.swissRounds.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                        {{ 'tournament.wizard.step6.swiss_rounds'|trans }}
+                    </label>
+                    {{ form_widget(form.swissRounds, {attr: {
+                        'class': 'form-input w-full rounded-xl',
+                        'data-tournament-form-target': 'swissRounds'
+                    }}) }}
+                    {{ form_errors(form.swissRounds) }}
+                    <p class="text-sm mt-2" style="color: var(--color-primary-600);" data-tournament-form-target="roundsSuggestion"></p>
+                    <p class="text-xs mt-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.swiss_rounds_hint'|trans }}</p>
+                </div>
+            </div>
+
+            <div class="{{ hasElimination and not hasGroupStage ? '' : 'hidden' }} mt-6" data-tournament-form-target="topCutWrapper">
+                <label for="{{ form.topCutSize.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                    {{ ux_icon('lucide:trophy', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                    {{ 'tournament.wizard.step6.top_cut_size'|trans }}
+                </label>
+                {{ form_widget(form.topCutSize, {attr: {
+                    'class': 'form-input w-full rounded-xl'
+                }}) }}
+                {{ form_errors(form.topCutSize) }}
+                <p class="text-xs mt-2" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.top_cut_hint'|trans }}</p>
+            </div>
+        </div>
+
+        {# Group stage configuration section #}
+        <div data-tournament-form-target="groupStageSection" class="{{ hasGroupStage ? '' : 'hidden' }}">
+            <div class="bg-green-500/10 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-green-800 dark:text-green-300 mb-6 flex items-center">
+                    {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'tournament.wizard.step6.group_structure'|trans }}
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="{{ form.groupCount.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                            {{ 'tournament.wizard.step6.group_count'|trans }}
+                        </label>
+                        {{ form_widget(form.groupCount, {attr: {
+                            'class': 'form-input w-full rounded-xl',
+                            'data-tournament-form-target': 'groupCount',
+                            'data-action': 'input->tournament-form#updateGroupSummary',
+                            'placeholder': 'Ex: 4'
+                        }}) }}
+                        {{ form_errors(form.groupCount) }}
+                    </div>
+                    <div>
+                        <label for="{{ form.playersPerGroup.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                            {{ 'tournament.wizard.step6.players_per_group'|trans }}
+                        </label>
+                        {{ form_widget(form.playersPerGroup, {attr: {
+                            'class': 'form-input w-full rounded-xl',
+                            'data-tournament-form-target': 'playersPerGroup',
+                            'data-action': 'input->tournament-form#updateGroupSummary',
+                            'placeholder': 'Ex: 4'
+                        }}) }}
+                        {{ form_errors(form.playersPerGroup) }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="{{ form.qualifiersPerGroup.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                            {{ 'tournament.wizard.step6.qualifiers_per_group'|trans }}
+                        </label>
+                        {{ form_widget(form.qualifiersPerGroup, {attr: {
+                            'class': 'form-input w-full rounded-xl',
+                            'data-tournament-form-target': 'qualifiersPerGroup',
+                            'data-action': 'change->tournament-form#updateGroupSummary'
+                        }}) }}
+                        {{ form_errors(form.qualifiersPerGroup) }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                            {{ 'tournament.wizard.step6.formation_method'|trans }}
+                        </label>
+                        <div class="space-y-3">
+                            {% for child in form.groupFormationMethod %}
+                                <label class="flex items-center p-3 rounded-xl cursor-pointer transition-colors" style="background-color: var(--card-bg); border: 1px solid var(--border-default);" onmouseover="this.style.borderColor='var(--color-green-300)';" onmouseout="this.style.borderColor='var(--border-default)';">
+                                    {{ form_widget(child, {attr: {class: 'form-radio', style: 'accent-color: var(--color-green-600);'}}) }}
+                                    <span class="ml-3 text-sm" style="color: var(--text-secondary);">{{ child.vars.label|trans }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {{ form_errors(form.groupFormationMethod) }}
+                    </div>
+                </div>
+
+                {# Summary #}
+                <div data-tournament-form-target="groupSummary" class="rounded-xl p-4 border border-green-200 dark:border-green-500/30" style="background-color: var(--card-bg);">
+                    <h4 class="font-medium mb-3 flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:calculator', {class: 'w-4 h-4 mr-2 text-green-600 dark:text-green-400'}) }}
+                        {{ 'tournament.wizard.step6.summary'|trans }}
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div data-tournament-form-target="totalPlayersDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                            <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.total_players'|trans }}</div>
+                            <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                        </div>
+                        <div data-tournament-form-target="roundsPerGroupDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                            <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.rounds_per_group'|trans }}</div>
+                            <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                        </div>
+                        <div data-tournament-form-target="totalQualifiersDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                            <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.qualifiers'|trans }}</div>
+                            <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                        </div>
+                        <div data-tournament-form-target="bracketSizeDisplay" class="text-center p-2 bg-green-500/10 dark:bg-green-500/20 rounded-lg">
+                            <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.bracket'|trans }}</div>
+                            <div class="font-bold text-sm text-green-700 dark:text-green-400"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {{ form_end(form) }}
+{% endblock %}
