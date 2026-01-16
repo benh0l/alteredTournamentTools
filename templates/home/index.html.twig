@@ -379,8 +379,8 @@
         {# Landing page for non-authenticated users                                  #}
         {# ========================================================================= #}
         <section class="text-center py-16">
-            <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-8 shadow-2xl theme-primary-gradient">
-                {{ ux_icon('lucide:layers', {class: 'w-16 h-16 text-white'}) }}
+            <div class="w-32 h-32 mx-auto rounded-2xl flex items-center justify-center mb-8 shadow-2xl overflow-hidden">
+                <img src="{{ asset('logo/alteredTT_logo.png') }}" alt="Altered Tournament Tools" class="w-full h-full object-cover">
             </div>
             <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--text-primary);">
                 <span class="text-gradient">{{ 'home.landing.title'|trans }}</span>

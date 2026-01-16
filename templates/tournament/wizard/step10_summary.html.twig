@@ -46,20 +46,20 @@
             <dl class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
                     <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.format'|trans }}</dt>
-                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.format }}</dd>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.format|trans }}</dd>
                 </div>
                 <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
                     <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.structure'|trans }}</dt>
-                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.structure }}</dd>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.structure|trans }}</dd>
                 </div>
                 <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
                     <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.swiss_matches'|trans }}</dt>
-                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.swissMatchFormat }}</dd>
+                    <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.swissMatchFormat|trans }}</dd>
                 </div>
                 {% if summary.eliminationMatchFormat %}
                     <div class="rounded-xl p-3 text-center" style="background-color: var(--bg-subtle);">
                         <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.elim_matches'|trans }}</dt>
-                        <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.eliminationMatchFormat }}</dd>
+                        <dd class="text-sm font-medium" style="color: var(--text-primary);">{{ summary.eliminationMatchFormat|trans }}</dd>
                     </div>
                 {% endif %}
             </dl>
@@ -127,7 +127,7 @@
                     {% if summary.groupFormationMethod %}
                         <div class="rounded-xl p-3 text-center" style="background-color: var(--card-bg);">
                             <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.formation'|trans }}</dt>
-                            <dd class="text-sm font-medium text-green-600">{{ summary.groupFormationMethod }}</dd>
+                            <dd class="text-sm font-medium text-green-600">{{ summary.groupFormationMethod|trans }}</dd>
                         </div>
                     {% endif %}
                 </dl>
@@ -144,23 +144,23 @@
                 <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
                     <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.tournament'|trans }}</dt>
                     <dd class="text-sm font-medium flex items-center" style="color: var(--text-primary);">
-                        {% if summary.visibility == 'Public' %}
+                        {% if summary.visibility == 'enum.tournament_visibility.public' %}
                             {{ ux_icon('lucide:globe', {class: 'w-4 h-4 mr-1 text-green-500'}) }}
                         {% else %}
                             {{ ux_icon('lucide:lock', {class: 'w-4 h-4 mr-1 text-amber-500'}) }}
                         {% endif %}
-                        {{ summary.visibility }}
+                        {{ summary.visibility|trans }}
                     </dd>
                 </div>
                 <div class="rounded-xl p-3 flex items-center justify-between" style="background-color: var(--bg-subtle);">
                     <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.decklists'|trans }}</dt>
                     <dd class="text-sm font-medium flex items-center" style="color: var(--text-primary);">
-                        {% if summary.decklistTransparency == 'Ouvertes' %}
+                        {% if summary.decklistTransparency == 'enum.decklist_transparency.open' %}
                             {{ ux_icon('lucide:eye', {class: 'w-4 h-4 mr-1 text-blue-500'}) }}
                         {% else %}
                             {{ ux_icon('lucide:eye-off', {class: 'w-4 h-4 mr-1 text-gray-400'}) }}
                         {% endif %}
-                        {{ summary.decklistTransparency }}
+                        {{ summary.decklistTransparency|trans }}
                     </dd>
                 </div>
             </dl>

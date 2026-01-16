@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Tournament;
+use App\Enum\BracketSize;
 use App\Enum\PairingMode;
+use App\Enum\TournamentStructure;
 use App\Event\RoundStartedEvent;
 use App\Exception\InsufficientPlayersException;
 use App\Exception\InvalidTournamentStateException;
 use App\Exception\PairingException;
 use App\Exception\RoundNotCompleteException;
 use App\Security\Voter\TournamentVoter;
+use App\Service\BracketService;
 use App\Service\PairingService;
 use App\Service\TournamentCompletionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +37,7 @@ final class RoundController extends AbstractController
 {
     public function __construct(
         private readonly PairingService $pairingService,
+        private readonly BracketService $bracketService,
         private readonly TournamentCompletionService $completionService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
@@ -70,7 +74,22 @@ final class RoundController extends AbstractController
         $mode = PairingMode::tryFrom($modeValue) ?? PairingMode::RANDOM;
 
         try {
-            $round = $this->pairingService->generateRound1Pairings($tournament, $mode);
+            // Check if this is a single elimination tournament
+            if ($tournament->getStructure() === TournamentStructure::SINGLE_ELIMINATION) {
+                // Use bracket service for elimination tournaments
+                $playerCount = $tournament->getRegistrations()->count();
+                $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+
+                // Start the tournament first (set status to ONGOING)
+                $tournament->setStatus(\App\Enum\TournamentStatus::ONGOING);
+                $tournament->setStartedAt(new \DateTimeImmutable());
+
+                $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);
+                $round->setIsEliminationRound(true);
+            } else {
+                // Use Swiss pairing for other tournament structures
+                $round = $this->pairingService->generateRound1Pairings($tournament, $mode);
+            }
 
             // Dispatch event for round start notifications (FR66)
             $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
@@ -115,19 +134,63 @@ final class RoundController extends AbstractController
             return $this->redirectToTournament($tournament);
         }
 
-        // Check if round limit has been reached
-        if ($tournament->hasReachedSwissRoundLimit()) {
-            $this->addFlash('error', sprintf(
-                'Limite de rondes atteinte (%d/%d). Terminez le tournoi ou modifiez la configuration.',
-                $tournament->getRoundsCount(),
-                $tournament->getSwissRounds()
-            ));
-
-            return $this->redirectToTournament($tournament);
-        }
-
         try {
-            $round = $this->pairingService->generateSubsequentRoundPairings($tournament);
+            // Check if we're in elimination phase (for any tournament structure with elimination)
+            $isEliminationPhase = $tournament->getStructure() === TournamentStructure::SINGLE_ELIMINATION
+                || $tournament->isInEliminationPhase();
+
+            if ($isEliminationPhase) {
+                // Use bracket service for elimination rounds
+                $previousRound = $tournament->getLatestRound();
+
+                if ($previousRound === null) {
+                    throw new InvalidTournamentStateException(
+                        $tournament->getStatus(),
+                        [\App\Enum\TournamentStatus::ONGOING],
+                        'generer la prochaine ronde (aucune ronde precedente)'
+                    );
+                }
+
+                // Check if bracket is complete (only 1 match in last round = final)
+                if ($this->bracketService->isBracketComplete($tournament)) {
+                    $this->addFlash('info', 'Le bracket est termine. Finalisez le tournoi.');
+
+                    return $this->redirectToTournament($tournament);
+                }
+
+                // Check if we can advance (all matches completed, more than 1 winner)
+                if (!$this->bracketService->canAdvanceBracket($previousRound)) {
+                    $this->addFlash('error', 'La ronde precedente n\'est pas terminee ou il n\'y a plus assez de joueurs.');
+
+                    return $this->redirectToTournament($tournament);
+                }
+
+                $round = $this->bracketService->generateNextBracketRound($tournament, $previousRound);
+                $round->setIsEliminationRound(true);
+            } else {
+                // Swiss phase - check if round limit has been reached
+                if ($tournament->hasReachedSwissRoundLimit()) {
+                    // For MIXED tournaments, prompt to start elimination phase
+                    if ($tournament->getStructure() === TournamentStructure::MIXED) {
+                        $this->addFlash('info', sprintf(
+                            'Rondes suisses terminees (%d/%d). Demarrez la phase eliminatoire.',
+                            $tournament->getRoundsCount(),
+                            $tournament->getSwissRounds()
+                        ));
+                    } else {
+                        $this->addFlash('error', sprintf(
+                            'Limite de rondes atteinte (%d/%d). Terminez le tournoi ou modifiez la configuration.',
+                            $tournament->getRoundsCount(),
+                            $tournament->getSwissRounds()
+                        ));
+                    }
+
+                    return $this->redirectToTournament($tournament);
+                }
+
+                // Use Swiss pairing for Swiss phase
+                $round = $this->pairingService->generateSubsequentRoundPairings($tournament);
+            }
 
             // Dispatch event for round start notifications (FR66)
             $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
@@ -142,6 +205,8 @@ final class RoundController extends AbstractController
         } catch (InvalidTournamentStateException $e) {
             $this->addFlash('error', $e->getMessage());
         } catch (PairingException $e) {
+            $this->addFlash('error', $e->getMessage());
+        } catch (\LogicException $e) {
             $this->addFlash('error', $e->getMessage());
         }
 
@@ -232,6 +297,82 @@ final class RoundController extends AbstractController
             'tournament' => $tournament,
             'standings' => $sortedStandings,
         ]);
+    }
+
+    /**
+     * Start elimination phase for MIXED tournaments.
+     *
+     * This action:
+     * 1. Validates Swiss rounds are complete
+     * 2. Generates elimination bracket from top players
+     * 3. Marks tournament as in elimination phase
+     */
+    #[Route('/start-elimination', name: 'round_start_elimination', methods: ['POST'])]
+    public function startEliminationPhase(
+        Request $request,
+        Tournament $tournament
+    ): Response {
+        // Security check - only organizer can start elimination phase
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        // CSRF protection
+        if (!$this->isCsrfTokenValid('start-elimination-' . $tournament->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', $this->translator->trans('flash.error.invalid_csrf_token'));
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        // Validate this is a MIXED tournament
+        if ($tournament->getStructure() !== TournamentStructure::MIXED) {
+            $this->addFlash('error', 'Cette action n\'est disponible que pour les tournois en format mixte.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        // Validate we're not already in elimination phase
+        if ($tournament->isInEliminationPhase()) {
+            $this->addFlash('error', 'La phase eliminatoire a deja commence.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        // Validate Swiss rounds are complete
+        $latestRound = $tournament->getLatestRound();
+        if ($latestRound === null || !$latestRound->areAllMatchesCompleted()) {
+            $this->addFlash('error', 'La ronde actuelle doit etre terminee avant de demarrer la phase eliminatoire.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        try {
+            // Complete the last Swiss round if not already
+            if (!$latestRound->isCompleted()) {
+                $latestRound->complete();
+            }
+
+            // Get the elimination bracket size (default to TOP_8 or calculated from player count)
+            $playerCount = $tournament->getRegistrations()->count();
+            $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+
+            // Generate first elimination round
+            $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);
+            $round->setIsEliminationRound(true);
+
+            // Dispatch event for round start notifications
+            $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+
+            $this->addFlash('success', sprintf(
+                'Phase eliminatoire lancee! Top %d, %d match(s) genere(s).',
+                $bracketSize->value,
+                $round->getMatches()->count()
+            ));
+        } catch (InsufficientPlayersException $e) {
+            $this->addFlash('error', $e->getMessage());
+        } catch (\LogicException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToTournament($tournament);
     }
 
     /**

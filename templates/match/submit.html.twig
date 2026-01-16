@@ -70,69 +70,126 @@
                 <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
                     {{ 'match.submit.what_result'|trans }}
                 </label>
-                <div class="grid grid-cols-3 gap-3">
-                    <label class="relative">
+                {% set is_elimination = match.round.isEliminationRound %}
+                <div class="grid {{ is_elimination ? 'grid-cols-2' : 'grid-cols-3' }} gap-3">
+                    <label class="relative block">
                         <input type="radio" name="winner_id" value="{{ match.player1.id }}" required
                                class="peer sr-only" id="winner_player1">
-                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
-                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
-                                    hover:border-gray-400" style="border-color: var(--border-default);">
-                            <span class="font-semibold text-base block truncate" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</span>
-                            <span class="text-sm" style="color: var(--color-green-600);">{{ 'match.submit.victory'|trans }}</span>
+                        <div class="p-4 border-3 rounded-xl cursor-pointer text-center transition-all duration-200
+                                    border-gray-200 bg-white
+                                    peer-checked:border-green-500 peer-checked:bg-gradient-to-br peer-checked:from-green-500 peer-checked:to-emerald-600 peer-checked:shadow-xl peer-checked:scale-[1.02] peer-checked:[&>span]:text-white
+                                    hover:border-green-300 hover:shadow-md hover:bg-green-50">
+                            <span class="font-bold text-lg block truncate text-gray-800 transition-colors">{{ match.player1.player.displayName }}</span>
+                            <span class="text-sm font-medium text-green-600 transition-colors">{{ 'match.submit.victory'|trans }}</span>
+                        </div>
+                        <div class="absolute -top-2 -right-2 hidden peer-checked:flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-lg border-2 border-green-500">
+                            {{ ux_icon('lucide:check', {class: 'w-5 h-5 text-green-600'}) }}
                         </div>
                     </label>
-                    <label class="relative">
+                    {% if not is_elimination %}
+                    <label class="relative block">
                         <input type="radio" name="winner_id" value="0" required
                                class="peer sr-only" id="winner_tie">
-                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
-                                    peer-checked:border-amber-500 peer-checked:bg-amber-500/10
-                                    hover:border-gray-400" style="border-color: var(--border-default);">
-                            <span class="font-semibold text-base block" style="color: var(--text-primary);">{{ 'match.submit.tie'|trans }}</span>
-                            <span class="text-sm" style="color: var(--color-amber-600);">{{ 'match.submit.draw'|trans }}</span>
+                        <div class="p-4 border-3 rounded-xl cursor-pointer text-center transition-all duration-200
+                                    border-gray-200 bg-white
+                                    peer-checked:border-amber-500 peer-checked:bg-gradient-to-br peer-checked:from-amber-500 peer-checked:to-orange-500 peer-checked:shadow-xl peer-checked:scale-[1.02] peer-checked:[&>span]:text-white
+                                    hover:border-amber-300 hover:shadow-md hover:bg-amber-50">
+                            <span class="font-bold text-lg block text-gray-800 transition-colors">{{ 'match.submit.tie'|trans }}</span>
+                            <span class="text-sm font-medium text-amber-600 transition-colors">{{ 'match.submit.draw'|trans }}</span>
+                        </div>
+                        <div class="absolute -top-2 -right-2 hidden peer-checked:flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-lg border-2 border-amber-500">
+                            {{ ux_icon('lucide:check', {class: 'w-5 h-5 text-amber-600'}) }}
                         </div>
                     </label>
-                    <label class="relative">
+                    {% endif %}
+                    <label class="relative block">
                         <input type="radio" name="winner_id" value="{{ match.player2.id }}" required
                                class="peer sr-only" id="winner_player2">
-                        <div class="p-4 border-2 rounded-lg cursor-pointer text-center transition-all
-                                    peer-checked:border-green-500 peer-checked:bg-green-500/10
-                                    hover:border-gray-400" style="border-color: var(--border-default);">
-                            <span class="font-semibold text-base block truncate" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</span>
-                            <span class="text-sm" style="color: var(--color-green-600);">{{ 'match.submit.victory'|trans }}</span>
+                        <div class="p-4 border-3 rounded-xl cursor-pointer text-center transition-all duration-200
+                                    border-gray-200 bg-white
+                                    peer-checked:border-green-500 peer-checked:bg-gradient-to-br peer-checked:from-green-500 peer-checked:to-emerald-600 peer-checked:shadow-xl peer-checked:scale-[1.02] peer-checked:[&>span]:text-white
+                                    hover:border-green-300 hover:shadow-md hover:bg-green-50">
+                            <span class="font-bold text-lg block truncate text-gray-800 transition-colors">{{ match.player2.player.displayName }}</span>
+                            <span class="text-sm font-medium text-green-600 transition-colors">{{ 'match.submit.victory'|trans }}</span>
+                        </div>
+                        <div class="absolute -top-2 -right-2 hidden peer-checked:flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-lg border-2 border-green-500">
+                            {{ ux_icon('lucide:check', {class: 'w-5 h-5 text-green-600'}) }}
                         </div>
                     </label>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
-                    {{ 'match.submit.score_optional'|trans }}
-                </label>
-                <div class="flex items-center justify-center gap-4">
-                    <div class="text-center">
-                        <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                            {{ match.player1.player.displayName }}
-                        </label>
-                        <input type="number" id="player1_score" name="player1_score" min="0" max="3" value="0"
-                               class="form-input w-16 h-12 text-center text-xl rounded-lg">
-                    </div>
-                    <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
-                    <div class="text-center">
-                        <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                            {{ match.player2.player.displayName }}
-                        </label>
-                        <input type="number" id="player2_score" name="player2_score" min="0" max="3" value="0"
-                               class="form-input w-16 h-12 text-center text-xl rounded-lg">
-                    </div>
+            {% set is_bo1 = match_format.value == 'bo1' %}
+            {% set is_bo3 = match_format.value == 'bo3' %}
+
+            {% if is_bo1 %}
+                {# BO1: Score is automatic (1-0), show info message #}
+                <div class="rounded-lg p-4" style="background-color: var(--color-blue-50); border: 1px solid var(--color-blue-200);">
+                    <p class="text-sm text-center" style="color: var(--color-blue-700);">
+                        {{ ux_icon('lucide:info', {class: 'w-4 h-4 inline mr-1'}) }}
+                        {{ 'match.submit.bo1_score_auto'|trans|default('Format BO1 : le score sera automatiquement 1-0 en faveur du vainqueur.') }}
+                    </p>
                 </div>
-                <p class="text-xs text-center mt-2" style="color: var(--text-muted);">
-                    {{ 'match.submit.score_help'|trans }}
-                </p>
-            </div>
+                <input type="hidden" name="player1_score" value="0">
+                <input type="hidden" name="player2_score" value="0">
+            {% elseif is_bo3 %}
+                {# BO3: Score is required, winner must have 2 #}
+                <div>
+                    <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
+                        {{ 'match.submit.score_required'|trans|default('Score (obligatoire)') }}
+                    </label>
+                    <div class="flex items-center justify-center gap-4">
+                        <div class="text-center">
+                            <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                                {{ match.player1.player.displayName }}
+                            </label>
+                            <input type="number" id="player1_score" name="player1_score" min="0" max="2" value="0" required
+                                   class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                        </div>
+                        <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
+                        <div class="text-center">
+                            <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                                {{ match.player2.player.displayName }}
+                            </label>
+                            <input type="number" id="player2_score" name="player2_score" min="0" max="2" value="0" required
+                                   class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                        </div>
+                    </div>
+                    <p class="text-xs text-center mt-2" style="color: var(--color-amber-600);">
+                        {{ 'match.submit.bo3_score_help'|trans|default('Format BO3 : le vainqueur doit avoir un score de 2.') }}
+                    </p>
+                </div>
+            {% else %}
+                {# Fallback for other formats #}
+                <div>
+                    <label class="block text-sm font-medium mb-3 text-center" style="color: var(--text-secondary);">
+                        {{ 'match.submit.score_optional'|trans }}
+                    </label>
+                    <div class="flex items-center justify-center gap-4">
+                        <div class="text-center">
+                            <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                                {{ match.player1.player.displayName }}
+                            </label>
+                            <input type="number" id="player1_score" name="player1_score" min="0" max="3" value="0"
+                                   class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                        </div>
+                        <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
+                        <div class="text-center">
+                            <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
+                                {{ match.player2.player.displayName }}
+                            </label>
+                            <input type="number" id="player2_score" name="player2_score" min="0" max="3" value="0"
+                                   class="form-input w-16 h-12 text-center text-xl rounded-lg">
+                        </div>
+                    </div>
+                    <p class="text-xs text-center mt-2" style="color: var(--text-muted);">
+                        {{ 'match.submit.score_help'|trans }}
+                    </p>
+                </div>
+            {% endif %}
 
             <button type="submit"
-                    class="w-full py-4 px-6 font-semibold rounded-lg text-white text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md hover:shadow-lg"
-                    style="{% if organizer_mode|default(false) %}background-color: var(--color-purple-600); --tw-ring-color: var(--color-purple-500);{% else %}background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));{% endif %}">
+                    class="w-full py-4 px-6 text-lg shadow-md hover:shadow-lg {% if organizer_mode|default(false) %}btn-purple{% else %}btn-primary{% endif %}">
                 {% if organizer_mode|default(false) %}
                     {{ 'match.submit.validate_organizer'|trans }}
                 {% else %}

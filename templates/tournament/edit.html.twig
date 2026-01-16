@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ tournament.name }} - Altered Tournament Tools{% endblock %}
+{% block title %}{{ 'tournament.edit.title'|trans }} - {{ tournament.name }}{% endblock %}
 
 {% block body %}
 <div class="min-h-screen py-8 px-4">
@@ -10,7 +10,7 @@
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg theme-primary-gradient">
                 {{ ux_icon('lucide:edit-3', {class: 'w-8 h-8 text-white'}) }}
             </div>
-            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Modifier le tournoi</h1>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'tournament.edit.title'|trans }}</h1>
             <p class="mt-2" style="color: var(--text-muted);">{{ tournament.name }}</p>
         </div>
 
@@ -24,7 +24,7 @@
                 <span class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center mr-3">
                     {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-blue-600'}) }}
                 </span>
-                Informations generales
+                {{ 'tournament.create.section_general'|trans }}
             </h2>
 
             <div class="space-y-5">
@@ -32,7 +32,7 @@
                 <div>
                     <label for="{{ form.name.vars.id }}" class="block form-label mb-2">
                         {{ ux_icon('lucide:trophy', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                        Nom du tournoi
+                        {{ 'form.tournament.name'|trans }}
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -40,7 +40,7 @@
                         </div>
                         {{ form_widget(form.name, {'attr': {
                             'class': 'form-input w-full pl-10',
-                            'placeholder': 'Nom du tournoi'
+                            'placeholder': 'form.tournament.name_placeholder'|trans
                         }}) }}
                     </div>
                     {{ form_errors(form.name) }}
@@ -51,7 +51,7 @@
                     <div>
                         <label for="{{ form.date.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Date
+                            {{ 'form.tournament.date'|trans }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -66,7 +66,7 @@
                     <div>
                         <label for="{{ form.time.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:clock', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Heure
+                            {{ 'form.tournament.time'|trans }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -84,7 +84,7 @@
                 <div>
                     <label for="{{ form.location.vars.id }}" class="block form-label mb-2">
                         {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                        Lieu
+                        {{ 'form.tournament.location'|trans }}
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -92,7 +92,7 @@
                         </div>
                         {{ form_widget(form.location, {'attr': {
                             'class': 'form-input w-full pl-10',
-                            'placeholder': 'Adresse ou nom du lieu'
+                            'placeholder': 'form.tournament.location_placeholder'|trans
                         }}) }}
                     </div>
                     {{ form_errors(form.location) }}
@@ -108,7 +108,7 @@
                 <span class="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center mr-3">
                     {{ ux_icon('lucide:settings', {class: 'w-5 h-5 text-purple-600'}) }}
                 </span>
-                Format et structure
+                {{ 'tournament.create.section_config'|trans }}
             </h2>
 
             <div class="space-y-5">
@@ -117,7 +117,7 @@
                     <div>
                         <label for="{{ form.format.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:layers', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Format de jeu
+                            {{ 'form.tournament.format'|trans }}
                         </label>
                         {{ form_widget(form.format, {'attr': {
                             'class': 'form-input w-full'
@@ -127,7 +127,7 @@
                     <div>
                         <label for="{{ form.structure.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:git-branch', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Structure du tournoi
+                            {{ 'form.tournament.structure'|trans }}
                         </label>
                         {{ form_widget(form.structure, {'attr': {
                             'class': 'form-input w-full',
@@ -143,7 +143,7 @@
                     <div>
                         <label for="{{ form.swissMatchFormat.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:refresh-cw', {class: 'w-4 h-4 inline mr-1 text-blue-500'}) }}
-                            Format matchs suisses
+                            {{ 'form.tournament.swiss_match_format'|trans }}
                         </label>
                         {{ form_widget(form.swissMatchFormat, {'attr': {
                             'class': 'form-input w-full',
@@ -155,7 +155,7 @@
                     <div data-tournament-form-target="eliminationFormatContainer">
                         <label for="{{ form.eliminationMatchFormat.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:trophy', {class: 'w-4 h-4 inline mr-1 text-amber-500'}) }}
-                            Format matchs elimination
+                            {{ 'form.tournament.elimination_match_format'|trans }}
                         </label>
                         {{ form_widget(form.eliminationMatchFormat, {'attr': {
                             'class': 'form-input w-full'
@@ -169,7 +169,7 @@
                     <div>
                         <label for="{{ form.expectedPlayers.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:users', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Joueurs attendus
+                            {{ 'form.tournament.expected_players'|trans }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -186,7 +186,7 @@
                     <div data-tournament-form-target="swissRoundsContainer">
                         <label for="{{ form.swissRounds.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Rondes suisses
+                            {{ 'form.tournament.swiss_rounds'|trans }}
                         </label>
                         {{ form_widget(form.swissRounds, {'attr': {
                             'class': 'form-input w-full',
@@ -198,7 +198,7 @@
                     <div data-tournament-form-target="topCutSizeContainer">
                         <label for="{{ form.topCutSize.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:award', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Taille Top Cut
+                            {{ 'form.tournament.top_cut_size'|trans }}
                         </label>
                         {{ form_widget(form.topCutSize, {'attr': {
                             'class': 'form-input w-full'
@@ -217,13 +217,13 @@
                 <span class="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center mr-3">
                     {{ ux_icon('lucide:eye', {class: 'w-5 h-5 text-green-600'}) }}
                 </span>
-                Visibilite
+                {{ 'tournament.create.section_visibility'|trans }}
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {# Visibilité du tournoi #}
                 <div>
-                    <span class="block form-label mb-3">Visibilite du tournoi</span>
+                    <span class="block form-label mb-3">{{ 'form.tournament.visibility'|trans }}</span>
                     <div class="space-y-3">
                         {% for child in form.visibility %}
                             <label class="flex items-center p-4 rounded-xl border-2 border-transparent" style="background-color: var(--bg-subtle); cursor-pointer hover:border-green-300 hover:bg-green-500/10 transition-all group has-[:checked]:border-green-500 has-[:checked]:bg-green-500/10">
@@ -238,7 +238,7 @@
                                             {{ ux_icon('lucide:lock', {class: 'w-4 h-4 text-amber-600'}) }}
                                         </div>
                                     {% endif %}
-                                    <span class="form-label">{{ child.vars.label }}</span>
+                                    <span class="form-label">{{ child.vars.label|trans }}</span>
                                 </div>
                             </label>
                         {% endfor %}
@@ -248,7 +248,7 @@
 
                 {# Transparence des decklists #}
                 <div>
-                    <span class="block form-label mb-3">Transparence des decklists</span>
+                    <span class="block form-label mb-3">{{ 'form.tournament.decklist_transparency'|trans }}</span>
                     <div class="space-y-3">
                         {% for child in form.decklistTransparency %}
                             <label class="flex items-center p-4 rounded-xl border-2 border-transparent" style="background-color: var(--bg-subtle); cursor-pointer hover:border-blue-300 hover:bg-blue-500/10 transition-all group has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
@@ -263,7 +263,7 @@
                                             {{ ux_icon('lucide:eye-off', {class: 'w-4 h-4 text-gray-500'}) }}
                                         </div>
                                     {% endif %}
-                                    <span class="form-label">{{ child.vars.label }}</span>
+                                    <span class="form-label">{{ child.vars.label|trans }}</span>
                                 </div>
                             </label>
                         {% endfor %}
@@ -281,7 +281,7 @@
                 <span class="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center mr-3">
                     {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 text-orange-600'}) }}
                 </span>
-                Informations supplementaires
+                {{ 'tournament.create.section_additional'|trans }}
             </h2>
 
             <div class="space-y-5">
@@ -289,12 +289,12 @@
                 <div>
                     <label for="{{ form.description.vars.id }}" class="block form-label mb-2">
                         {{ ux_icon('lucide:align-left', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                        Description
+                        {{ 'form.tournament.description'|trans }}
                     </label>
                     {{ form_widget(form.description, {'attr': {
                         'class': 'form-input w-full resize-none',
                         'rows': '4',
-                        'placeholder': 'Description du tournoi, regles specifiques...'
+                        'placeholder': 'form.tournament.description_placeholder'|trans
                     }}) }}
                     {{ form_errors(form.description) }}
                 </div>
@@ -304,7 +304,7 @@
                     <div>
                         <label for="{{ form.entryFee.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:ticket', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Prix d'entree
+                            {{ 'form.tournament.entry_fee'|trans }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -312,7 +312,7 @@
                             </div>
                             {{ form_widget(form.entryFee, {'attr': {
                                 'class': 'form-input w-full pl-10',
-                                'placeholder': 'Ex: 10€ ou Gratuit'
+                                'placeholder': 'form.tournament.entry_fee_placeholder'|trans
                             }}) }}
                         </div>
                         {{ form_errors(form.entryFee) }}
@@ -320,7 +320,7 @@
                     <div>
                         <label for="{{ form.alteredGgLink.vars.id }}" class="block form-label mb-2">
                             {{ ux_icon('lucide:link', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            Lien Altered.gg
+                            {{ 'form.tournament.altered_gg_link'|trans }}
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -328,7 +328,7 @@
                             </div>
                             {{ form_widget(form.alteredGgLink, {'attr': {
                                 'class': 'form-input w-full pl-10',
-                                'placeholder': 'https://altered.gg/...'
+                                'placeholder': 'form.tournament.altered_gg_placeholder'|trans
                             }}) }}
                         </div>
                         {{ form_errors(form.alteredGgLink) }}
@@ -339,12 +339,12 @@
                 <div>
                     <label for="{{ form.prizes.vars.id }}" class="block form-label mb-2">
                         {{ ux_icon('lucide:gift', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                        Dotations / Prix
+                        {{ 'form.tournament.prizes'|trans }}
                     </label>
                     {{ form_widget(form.prizes, {'attr': {
                         'class': 'form-input w-full resize-none',
                         'rows': '3',
-                        'placeholder': 'Ex: 1er: Booster box, 2eme: 10 boosters...'
+                        'placeholder': 'form.tournament.prizes_placeholder'|trans
                     }}) }}
                     {{ form_errors(form.prizes) }}
                 </div>
@@ -359,13 +359,13 @@
                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 text-base font-semibold rounded-xl hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200"
                style="border-color: var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);">
                 {{ ux_icon('lucide:x', {class: 'w-5 h-5 mr-2'}) }}
-                Annuler
+                {{ 'action.cancel'|trans }}
             </a>
             <button type="submit"
                     class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 text-base font-semibold rounded-xl text-white shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
                     style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
                 {{ ux_icon('lucide:save', {class: 'w-5 h-5 mr-2'}) }}
-                Enregistrer les modifications
+                {{ 'action.save'|trans }}
             </button>
         </div>
 

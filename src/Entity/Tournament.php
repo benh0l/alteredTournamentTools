@@ -429,6 +429,20 @@ class Tournament
         return $this;
     }
 
+    /**
+     * Get the match format for a specific round.
+     *
+     * Returns elimination format for elimination rounds, swiss format otherwise.
+     */
+    public function getMatchFormatForRound(Round $round): MatchFormat
+    {
+        if ($round->isEliminationRound() && $this->eliminationMatchFormat !== null) {
+            return $this->eliminationMatchFormat;
+        }
+
+        return $this->swissMatchFormat;
+    }
+
     public function getSwissRounds(): ?int
     {
         return $this->swissRounds;

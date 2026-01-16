@@ -400,8 +400,57 @@
                                     {{ 'dashboard.matches.completed_count'|trans({'%completed%': statistics.completed_matches, '%total%': statistics.total_matches}) }}
                                 </div>
                                 {% if can_manage and display_round.areAllMatchesCompleted %}
-                                    {% if tournament.hasReachedSwissRoundLimit %}
-                                        {# Round limit reached - show complete tournament button #}
+                                    {% set is_in_elimination = tournament.isInEliminationPhase %}
+                                    {% set is_elimination_tournament = tournament.structure.value == 'single_elimination' %}
+                                    {% set is_mixed_tournament = tournament.structure.value == 'mixed' %}
+                                    {% set is_group_elimination = tournament.structure.value == 'group_stage_elimination' %}
+
+                                    {% if is_elimination_tournament or is_in_elimination %}
+                                        {# Elimination phase logic (for pure elimination or mixed/group in elimination phase) #}
+                                        {% if is_bracket_complete %}
+                                            {# Bracket complete (final finished) - show complete tournament button #}
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-sm font-medium" style="color: var(--color-primary-600);">
+                                                    {{ 'dashboard.matches.bracket_complete'|trans|default('Finale terminee !') }}
+                                                </span>
+                                                <form action="{{ path('round_complete_tournament', {id: tournament.id}) }}" method="POST" class="inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('complete-tournament-' ~ tournament.id) }}">
+                                                    <button type="submit"
+                                                            class="inline-flex items-center bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-5 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-indigo-600 transition-all">
+                                                        {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2'}) }}
+                                                        {{ 'dashboard.matches.complete_tournament'|trans }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% elseif can_advance_bracket %}
+                                            {# Can advance to next elimination round #}
+                                            <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                                        style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                                                    {{ ux_icon('lucide:arrow-right', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'dashboard.matches.start_next_round'|trans }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% elseif is_mixed_tournament and tournament.hasReachedSwissRoundLimit %}
+                                        {# MIXED tournament: Swiss rounds done, start elimination phase #}
+                                        <div class="flex items-center space-x-4">
+                                            <span class="text-sm font-medium" style="color: var(--color-primary-600);">
+                                                {{ 'dashboard.matches.swiss_complete'|trans({'%current%': tournament.roundsCount, '%max%': tournament.swissRounds})|default('Rondes suisses terminees !') }}
+                                            </span>
+                                            <form action="{{ path('round_start_elimination', {id: tournament.id}) }}" method="POST" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('start-elimination-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center bg-gradient-to-r from-orange-500 to-amber-500 text-white px-5 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-amber-600 transition-all">
+                                                    {{ ux_icon('lucide:swords', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'dashboard.matches.start_elimination'|trans|default('Demarrer la phase eliminatoire') }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% elseif tournament.hasReachedSwissRoundLimit %}
+                                        {# Swiss only tournament: round limit reached - show complete tournament button #}
                                         <div class="flex items-center space-x-4">
                                             <span class="text-sm font-medium" style="color: var(--color-primary-600);">
                                                 {{ 'dashboard.matches.round_limit_reached'|trans({'%current%': tournament.roundsCount, '%max%': tournament.swissRounds}) }}
@@ -416,6 +465,7 @@
                                             </form>
                                         </div>
                                     {% else %}
+                                        {# Swiss phase - start next round #}
                                         <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
                                             <button type="submit"

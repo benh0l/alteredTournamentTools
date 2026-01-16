@@ -83,6 +83,12 @@
            focus-visible:ring-amber-500;
   }
 
+  .btn-purple {
+    @apply btn bg-gradient-to-r from-purple-500 to-violet-500 text-white
+           hover:from-purple-600 hover:to-violet-600
+           focus-visible:ring-purple-500;
+  }
+
   /* Modern Card component with border accent - uses theme */
   .card {
     @apply rounded-xl shadow-lg p-5 border-l-4;

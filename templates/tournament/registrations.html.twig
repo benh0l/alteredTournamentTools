@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscriptions - {{ tournament.name }}{% endblock %}
+{% block title %}{{ 'tournament.registrations.page_title'|trans({'%tournament%': tournament.name}) }}{% endblock %}
 
 {% block body %}
 <div class="container mx-auto px-4 py-8">
@@ -12,22 +12,22 @@
                     {{ tournament.name }}
                 </a>
                 <span class="mx-2">/</span>
-                <span>Inscriptions</span>
+                <span>{{ 'tournament.registrations.breadcrumb'|trans }}</span>
             </nav>
-            <h1 class="text-3xl font-bold">Gestion des inscriptions</h1>
+            <h1 class="text-3xl font-bold">{{ 'tournament.registrations.header'|trans }}</h1>
         </div>
 
         <div class="mt-4 md:mt-0 flex items-center space-x-4">
             {# Player Count Badge #}
             <div class="bg-blue-500/20 text-blue-800 dark:text-blue-400 px-4 py-2 rounded-lg font-medium">
                 <span>{{ registrations|length }}</span>{% if tournament.maxPlayers %}/{{ tournament.maxPlayers }}{% endif %}
-                joueurs
+                {{ 'tournament.registrations.players_count'|trans }}
             </div>
 
             {# Export Button #}
             <a href="{{ path('tournament_registrations_export', {'id': tournament.id}) }}"
                class="bg-gray-500/20 hover:bg-gray-500/30 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition">
-                Exporter CSV
+                {{ 'tournament.registrations.export_csv'|trans }}
             </a>
 
             {# Close/Reopen Registrations Button #}
@@ -36,8 +36,8 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('close_registrations' ~ tournament.id) }}">
                     <button type="submit"
                             class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition"
-                            onclick="return confirm('Fermer les inscriptions ?')">
-                        Fermer les inscriptions
+                            onclick="return confirm('{{ 'tournament.registrations.close_confirm'|trans }}')">
+                        {{ 'tournament.registrations.close_registrations'|trans }}
                     </button>
                 </form>
             {% else %}
@@ -45,7 +45,7 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('reopen_registrations' ~ tournament.id) }}">
                     <button type="submit"
                             class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                        Rouvrir les inscriptions
+                        {{ 'tournament.registrations.reopen_registrations'|trans }}
                     </button>
                 </form>
             {% endif %}
@@ -55,7 +55,7 @@
     {# Status Badge #}
     {% if tournament.registrationsClosed %}
         <div class="bg-red-500/20 border border-red-500/30 text-red-800 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-            Les inscriptions sont actuellement fermees.
+            {{ 'tournament.registrations.closed_message'|trans }}
         </div>
     {% endif %}
 
@@ -68,7 +68,7 @@
                     class="flex items-center justify-between w-full text-left font-medium theme-text-primary">
                 <span class="flex items-center">
                     {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2 text-green-600'}) }}
-                    Ajouter un joueur manuellement
+                    {{ 'tournament.registrations.add_player_title'|trans }}
                 </span>
                 {{ ux_icon('lucide:chevron-down', {class: 'w-5 h-5 transform transition-transform', id: 'add-player-chevron'}) }}
             </button>
@@ -76,13 +76,13 @@
         <div id="add-player-form" class="hidden p-6">
             <div class="mb-4">
                 <label for="user-search" class="block text-sm font-medium theme-text-secondary mb-2">
-                    Rechercher un utilisateur (email ou pseudo)
+                    {{ 'tournament.registrations.search_label'|trans }}
                 </label>
                 <div class="relative">
                     <input type="text"
                            id="user-search"
                            class="form-input"
-                           placeholder="Tapez au moins 2 caracteres..."
+                           placeholder="{{ 'tournament.registrations.search_placeholder'|trans }}"
                            autocomplete="off">
                     <div id="search-spinner" class="hidden absolute right-3 top-2.5">
                         {{ ux_icon('lucide:loader-2', {class: 'animate-spin h-5 w-5 text-gray-400'}) }}
@@ -133,23 +133,21 @@
                         <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
                             <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
                                 {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
-                                Faction et Heros (optionnel)
+                                {{ 'tournament.registrations.faction_hero_title'|trans }}
                             </h4>
 
                             {% if tournament.format.isHeroOutOfFaction %}
                                 <div class="flex items-start p-3 mb-3 rounded-lg bg-pink-500/10 border border-pink-500/30">
                                     {{ ux_icon('lucide:info', {class: 'w-4 h-4 text-pink-500 mr-2 flex-shrink-0 mt-0.5'}) }}
                                     <p class="text-xs theme-text-secondary">
-                                        <strong class="text-pink-600">Format Heros Out of Faction :</strong>
-                                        Le heros doit etre d'une faction differente du deck.
+                                        <strong class="text-pink-600">{{ 'tournament.registrations.hero_oof_notice'|trans }}</strong>
                                     </p>
                                 </div>
                             {% elseif tournament.format.isBifaction %}
                                 <div class="flex items-start p-3 mb-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
                                     {{ ux_icon('lucide:info', {class: 'w-4 h-4 text-cyan-500 mr-2 flex-shrink-0 mt-0.5'}) }}
                                     <p class="text-xs theme-text-secondary">
-                                        <strong class="text-cyan-600">Format Bifaction :</strong>
-                                        Deux factions requises, heros de l'une des deux.
+                                        <strong class="text-cyan-600">{{ 'tournament.registrations.bifaction_notice'|trans }}</strong>
                                     </p>
                                 </div>
                             {% endif %}
@@ -158,14 +156,14 @@
                                 {# Faction Select #}
                                 <div>
                                     <label for="add-player-faction" class="block text-xs font-medium theme-text-secondary mb-1">
-                                        {{ tournament.format.isBifaction ? 'Premiere Faction' : 'Faction' }}
+                                        {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
                                     </label>
                                     <select name="faction"
                                             id="add-player-faction"
                                             class="form-select text-sm"
                                             data-registration-form-target="faction"
                                             data-action="change->registration-form#factionChanged">
-                                        <option value="">Selectionnez une faction</option>
+                                        <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
                                         {% for label, value in factionChoices %}
                                             <option value="{{ value }}">{{ label }}</option>
                                         {% endfor %}
@@ -176,14 +174,14 @@
                                     {# Faction 2 Select for Bifaction #}
                                     <div>
                                         <label for="add-player-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
-                                            Seconde Faction
+                                            {{ 'tournament.registrations.second_faction'|trans }}
                                         </label>
                                         <select name="faction2"
                                                 id="add-player-faction2"
                                                 class="form-select text-sm"
                                                 data-registration-form-target="faction2"
                                                 data-action="change->registration-form#factionChanged">
-                                            <option value="">Selectionnez une faction</option>
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
                                             {% for label, value in factionChoices %}
                                                 <option value="{{ value }}">{{ label }}</option>
                                             {% endfor %}
@@ -194,14 +192,14 @@
                                 {# Hero Select #}
                                 <div class="{{ tournament.format.isBifaction ? 'md:col-span-2' : '' }}">
                                     <label for="add-player-hero" class="block text-xs font-medium theme-text-secondary mb-1">
-                                        Heros
+                                        {{ 'tournament.registrations.hero_label'|trans }}
                                     </label>
                                     <select name="hero"
                                             id="add-player-hero"
                                             class="form-select text-sm"
                                             data-registration-form-target="hero"
                                             disabled>
-                                        <option value="">Selectionnez d'abord une faction</option>
+                                        <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -211,14 +209,14 @@
                         <div class="flex items-start p-3 rounded-lg bg-gray-500/10 border" style="border-color: var(--border-default);">
                             {{ ux_icon('lucide:info', {class: 'w-4 h-4 mr-2 flex-shrink-0 mt-0.5', style: 'color: var(--text-muted);'}) }}
                             <p class="text-xs theme-text-muted">
-                                Format Limited : La faction et le heros seront determines lors de la construction du deck sur place.
+                                {{ 'tournament.registrations.limited_notice'|trans }}
                             </p>
                         </div>
                     {% endif %}
 
                     <div>
                         <label for="decklist_url" class="block text-sm font-medium theme-text-secondary mb-2">
-                            URL de la decklist (optionnel)
+                            {{ 'tournament.registrations.decklist_url_label'|trans }}
                         </label>
                         <input type="url"
                                name="decklist_url"
@@ -229,13 +227,13 @@
 
                     <button type="submit"
                             class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">
-                        Ajouter au tournoi
+                        {{ 'tournament.registrations.add_to_tournament'|trans }}
                     </button>
                 </form>
             </div>
 
             <p id="no-results" class="hidden theme-text-muted text-sm text-center py-4">
-                Aucun utilisateur trouve pour cette recherche.
+                {{ 'tournament.registrations.no_user_found'|trans }}
             </p>
         </div>
     </div>
@@ -256,7 +254,7 @@
                             'sort': 'player.pseudo',
                             'direction': sort_field == 'player.pseudo' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
                         }) }}" class="flex items-center hover:text-gray-700">
-                            Pseudo
+                            {{ 'tournament.registrations.table.pseudo'|trans }}
                             {% if sort_field == 'player.pseudo' %}
                                 {% if sort_direction == 'ASC' %}
                                     {{ ux_icon('lucide:chevron-up', {class: 'w-4 h-4 ml-1'}) }}
@@ -267,10 +265,10 @@
                         </a>
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Faction / Heros
+                        {{ 'tournament.registrations.table.faction_hero'|trans }}
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Decklist
+                        {{ 'tournament.registrations.table.decklist'|trans }}
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         <a href="{{ path('tournament_registrations', {
@@ -278,7 +276,7 @@
                             'sort': 'registeredAt',
                             'direction': sort_field == 'registeredAt' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
                         }) }}" class="flex items-center hover:text-gray-700">
-                            Inscrit le
+                            {{ 'tournament.registrations.table.registered_at'|trans }}
                             {% if sort_field == 'registeredAt' %}
                                 {% if sort_direction == 'ASC' %}
                                     {{ ux_icon('lucide:chevron-up', {class: 'w-4 h-4 ml-1'}) }}
@@ -289,7 +287,7 @@
                         </a>
                     </th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        {{ 'tournament.registrations.table.actions'|trans }}
                     </th>
                 </tr>
             </thead>
@@ -313,7 +311,7 @@
                                     </span>
                                     {% if registration.player.id == tournament.organizer.id %}
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-800 dark:text-purple-400">
-                                            Organisateur
+                                            {{ 'tournament.registrations.organizer_badge'|trans }}
                                         </span>
                                     {% endif %}
                                 </div>
@@ -354,7 +352,7 @@
                                 </div>
                             </div>
                         {% else %}
-                            <span class="text-gray-400 text-xs">Non renseigne</span>
+                            <span class="text-gray-400 text-xs">{{ 'tournament.registrations.not_specified'|trans }}</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -362,11 +360,11 @@
                             <a href="{{ registration.decklistUrl }}"
                                target="_blank"
                                class="text-blue-600 hover:text-blue-800 flex items-center">
-                                Voir decklist
+                                {{ 'tournament.registrations.view_decklist'|trans }}
                                 {{ ux_icon('lucide:external-link', {class: 'w-4 h-4 ml-1'}) }}
                             </a>
                         {% else %}
-                            <span class="text-gray-400">Non fournie</span>
+                            <span class="text-gray-400">{{ 'tournament.registrations.not_provided'|trans }}</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -380,8 +378,8 @@
                             <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
                             <button type="submit"
                                     class="text-red-600 hover:text-red-900"
-                                    onclick="return confirm('Retirer {{ registration.player.pseudo }} du tournoi ?')">
-                                Retirer
+                                    onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">
+                                {{ 'tournament.registrations.remove_player'|trans }}
                             </button>
                         </form>
                         {% else %}
@@ -396,8 +394,8 @@
     {% else %}
     <div class="bg-white rounded-lg shadow-md p-8 text-center">
         {{ ux_icon('lucide:users', {class: 'w-16 h-16 mx-auto text-gray-400 mb-4'}) }}
-        <h2 class="text-xl font-medium text-gray-900 mb-2">Aucun joueur inscrit</h2>
-        <p class="text-gray-500">Les joueurs pourront s'inscrire une fois le tournoi publie.</p>
+        <h2 class="text-xl font-medium text-gray-900 mb-2">{{ 'tournament.registrations.no_players_title'|trans }}</h2>
+        <p class="text-gray-500">{{ 'tournament.registrations.no_players_message'|trans }}</p>
     </div>
     {% endif %}
 </div>
@@ -408,6 +406,10 @@
     {% if tournament.status.value in ['published', 'ongoing'] %}
     <script>
     (function() {
+        const translations = {
+            selectBtn: '{{ 'tournament.registrations.select_btn'|trans }}'
+        };
+
         function initAddPlayerForm() {
             const toggleBtn = document.getElementById('toggle-add-player');
             const addPlayerForm = document.getElementById('add-player-form');
@@ -518,7 +520,7 @@
                             </div>
                         </div>
                         <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium">
-                            Selectionner
+                            ${translations.selectBtn}
                         </button>
                     `;
 

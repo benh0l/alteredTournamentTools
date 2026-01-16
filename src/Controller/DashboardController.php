@@ -6,8 +6,10 @@ namespace App\Controller;
 
 use App\Entity\Tournament;
 use App\Enum\MatchStatus;
+use App\Enum\TournamentStructure;
 use App\Repository\TournamentMatchRepository;
 use App\Security\Voter\TournamentVoter;
+use App\Service\BracketService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,6 +33,7 @@ final class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly TournamentMatchRepository $matchRepository,
+        private readonly BracketService $bracketService,
     ) {
     }
 
@@ -53,6 +56,21 @@ final class DashboardController extends AbstractController
         // Check if user can manage (organizer) to show/hide management buttons
         $canManage = $this->isGranted(TournamentVoter::MANAGE, $tournament);
 
+        // Check if elimination bracket is complete (for tournaments with elimination phase)
+        $isBracketComplete = false;
+        $canAdvanceBracket = false;
+
+        // Check bracket status for pure elimination tournaments OR mixed/group tournaments in elimination phase
+        $isInElimination = $tournament->getStructure() === TournamentStructure::SINGLE_ELIMINATION
+            || $tournament->isInEliminationPhase();
+
+        if ($isInElimination) {
+            $isBracketComplete = $this->bracketService->isBracketComplete($tournament);
+            if ($displayRound !== null && $displayRound->isEliminationRound()) {
+                $canAdvanceBracket = $this->bracketService->canAdvanceBracket($displayRound);
+            }
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'tournament' => $tournament,
             'current_round' => $currentRound,
@@ -61,6 +79,8 @@ final class DashboardController extends AbstractController
             'statistics' => $statistics,
             'rounds' => $tournament->getRounds(),
             'can_manage' => $canManage,
+            'is_bracket_complete' => $isBracketComplete,
+            'can_advance_bracket' => $canAdvanceBracket,
         ]);
     }
 

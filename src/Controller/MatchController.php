@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\TournamentMatch;
+use App\Enum\MatchFormat;
 use App\Exception\InvalidSubmissionException;
 use App\Repository\TournamentMatchRepository;
 use App\Service\ResultSubmissionService;
@@ -43,10 +44,13 @@ final class MatchController extends AbstractController
         if (!$this->resultSubmissionService->canUserSubmit($match, $user)) {
             // If organizer, allow them to use the override form
             if ($canOrganizerOverride) {
+                $matchFormat = $match->getRound()->getTournament()->getMatchFormatForRound($match->getRound());
+
                 return $this->render('match/submit.html.twig', [
                     'match' => $match,
                     'is_organizer' => true,
                     'organizer_mode' => true,
+                    'match_format' => $matchFormat,
                 ]);
             }
 
@@ -54,10 +58,13 @@ final class MatchController extends AbstractController
             if ($match->isCompleted()) {
                 // Even completed matches can be corrected by organizer
                 if ($isOrganizer) {
+                    $matchFormat = $match->getRound()->getTournament()->getMatchFormatForRound($match->getRound());
+
                     return $this->render('match/submit.html.twig', [
                         'match' => $match,
                         'is_organizer' => true,
                         'organizer_mode' => true,
+                        'match_format' => $matchFormat,
                     ]);
                 }
 
@@ -95,10 +102,13 @@ final class MatchController extends AbstractController
             ]);
         }
 
+        $matchFormat = $match->getRound()->getTournament()->getMatchFormatForRound($match->getRound());
+
         return $this->render('match/submit.html.twig', [
             'match' => $match,
             'is_organizer' => $isOrganizer,
             'organizer_mode' => false,
+            'match_format' => $matchFormat,
         ]);
     }
 
@@ -134,6 +144,47 @@ final class MatchController extends AbstractController
             $this->addFlash('error', $this->translator->trans('flash.error.invalid_winner'));
 
             return $this->redirectToRoute('match_submit_form', ['id' => $match->getId()]);
+        }
+
+        // Reject ties for elimination rounds
+        if ($winnerId === null && $match->getRound()->isEliminationRound()) {
+            $this->addFlash('error', $this->translator->trans('flash.error.tie_not_allowed_elimination'));
+
+            return $this->redirectToRoute('match_submit_form', ['id' => $match->getId()]);
+        }
+
+        // Get match format and validate/adjust scores accordingly
+        $tournament = $match->getRound()->getTournament();
+        $matchFormat = $tournament->getMatchFormatForRound($match->getRound());
+
+        if ($matchFormat === MatchFormat::BO1) {
+            // BO1: Auto-set score to 1-0 in favor of winner (or 0-0 for tie)
+            if ($winnerId === null) {
+                $player1Score = 0;
+                $player2Score = 0;
+            } elseif ($winnerId === $player1Id) {
+                $player1Score = 1;
+                $player2Score = 0;
+            } else {
+                $player1Score = 0;
+                $player2Score = 1;
+            }
+        } elseif ($matchFormat === MatchFormat::BO3 && $winnerId !== null) {
+            // BO3: Winner must have score of 2, loser must have 0 or 1
+            $winnerScore = ($winnerId === $player1Id) ? $player1Score : $player2Score;
+            $loserScore = ($winnerId === $player1Id) ? $player2Score : $player1Score;
+
+            if ($winnerScore !== 2) {
+                $this->addFlash('error', $this->translator->trans('flash.error.bo3_winner_must_have_2'));
+
+                return $this->redirectToRoute('match_submit_form', ['id' => $match->getId()]);
+            }
+
+            if ($loserScore < 0 || $loserScore > 1) {
+                $this->addFlash('error', $this->translator->trans('flash.error.bo3_loser_invalid_score'));
+
+                return $this->redirectToRoute('match_submit_form', ['id' => $match->getId()]);
+            }
         }
 
         // Handle organizer override - directly validate without waiting for players

@@ -26,9 +26,15 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
 use Symfony\Component\Validator\Constraints\Range;
 use Symfony\Component\Validator\Constraints\Url;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class TournamentType extends AbstractType
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -76,7 +82,7 @@ final class TournamentType extends AbstractType
             ->add('format', EnumType::class, [
                 'class' => TournamentFormat::class,
                 'label' => 'form.tournament.format',
-                'choice_label' => fn (TournamentFormat $format) => $format->getLabel(),
+                'choice_label' => fn (TournamentFormat $format) => $this->translator->trans($format->getLabel()),
                 'attr' => ['class' => 'form-select'],
                 'constraints' => [
                     new NotBlank(['message' => 'validation.tournament.format_required']),
@@ -85,7 +91,7 @@ final class TournamentType extends AbstractType
             ->add('structure', EnumType::class, [
                 'class' => TournamentStructure::class,
                 'label' => 'form.tournament.structure',
-                'choice_label' => fn (TournamentStructure $structure) => $structure->getLabel(),
+                'choice_label' => fn (TournamentStructure $structure) => $this->translator->trans($structure->getLabel()),
                 'attr' => [
                     'class' => 'form-select',
                     'data-tournament-form-target' => 'structure',
@@ -100,7 +106,7 @@ final class TournamentType extends AbstractType
             ->add('swissMatchFormat', EnumType::class, [
                 'class' => MatchFormat::class,
                 'label' => 'form.tournament.swiss_match_format',
-                'choice_label' => fn (MatchFormat $format) => $format->getLabel(),
+                'choice_label' => fn (MatchFormat $format) => $this->translator->trans($format->getLabel()),
                 'attr' => ['class' => 'form-select'],
                 'constraints' => [
                     new NotBlank(['message' => 'validation.tournament.swiss_format_required']),
@@ -109,7 +115,7 @@ final class TournamentType extends AbstractType
             ->add('eliminationMatchFormat', EnumType::class, [
                 'class' => MatchFormat::class,
                 'label' => 'form.tournament.elimination_match_format',
-                'choice_label' => fn (MatchFormat $format) => $format->getLabel(),
+                'choice_label' => fn (MatchFormat $format) => $this->translator->trans($format->getLabel()),
                 'required' => false,
                 'placeholder' => 'form.common.select',
                 'attr' => [
@@ -176,9 +182,11 @@ final class TournamentType extends AbstractType
                 'class' => TournamentVisibility::class,
                 'label' => 'form.tournament.visibility',
                 'expanded' => true,
-                'choice_label' => fn (TournamentVisibility $v) => $v === TournamentVisibility::PUBLIC
-                    ? 'enum.tournament_visibility.public_desc'
-                    : 'enum.tournament_visibility.private_desc',
+                'choice_label' => fn (TournamentVisibility $v) => $this->translator->trans(
+                    $v === TournamentVisibility::PUBLIC
+                        ? 'enum.tournament_visibility.public_desc'
+                        : 'enum.tournament_visibility.private_desc'
+                ),
                 'constraints' => [
                     new NotBlank(['message' => 'validation.tournament.visibility_required']),
                 ],
@@ -187,7 +195,7 @@ final class TournamentType extends AbstractType
                 'class' => DecklistTransparency::class,
                 'label' => 'form.tournament.decklist_transparency',
                 'expanded' => true,
-                'choice_label' => fn (DecklistTransparency $d) => $d->getLabel(),
+                'choice_label' => fn (DecklistTransparency $d) => $this->translator->trans($d->getLabel()),
                 'constraints' => [
                     new NotBlank(['message' => 'validation.tournament.decklist_transparency_required']),
                 ],

@@ -104,11 +104,12 @@ final class ExpectedPlayersType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Choisir...',
                 'choices' => [
-                    '1 (premier uniquement)' => 1,
-                    '2 (deux premiers)' => 2,
-                    '3' => 3,
-                    '4' => 4,
+                    'tournament.wizard.step6.qualifiers_choice.1' => 1,
+                    'tournament.wizard.step6.qualifiers_choice.2' => 2,
+                    'tournament.wizard.step6.qualifiers_choice.3' => 3,
+                    'tournament.wizard.step6.qualifiers_choice.4' => 4,
                 ],
+                'choice_translation_domain' => 'messages',
                 'attr' => [
                     'class' => 'form-select w-full',
                 ],

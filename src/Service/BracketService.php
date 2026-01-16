@@ -85,6 +85,7 @@ class BracketService
         $round = new Round();
         $round->setTournament($tournament);
         $round->setRoundNumber($roundNumber);
+        $round->setIsEliminationRound(true);
         $tournament->addRound($round);
 
         // Generate bracket pairings
@@ -336,6 +337,7 @@ class BracketService
         $round = new Round();
         $round->setTournament($tournament);
         $round->setRoundNumber($previousRound->getRoundNumber() + 1);
+        $round->setIsEliminationRound(true);
         $tournament->addRound($round);
 
         // Pair winners (they should already be in bracket order)
