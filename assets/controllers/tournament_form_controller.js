@@ -51,6 +51,7 @@ export default class extends Controller {
         hasGroupStage: String,
         hasSwiss: String,
         hasElimination: String,
+        matchFormat: { type: String, default: 'bo3' },
         errorCalculation: { type: String, default: 'Calculation error' },
         bracketLabel: { type: String, default: 'Bracket of %players% players' },
         bracketByesLabel: { type: String, default: 'Bracket of %bracket% (%byes% BYEs needed)' },
@@ -80,10 +81,10 @@ export default class extends Controller {
             return;
         }
 
-        // Get match format (BO1 or BO3)
+        // Get match format (BO1 or BO3) - from value or from form element
         const format = this.hasSwissMatchFormatTarget
             ? this.swissMatchFormatTarget.value.toUpperCase()
-            : 'BO3';
+            : this.matchFormatValue.toUpperCase();
 
         try {
             const response = await fetch(

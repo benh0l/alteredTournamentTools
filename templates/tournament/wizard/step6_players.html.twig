@@ -26,6 +26,8 @@
         </p>
     </div>
 
+    {% set matchFormat = (wizard_data is defined and wizard_data[5] is defined and wizard_data[5].swissMatchFormat is defined) ? wizard_data[5].swissMatchFormat.value : 'bo3' %}
+
     {{ form_start(form, {attr: {
         id: 'wizard-form',
         class: 'space-y-6',
@@ -33,7 +35,8 @@
         'data-tournament-form-structure-value': structure ? structure.value : '',
         'data-tournament-form-has-group-stage-value': hasGroupStage ? 'true' : 'false',
         'data-tournament-form-has-swiss-value': hasSwiss ? 'true' : 'false',
-        'data-tournament-form-has-elimination-value': hasElimination ? 'true' : 'false'
+        'data-tournament-form-has-elimination-value': hasElimination ? 'true' : 'false',
+        'data-tournament-form-match-format-value': matchFormat
     }}) }}
 
         {# Standard players section (non-group stage) #}
