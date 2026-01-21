@@ -37,7 +37,8 @@ git reset --hard origin/$BRANCH
 
 # 3. Installer les dépendances
 echo -e "${YELLOW}[3/8] Installation des dépendances Composer...${NC}"
-composer install --no-dev --optimize-autoloader --no-interaction
+composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+php bin/console assets:install
 
 # 4. Exécuter les migrations
 echo -e "${YELLOW}[4/8] Exécution des migrations de base de données...${NC}"
