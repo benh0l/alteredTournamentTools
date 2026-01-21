@@ -7,6 +7,8 @@ namespace App\Controller;
 use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\MatchFormat;
+use App\Enum\TournamentFormat;
+use App\Form\TournamentSearchType;
 use App\Form\TournamentType;
 use App\Repository\TournamentRepository;
 use App\Security\Voter\TournamentVoter;
@@ -33,12 +35,51 @@ final class TournamentController extends AbstractController
     }
 
     #[Route('', name: 'tournament_list', methods: ['GET'])]
-    public function list(): Response
+    public function list(Request $request): Response
     {
-        $tournaments = $this->tournamentRepository->findPublicTournaments();
+        $form = $this->createForm(TournamentSearchType::class);
+        $form->handleRequest($request);
+
+        $tournaments = [];
+        $searchResults = null;
+
+        $lat = $form->get('lat')->getData();
+        $lng = $form->get('lng')->getData();
+
+        if ($lat && $lng) {
+            // Search by location with coordinates
+            $radius = (float) ($form->get('radius')->getData() ?? 50);
+            $formatValue = $form->get('format')->getData();
+            $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
+
+            // Handle date filters (dateFrom = minimum, dateTo = maximum, both optional)
+            $dateFrom = $form->get('dateFrom')->getData();
+            $dateTo = $form->get('dateTo')->getData();
+
+            if ($dateFrom instanceof \DateTime) {
+                $dateFrom = \DateTimeImmutable::createFromMutable($dateFrom);
+            }
+            if ($dateTo instanceof \DateTime) {
+                $dateTo = \DateTimeImmutable::createFromMutable($dateTo);
+            }
+
+            $searchResults = $this->tournamentRepository->findByLocation(
+                (float) $lat,
+                (float) $lng,
+                $radius,
+                $format,
+                $dateFrom,
+                $dateTo
+            );
+        } else {
+            // No location filter, show all public tournaments
+            $tournaments = $this->tournamentRepository->findPublicTournaments();
+        }
 
         return $this->render('tournament/list.html.twig', [
             'tournaments' => $tournaments,
+            'searchResults' => $searchResults,
+            'form' => $form,
         ]);
     }
 

@@ -14,7 +14,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
@@ -75,6 +77,19 @@ final class TournamentType extends AbstractType
                 'attr' => [
                     'placeholder' => 'form.tournament.location_placeholder',
                     'class' => 'form-input',
+                    'data-address-autocomplete-target' => 'input',
+                ],
+            ])
+            ->add('latitude', HiddenType::class, [
+                'required' => false,
+                'attr' => [
+                    'data-address-autocomplete-target' => 'latitude',
+                ],
+            ])
+            ->add('longitude', HiddenType::class, [
+                'required' => false,
+                'attr' => [
+                    'data-address-autocomplete-target' => 'longitude',
                 ],
             ])
 

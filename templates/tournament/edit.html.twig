@@ -80,22 +80,26 @@
                     </div>
                 </div>
 
-                {# Lieu #}
-                <div>
+                {# Lieu avec autocomplétion #}
+                <div data-controller="address-autocomplete">
                     <label for="{{ form.location.vars.id }}" class="block form-label mb-2">
                         {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
                         {{ 'form.tournament.location'|trans }}
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                             {{ ux_icon('lucide:map-pin', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
                         </div>
                         {{ form_widget(form.location, {'attr': {
                             'class': 'form-input w-full pl-10',
-                            'placeholder': 'form.tournament.location_placeholder'|trans
+                            'placeholder': 'form.tournament.location_placeholder'|trans,
+                            'data-address-autocomplete-target': 'input',
+                            'autocomplete': 'off'
                         }}) }}
                     </div>
                     {{ form_errors(form.location) }}
+                    {{ form_widget(form.latitude, {'attr': {'data-address-autocomplete-target': 'latitude'}}) }}
+                    {{ form_widget(form.longitude, {'attr': {'data-address-autocomplete-target': 'longitude'}}) }}
                 </div>
             </div>
         </div>

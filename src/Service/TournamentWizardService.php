@@ -54,6 +54,13 @@ final class TournamentWizardService
             if (isset($wizardData[2]['location'])) {
                 $tournament->setLocation($wizardData[2]['location']);
             }
+            // Geocoding coordinates from address autocomplete
+            if (isset($wizardData[2]['latitude']) && $wizardData[2]['latitude'] !== '') {
+                $tournament->setLatitude((float) $wizardData[2]['latitude']);
+            }
+            if (isset($wizardData[2]['longitude']) && $wizardData[2]['longitude'] !== '') {
+                $tournament->setLongitude((float) $wizardData[2]['longitude']);
+            }
         }
 
         // Step 3: Game format

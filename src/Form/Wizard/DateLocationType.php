@@ -6,6 +6,7 @@ namespace App\Form\Wizard;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -49,6 +50,19 @@ final class DateLocationType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Ex: Game Store Paris, 123 rue du Jeu',
                     'class' => 'form-input w-full',
+                    'data-address-autocomplete-target' => 'input',
+                ],
+            ])
+            ->add('latitude', HiddenType::class, [
+                'required' => false,
+                'attr' => [
+                    'data-address-autocomplete-target' => 'latitude',
+                ],
+            ])
+            ->add('longitude', HiddenType::class, [
+                'required' => false,
+                'attr' => [
+                    'data-address-autocomplete-target' => 'longitude',
                 ],
             ]);
     }

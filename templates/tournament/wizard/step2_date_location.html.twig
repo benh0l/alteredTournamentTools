@@ -40,24 +40,28 @@
 
         <hr style="border-color: var(--border-default);">
 
-        {# Location #}
-        <div>
+        {# Location with autocomplete #}
+        <div data-controller="address-autocomplete">
             <label for="{{ form.location.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
                 {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
                 {{ 'tournament.wizard.step2.location_label'|trans }}
             </label>
             <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                     {{ ux_icon('lucide:building-2', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
                 </div>
                 {{ form_widget(form.location, {
                     'attr': {
                         'class': 'form-input w-full pl-10 rounded-xl',
-                        'placeholder': 'tournament.wizard.step2.location_placeholder'|trans
+                        'placeholder': 'tournament.wizard.step2.location_placeholder'|trans,
+                        'data-address-autocomplete-target': 'input',
+                        'autocomplete': 'off'
                     }
                 }) }}
             </div>
             {{ form_errors(form.location) }}
+            {{ form_widget(form.latitude, {'attr': {'data-address-autocomplete-target': 'latitude'}}) }}
+            {{ form_widget(form.longitude, {'attr': {'data-address-autocomplete-target': 'longitude'}}) }}
             <p class="text-xs mt-2" style="color: var(--text-muted);">
                 {{ ux_icon('lucide:info', {class: 'w-3 h-3 inline mr-1'}) }}
                 {{ 'tournament.wizard.step2.location_hint'|trans }}

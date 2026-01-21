@@ -9,6 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -27,20 +28,19 @@ class TournamentSearchType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Ex: Paris, 75001, Lyon...',
                     'class' => 'form-input',
+                    'data-address-autocomplete-target' => 'input',
+                    'autocomplete' => 'off',
                 ],
             ])
-            ->add('radius', ChoiceType::class, [
-                'label' => 'Rayon',
-                'choices' => [
-                    '5 km' => 5,
-                    '10 km' => 10,
-                    '20 km' => 20,
-                    '50 km' => 50,
-                    '100 km' => 100,
-                ],
+            ->add('radius', NumberType::class, [
+                'label' => 'Rayon (km)',
+                'required' => false,
                 'data' => 50,
                 'attr' => [
-                    'class' => 'form-select',
+                    'class' => 'form-input',
+                    'placeholder' => '50',
+                    'min' => 1,
+                    'max' => 1000,
                 ],
             ])
             ->add('format', ChoiceType::class, [
@@ -57,21 +57,6 @@ class TournamentSearchType extends AbstractType
                 ],
                 'attr' => [
                     'class' => 'form-select',
-                ],
-            ])
-            ->add('dateRange', ChoiceType::class, [
-                'label' => 'Periode',
-                'required' => false,
-                'placeholder' => 'Toutes les dates',
-                'choices' => [
-                    'Aujourd\'hui' => 'today',
-                    'Cette semaine' => 'week',
-                    'Ce mois' => 'month',
-                    'Personnalise' => 'custom',
-                ],
-                'attr' => [
-                    'class' => 'form-select',
-                    'data-action' => 'change->filter#toggleCustomDates',
                 ],
             ])
             ->add('dateFrom', DateType::class, [
@@ -91,8 +76,16 @@ class TournamentSearchType extends AbstractType
                 ],
             ])
             // Hidden fields for coordinates (set by JavaScript/geocoding)
-            ->add('lat', HiddenType::class)
-            ->add('lng', HiddenType::class);
+            ->add('lat', HiddenType::class, [
+                'attr' => [
+                    'data-address-autocomplete-target' => 'latitude',
+                ],
+            ])
+            ->add('lng', HiddenType::class, [
+                'attr' => [
+                    'data-address-autocomplete-target' => 'longitude',
+                ],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -58,6 +58,20 @@
                 color: var(--text-primary);
                 min-height: 100vh;
             }
+            /* Accent text with subtle glow - modern heading style */
+            .text-accent-glow {
+                color: var(--color-accent-500);
+                text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            }
+            /* Gold text - winner/champion style */
+            .text-gold {
+                color: #f59e0b;
+                text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+            }
+            .dark .text-gold {
+                color: #fbbf24;
+                text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+            }
         </style>
     {% endblock %}
 

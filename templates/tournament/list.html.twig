@@ -27,12 +27,148 @@
         </div>
     </div>
 
-    {% if tournaments is empty %}
+    {# Search Filter #}
+    <div class="card-gradient rounded-2xl shadow-lg p-6 mb-8 border" style="border-color: var(--border-muted);">
+        <div class="flex items-center gap-2 mb-5">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:search', {class: 'w-5 h-5 text-white'}) }}
+            </div>
+            <div>
+                <h2 class="text-lg font-bold" style="color: var(--text-primary);">{{ 'action.search'|trans }}</h2>
+                <p class="text-sm" style="color: var(--text-muted);">{{ 'home.discover_tournaments'|trans }}</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {attr: {class: 'space-y-5'}}) }}
+            {# First row: Location, Radius, Format #}
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                {# Location with autocomplete #}
+                <div data-controller="address-autocomplete" class="md:col-span-5">
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--color-primary-500);'}) }}
+                        {{ 'tournament.search.location'|trans }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                            {{ ux_icon('lucide:globe', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.location, {attr: {
+                            class: 'form-input w-full pl-10 rounded-xl border-2 transition-all focus:border-primary-500',
+                            style: 'border-color: var(--border-default); background-color: var(--input-bg);',
+                            placeholder: 'tournament.search.location_placeholder'|trans
+                        }}) }}
+                    </div>
+                    {{ form_widget(form.lat) }}
+                    {{ form_widget(form.lng) }}
+                </div>
+
+                {# Radius #}
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:target', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--color-accent-500);'}) }}
+                        {{ 'tournament.search.radius'|trans }}
+                        <span class="font-normal text-xs" style="color: var(--text-muted);">(1-1000 km)</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:ruler', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.radius, {attr: {
+                            class: 'form-input w-full pl-10 rounded-xl border-2 transition-all focus:border-primary-500',
+                            style: 'border-color: var(--border-default); background-color: var(--input-bg);',
+                            type: 'number',
+                            min: '1',
+                            max: '1000'
+                        }}) }}
+                    </div>
+                </div>
+
+                {# Format #}
+                <div class="md:col-span-4">
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:layers', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--color-primary-500);'}) }}
+                        {{ 'tournament.search.format'|trans }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:gamepad-2', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.format, {attr: {
+                            class: 'form-select w-full pl-10 rounded-xl border-2 transition-all focus:border-primary-500',
+                            style: 'border-color: var(--border-default); background-color: var(--input-bg);'
+                        }}) }}
+                    </div>
+                </div>
+            </div>
+
+            {# Second row: Date From, Date To #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {# Date From #}
+                <div>
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:calendar-arrow-up', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--color-accent-500);'}) }}
+                        {{ 'tournament.search.date_from'|trans }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:calendar-plus', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.dateFrom, {attr: {
+                            class: 'form-input w-full pl-10 rounded-xl border-2 transition-all focus:border-primary-500',
+                            style: 'border-color: var(--border-default); background-color: var(--input-bg);'
+                        }}) }}
+                    </div>
+                </div>
+
+                {# Date To #}
+                <div>
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--text-secondary);">
+                        {{ ux_icon('lucide:calendar-arrow-down', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--color-accent-500);'}) }}
+                        {{ 'tournament.search.date_to'|trans }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            {{ ux_icon('lucide:calendar-check', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                        </div>
+                        {{ form_widget(form.dateTo, {attr: {
+                            class: 'form-input w-full pl-10 rounded-xl border-2 transition-all focus:border-primary-500',
+                            style: 'border-color: var(--border-default); background-color: var(--input-bg);'
+                        }}) }}
+                    </div>
+                </div>
+            </div>
+
+            {# Buttons #}
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t" style="border-color: var(--border-muted);">
+                <a href="{{ path('tournament_list') }}"
+                   class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium transition-all hover:opacity-80 border"
+                   style="color: var(--text-secondary); background-color: var(--bg-subtle); border-color: var(--border-default);">
+                    {{ ux_icon('lucide:rotate-ccw', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'common.reset'|trans }}
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center justify-center px-6 py-2.5 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                    {{ ux_icon('lucide:search', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'common.search'|trans }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    {# Determine which data to display #}
+    {% set displayData = searchResults is not null ? searchResults : tournaments %}
+
+    {% if displayData is empty %}
         <div class="card-gradient p-12 text-center">
             <div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6" style="background: linear-gradient(to bottom right, var(--color-primary-100), var(--color-accent-400) / 0.3);">
                 {{ ux_icon('lucide:inbox', {class: 'w-12 h-12', style: 'color: var(--color-primary-500);'}) }}
             </div>
-            <p class="text-lg mb-4" style="color: var(--text-secondary);">{{ 'tournament.list.no_tournaments'|trans }}</p>
+            {% if searchResults is not null %}
+                <p class="text-lg mb-4" style="color: var(--text-secondary);">{{ 'tournament.list.no_results'|trans|default('Aucun tournoi trouvé dans cette zone') }}</p>
+            {% else %}
+                <p class="text-lg mb-4" style="color: var(--text-secondary);">{{ 'tournament.list.no_tournaments'|trans }}</p>
+            {% endif %}
             {% if is_granted('ROLE_USER') %}
                 <a href="{{ path('tournament_create') }}"
                    class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
@@ -43,8 +179,19 @@
             {% endif %}
         </div>
     {% else %}
+        {# Results count #}
+        {% if searchResults is not null %}
+            <div class="mb-4 text-sm" style="color: var(--text-muted);">
+                {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 inline mr-1'}) }}
+                {{ searchResults|length }} {{ 'tournament.list.results_found'|trans|default('tournoi(s) trouvé(s)') }}
+            </div>
+        {% endif %}
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for tournament in tournaments %}
+            {% for item in displayData %}
+                {# Handle both regular tournaments and search results with distance #}
+                {% set tournament = searchResults is not null ? item.tournament : item %}
+                {% set distance = searchResults is not null ? item.distance : null %}
                 <div class="rounded-2xl shadow-lg overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border" style="background-color: var(--card-bg); border-color: var(--border-muted);">
                     {# Color header based on status #}
                     {% if tournament.ongoing %}
@@ -97,14 +244,23 @@
                                     {% endif %}
                                 </span>
                             </div>
-                            {% if tournament.location %}
+                            {% if tournament.location or distance is not null %}
                                 <div class="flex items-center text-sm">
                                     <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center mr-3">
                                         {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
                                     </div>
-                                    <span style="color: var(--text-secondary);">
-                                        {{ tournament.location|length > 25 ? tournament.location|slice(0, 25) ~ '...' : tournament.location }}
-                                    </span>
+                                    <div>
+                                        {% if tournament.location %}
+                                            <span style="color: var(--text-secondary);">
+                                                {{ tournament.location|length > 25 ? tournament.location|slice(0, 25) ~ '...' : tournament.location }}
+                                            </span>
+                                        {% endif %}
+                                        {% if distance is not null %}
+                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                                {{ distance }} km
+                                            </span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             {% endif %}
                         </div>
