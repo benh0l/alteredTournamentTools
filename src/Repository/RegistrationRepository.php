@@ -191,8 +191,8 @@ class RegistrationRepository extends ServiceEntityRepository
             ->executeQuery(
                 "SELECT AVG(player_count) as avg_count FROM (
                     SELECT COUNT(r.id) as player_count
-                    FROM tournament t
-                    LEFT JOIN registration r ON r.tournament_id = t.id
+                    FROM tournaments t
+                    LEFT JOIN registrations r ON r.tournament_id = t.id
                     GROUP BY t.id
                     HAVING COUNT(r.id) > 0
                 ) counts"

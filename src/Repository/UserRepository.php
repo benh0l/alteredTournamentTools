@@ -167,7 +167,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                 "SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
                     COUNT(*) as count
-                 FROM \"user\"
+                 FROM users
                  WHERE created_at >= :start
                  GROUP BY TO_CHAR(created_at, 'YYYY-MM')
                  ORDER BY month ASC",
@@ -193,18 +193,72 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         int $limit = 20
     ): array {
         $qb = $this->createQueryBuilder('u');
+        $conditions = [];
+        $parameters = [];
 
         if ($query !== null && $query !== '') {
             $qb->andWhere('LOWER(u.email) LIKE LOWER(:query) OR LOWER(u.pseudo) LIKE LOWER(:query)')
                ->setParameter('query', '%' . $query . '%');
         }
 
+        // For role filtering, use native SQL with JSON cast for PostgreSQL
         if ($role !== null && $role !== '') {
-            $qb->andWhere('u.roles LIKE :role')
-               ->setParameter('role', '%"' . $role . '"%');
+            // Use DQL-compatible approach: filter in PHP after fetching
+            // First get all matching users, then filter by role
         }
 
-        // Count total
+        // Count and fetch without role filter first if role is specified
+        if ($role !== null && $role !== '') {
+            // Use native query for role filtering
+            $conn = $this->getEntityManager()->getConnection();
+
+            $sql = 'SELECT COUNT(*) FROM users u WHERE 1=1';
+            $countParams = [];
+
+            if ($query !== null && $query !== '') {
+                $sql .= ' AND (LOWER(u.email) LIKE LOWER(:query) OR LOWER(u.pseudo) LIKE LOWER(:query))';
+                $countParams['query'] = '%' . $query . '%';
+            }
+
+            $sql .= ' AND u.roles::text LIKE :role';
+            $countParams['role'] = '%"' . $role . '"%';
+
+            $total = (int) $conn->executeQuery($sql, $countParams)->fetchOne();
+
+            // Get paginated results
+            $sql = 'SELECT u.* FROM users u WHERE 1=1';
+            $selectParams = [];
+
+            if ($query !== null && $query !== '') {
+                $sql .= ' AND (LOWER(u.email) LIKE LOWER(:query) OR LOWER(u.pseudo) LIKE LOWER(:query))';
+                $selectParams['query'] = '%' . $query . '%';
+            }
+
+            $sql .= ' AND u.roles::text LIKE :role';
+            $selectParams['role'] = '%"' . $role . '"%';
+
+            $sql .= ' ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset';
+            $selectParams['limit'] = $limit;
+            $selectParams['offset'] = ($page - 1) * $limit;
+
+            $rows = $conn->executeQuery($sql, $selectParams)->fetchAllAssociative();
+
+            // Convert to User entities
+            $users = [];
+            foreach ($rows as $row) {
+                $user = $this->find($row['id']);
+                if ($user !== null) {
+                    $users[] = $user;
+                }
+            }
+
+            return [
+                'users' => $users,
+                'total' => $total,
+            ];
+        }
+
+        // Count total (no role filter)
         $countQb = clone $qb;
         $total = (int) $countQb->select('COUNT(u.id)')
             ->getQuery()
@@ -309,11 +363,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function findByRole(string $role): array
     {
-        return $this->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%"' . $role . '"%')
-            ->orderBy('u.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = 'SELECT id FROM users WHERE roles::text LIKE :role ORDER BY created_at DESC';
+        $rows = $conn->executeQuery($sql, ['role' => '%"' . $role . '"%'])->fetchAllAssociative();
+
+        $users = [];
+        foreach ($rows as $row) {
+            $user = $this->find($row['id']);
+            if ($user !== null) {
+                $users[] = $user;
+            }
+        }
+
+        return $users;
     }
 }

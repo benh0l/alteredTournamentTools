@@ -43,26 +43,40 @@ final class TournamentController extends AbstractController
         $tournaments = [];
         $searchResults = null;
 
-        $lat = $form->get('lat')->getData();
-        $lng = $form->get('lng')->getData();
+        // Get filter values from request (more reliable for GET forms)
+        $lat = $request->query->get('lat');
+        $lng = $request->query->get('lng');
+        $formatValue = $request->query->get('format');
+        $dateFromStr = $request->query->get('dateFrom');
+        $dateToStr = $request->query->get('dateTo');
+        $radius = (float) ($request->query->get('radius') ?: 50);
+
+        // Parse format
+        $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
+
+        // Parse dates
+        $dateFrom = null;
+        $dateTo = null;
+        if (!empty($dateFromStr)) {
+            try {
+                $dateFrom = new \DateTimeImmutable($dateFromStr);
+            } catch (\Exception $e) {
+                // Invalid date, ignore
+            }
+        }
+        if (!empty($dateToStr)) {
+            try {
+                $dateTo = new \DateTimeImmutable($dateToStr);
+            } catch (\Exception $e) {
+                // Invalid date, ignore
+            }
+        }
+
+        // Check if any search params are provided
+        $hasSearchParams = $request->query->count() > 0;
 
         if ($lat && $lng) {
             // Search by location with coordinates
-            $radius = (float) ($form->get('radius')->getData() ?? 50);
-            $formatValue = $form->get('format')->getData();
-            $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
-
-            // Handle date filters (dateFrom = minimum, dateTo = maximum, both optional)
-            $dateFrom = $form->get('dateFrom')->getData();
-            $dateTo = $form->get('dateTo')->getData();
-
-            if ($dateFrom instanceof \DateTime) {
-                $dateFrom = \DateTimeImmutable::createFromMutable($dateFrom);
-            }
-            if ($dateTo instanceof \DateTime) {
-                $dateTo = \DateTimeImmutable::createFromMutable($dateTo);
-            }
-
             $searchResults = $this->tournamentRepository->findByLocation(
                 (float) $lat,
                 (float) $lng,
@@ -71,8 +85,15 @@ final class TournamentController extends AbstractController
                 $dateFrom,
                 $dateTo
             );
+        } elseif ($hasSearchParams) {
+            // Search without location but with filters
+            $searchResults = $this->tournamentRepository->findPublicTournamentsFiltered(
+                $format,
+                $dateFrom,
+                $dateTo
+            );
         } else {
-            // No location filter, show all public tournaments
+            // No filters, show all public tournaments
             $tournaments = $this->tournamentRepository->findPublicTournaments();
         }
 

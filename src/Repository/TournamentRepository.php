@@ -75,6 +75,50 @@ class TournamentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find public tournaments with optional filters (without location).
+     *
+     * @return array<int, array{tournament: Tournament, distance: null}>
+     */
+    public function findPublicTournamentsFiltered(
+        ?TournamentFormat $format = null,
+        ?\DateTimeImmutable $dateFrom = null,
+        ?\DateTimeImmutable $dateTo = null
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->where('t.visibility = :visibility')
+            ->andWhere('t.status IN (:statuses)')
+            ->setParameter('visibility', TournamentVisibility::PUBLIC)
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING]);
+
+        if ($format !== null) {
+            $qb->andWhere('t.format = :format')
+                ->setParameter('format', $format);
+        }
+
+        if ($dateFrom !== null) {
+            $qb->andWhere('t.date >= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom);
+        }
+
+        if ($dateTo !== null) {
+            $qb->andWhere('t.date <= :dateTo')
+                ->setParameter('dateTo', $dateTo);
+        }
+
+        $tournaments = $qb->orderBy('t.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Return in same format as findByLocation for template compatibility
+        return array_map(fn (Tournament $t) => [
+            'tournament' => $t,
+            'distance' => null,
+        ], $tournaments);
+    }
+
+    /**
      * Find upcoming public tournaments (published, not yet started).
      *
      * @return Tournament[]
@@ -363,7 +407,7 @@ class TournamentRepository extends ServiceEntityRepository
                 "SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
                     COUNT(*) as count
-                 FROM tournament
+                 FROM tournaments
                  WHERE created_at >= :start
                  GROUP BY TO_CHAR(created_at, 'YYYY-MM')
                  ORDER BY month ASC",
@@ -414,8 +458,8 @@ class TournamentRepository extends ServiceEntityRepository
                     COUNT(*) as count
                  FROM (
                      SELECT t.id, COUNT(r.id) as player_count
-                     FROM tournament t
-                     LEFT JOIN registration r ON r.tournament_id = t.id
+                     FROM tournaments t
+                     LEFT JOIN registrations r ON r.tournament_id = t.id
                      GROUP BY t.id
                  ) sizes
                  GROUP BY size_range
