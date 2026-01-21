@@ -72,6 +72,22 @@
                 color: #fbbf24;
                 text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
             }
+            /* Mobile menu styles */
+            .mobile-menu-panel {
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            }
+            .mobile-menu-panel.mobile-menu-open {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            .mobile-menu-panel a:hover {
+                background-color: var(--bg-muted);
+            }
+            .mobile-menu-panel a:active {
+                background-color: var(--bg-subtle);
+            }
         </style>
     {% endblock %}
 
@@ -87,18 +103,38 @@
 
     <header class="shadow-lg theme-header-gradient">
         {% block header %}
-            <nav class="container mx-auto px-4 py-4">
+            <nav class="container mx-auto px-4 py-4" data-controller="mobile-menu">
                 <div class="flex items-center justify-between">
                     <a href="/" class="flex items-center space-x-2 group">
                         <img src="{{ asset('logo/alteredTT_logo.png') }}" alt="Altered Tournament Tools" class="w-10 h-10 rounded-lg shadow-md group-hover:scale-105 transition-transform">
-                        <span class="text-xl font-bold text-white drop-shadow-sm">
+                        <span class="text-xl font-bold text-white drop-shadow-sm hidden sm:inline">
                             Altered Tournament Tools
+                        </span>
+                        <span class="text-xl font-bold text-white drop-shadow-sm sm:hidden">
+                            ATT
                         </span>
                         <span class="px-2 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full bg-white/20 text-white border border-white/30 backdrop-blur-sm">
                             Beta
                         </span>
                     </a>
-                    <div class="flex items-center space-x-4">
+
+                    {# Burger button - mobile only #}
+                    <button type="button"
+                            class="md:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                            data-action="click->mobile-menu#toggle"
+                            data-mobile-menu-target="button"
+                            aria-expanded="false"
+                            aria-label="{% if app.request.locale == 'fr' %}Menu de navigation{% else %}Navigation menu{% endif %}">
+                        <span data-mobile-menu-target="iconOpen">
+                            {{ ux_icon('lucide:menu', {class: 'w-6 h-6 text-white'}) }}
+                        </span>
+                        <span data-mobile-menu-target="iconClose" class="hidden">
+                            {{ ux_icon('lucide:x', {class: 'w-6 h-6 text-white'}) }}
+                        </span>
+                    </button>
+
+                    {# Desktop menu #}
+                    <div class="hidden md:flex items-center space-x-4">
                         <a href="{{ path('tournament_list') }}"
                            class="px-3 py-2 rounded-lg font-medium transition-all
                                   {% if app.request.attributes.get('_route') == 'tournament_list' %}
@@ -382,6 +418,188 @@
                             </a>
                         {% endif %}
                         {% block navigation %}{% endblock %}
+                    </div>
+                </div>
+
+                {# Mobile menu panel #}
+                <div data-mobile-menu-target="panel"
+                     class="hidden md:hidden fixed inset-0 top-[72px] z-50 mobile-menu-panel"
+                     style="background-color: var(--card-bg);">
+                    <div class="flex flex-col h-full overflow-y-auto">
+                        <div class="flex flex-col p-4 space-y-2">
+                            <a href="{{ path('tournament_list') }}"
+                               class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                               style="color: var(--text-primary);"
+                               data-action="click->mobile-menu#close">
+                                {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                {{ 'nav.tournaments'|trans }}
+                            </a>
+
+                            {% if app.user %}
+                                <a href="{{ path('my_tournaments') }}"
+                                   class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                   style="color: var(--text-primary);"
+                                   data-action="click->mobile-menu#close">
+                                    {{ ux_icon('lucide:calendar', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                    {{ 'nav.my_tournaments'|trans }}
+                                </a>
+
+                                <a href="{{ path('tournament_my_list') }}"
+                                   class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                   style="color: var(--text-primary);"
+                                   data-action="click->mobile-menu#close">
+                                    {{ ux_icon('lucide:folder', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                    {% if app.request.locale == 'fr' %}Mes Evenements{% else %}My Events{% endif %}
+                                </a>
+
+                                <a href="{{ path('tournament_create') }}"
+                                   class="flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white shadow-md transition-all mt-2"
+                                   style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));"
+                                   data-action="click->mobile-menu#close">
+                                    {{ ux_icon('lucide:plus', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'tournament.create.title'|trans }}
+                                </a>
+
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('admin_dashboard') }}"
+                                       class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                       style="color: var(--text-primary);"
+                                       data-action="click->mobile-menu#close">
+                                        {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                        {{ 'nav.admin'|trans }}
+                                    </a>
+                                {% endif %}
+
+                                <hr class="my-2" style="border-color: var(--border-default);">
+
+                                {# User section #}
+                                <a href="{{ path('app_profile') }}"
+                                   class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                   style="color: var(--text-primary);"
+                                   data-action="click->mobile-menu#close">
+                                    {% if app.user.avatar %}
+                                        <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar"
+                                             class="w-8 h-8 rounded-full object-cover mr-3">
+                                    {% else %}
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" style="background-color: var(--color-primary-100);">
+                                            <span class="font-semibold text-sm" style="color: var(--color-primary-600);">{{ app.user.pseudo|slice(0,1)|upper }}</span>
+                                        </div>
+                                    {% endif %}
+                                    {{ app.user.displayName }}
+                                </a>
+
+                                <a href="{{ path('app_logout') }}"
+                                   class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                   style="color: var(--text-secondary);">
+                                    {{ ux_icon('lucide:log-out', {class: 'w-5 h-5 mr-3'}) }}
+                                    {{ 'nav.logout'|trans }}
+                                </a>
+                            {% else %}
+                                <hr class="my-2" style="border-color: var(--border-default);">
+
+                                <a href="{{ path('app_login') }}"
+                                   class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                                   style="color: var(--text-primary);"
+                                   data-action="click->mobile-menu#close">
+                                    {{ ux_icon('lucide:log-in', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                    {{ 'nav.login'|trans }}
+                                </a>
+
+                                <a href="{{ path('app_register') }}"
+                                   class="flex items-center justify-center px-4 py-3 rounded-xl font-semibold text-white shadow-md transition-all"
+                                   style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));"
+                                   data-action="click->mobile-menu#close">
+                                    {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'nav.register'|trans }}
+                                </a>
+                            {% endif %}
+
+                            <hr class="my-2" style="border-color: var(--border-default);">
+
+                            {# Language row #}
+                            <div class="flex items-center justify-between px-4 py-2">
+                                <span class="text-sm font-medium" style="color: var(--text-secondary);">
+                                    {% if app.request.locale == 'fr' %}Langue{% else %}Language{% endif %}
+                                </span>
+                                <div class="flex space-x-2">
+                                    <a href="{{ path('app_locale_switch', {locale: 'fr'}) }}"
+                                       class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {% if app.request.locale == 'fr' %}text-white{% endif %}"
+                                       style="{% if app.request.locale == 'fr' %}background: var(--color-primary-500);{% else %}color: var(--text-secondary); background: var(--bg-muted);{% endif %}">
+                                        FR
+                                    </a>
+                                    <a href="{{ path('app_locale_switch', {locale: 'en'}) }}"
+                                       class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all {% if app.request.locale == 'en' %}text-white{% endif %}"
+                                       style="{% if app.request.locale == 'en' %}background: var(--color-primary-500);{% else %}color: var(--text-secondary); background: var(--bg-muted);{% endif %}">
+                                        EN
+                                    </a>
+                                </div>
+                            </div>
+
+                            {# Theme selector - mobile version #}
+                            <div class="px-4 py-2"
+                                 data-controller="theme-selector"
+                                 data-theme-selector-color-value="{{ app.user ? app.user.themeColor : 'orange' }}"
+                                 data-theme-selector-mode-value="{{ app.user ? app.user.themeMode : 'light' }}"
+                                 data-theme-selector-save-url-value="{{ app.user ? path('api_theme_save') : '' }}">
+
+                                {# Theme colors #}
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-medium" style="color: var(--text-secondary);">
+                                        {% if app.request.locale == 'fr' %}Couleur{% else %}Color{% endif %}
+                                    </span>
+                                    <div class="flex space-x-2">
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="orange"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 hover:scale-110 transition-transform"
+                                                title="Orange">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="blue"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Bleu{% else %}Blue{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="green"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-teal-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Vert{% else %}Green{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="purple"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:scale-110 transition-transform"
+                                                title="{% if app.request.locale == 'fr' %}Violet{% else %}Purple{% endif %}">
+                                        </button>
+                                        <button data-action="click->theme-selector#selectColor"
+                                                data-color="rose"
+                                                data-theme-selector-target="colorButton"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-400 to-orange-500 hover:scale-110 transition-transform"
+                                                title="Rose">
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {# Dark mode toggle #}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium" style="color: var(--text-secondary);">
+                                        {% if app.request.locale == 'fr' %}Mode sombre{% else %}Dark mode{% endif %}
+                                    </span>
+                                    <button data-action="click->theme-selector#toggleMode"
+                                            data-theme-selector-target="modeToggle"
+                                            class="flex items-center">
+                                        <div class="w-12 h-7 rounded-full relative transition-colors" style="background-color: var(--bg-muted);">
+                                            <div data-toggle-knob
+                                                 class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform flex items-center justify-center">
+                                                {{ ux_icon('lucide:sun', {class: 'w-3 h-3', style: 'color: var(--color-primary-500);', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'sun'}) }}
+                                                {{ ux_icon('lucide:moon', {class: 'w-3 h-3 hidden', style: 'color: var(--color-primary-500);', 'data-theme-selector-target': 'modeIcon', 'data-mode-icon': 'moon'}) }}
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>

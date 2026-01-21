@@ -574,6 +574,7 @@ tournament:
                 constructed_hero_oof: "Players come with their own deck. Hero must be from a different faction than the deck."
                 constructed_bifaction: "Players come with their own deck. Two factions chosen. Hero from one of the two."
                 draft: "Decks are built on-site from boosters."
+                limited: "Limited format - Decks are built on-site from boosters or provided cards."
         step4:
             title: "Tournament Structure"
             question: "What tournament structure?"

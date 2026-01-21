@@ -31,7 +31,7 @@
             </div>
 
             {# Step indicators #}
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-1 overflow-x-auto pb-2">
                 {% for stepNum, config in stepConfig %}
                     {% if stepNum <= step %}
                         <a href="{{ path('tournament_wizard_step', {step: stepNum}) }}"
@@ -58,7 +58,7 @@
 
         {# Step Content Card #}
         <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
-            <div class="p-8">
+            <div class="p-4 md:p-8">
                 {% block wizard_content %}{% endblock %}
             </div>
         </div>
