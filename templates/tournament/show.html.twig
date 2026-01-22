@@ -201,9 +201,9 @@
         </div>
     {% endif %}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="space-y-6">
         {# Main content #}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="space-y-6">
             {# Basic Info Card #}
             <div class="rounded-xl shadow-lg border-l-4 overflow-hidden" style="background-color: var(--card-bg); border-color: var(--color-primary-400);">
                 <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, var(--color-primary-500) / 0.1, transparent); border-color: var(--border-muted);">
@@ -289,16 +289,14 @@
             </div>
         </div>
 
-        {# Sidebar #}
-        <div class="space-y-6">
-            {# Tournament Configuration Card #}
-            <div class="rounded-xl shadow-lg border-l-4 border-amber-400 overflow-hidden" style="background-color: var(--card-bg);">
-                <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, rgb(245 158 11 / 0.1), transparent); border-color: var(--border-muted);">
-                    <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
-                        {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
-                        {{ 'tournament.show.configuration'|trans }}
-                    </h2>
-                </div>
+        {# Tournament Configuration Card #}
+        <div class="rounded-xl shadow-lg border-l-4 border-amber-400 overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, rgb(245 158 11 / 0.1), transparent); border-color: var(--border-muted);">
+                <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
+                    {{ 'tournament.show.configuration'|trans }}
+                </h2>
+            </div>
                 <div class="p-6">
                     <dl class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
@@ -436,7 +434,6 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
     </div>
 
     {# Back link #}
