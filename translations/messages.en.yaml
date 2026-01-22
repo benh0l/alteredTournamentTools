@@ -248,6 +248,35 @@ home:
         mobile:
             title: "Mobile-first"
             description: "Interface optimized for mobile devices and tablets"
+    tutorial:
+        title: "How does it work?"
+        player:
+            title: "Player"
+            step1:
+                title: "Find"
+                description: "Browse available tournaments"
+            step2:
+                title: "Register"
+                description: "Join a tournament in one click"
+            step3:
+                title: "Play"
+                description: "Follow your matches and results"
+            cta: "Search a tournament"
+        organizer:
+            title: "Organizer"
+            step1:
+                title: "Create"
+                description: "Set up your tournament"
+            step2:
+                title: "Share"
+                description: "Send the link to players"
+            step3:
+                title: "Manage"
+                description: "Validate registrations"
+            step4:
+                title: "Launch"
+                description: "Referee in real-time"
+            cta: "Create a tournament"
 
 # ----------------------------------------------------------------------------
 # Authentication

@@ -250,6 +250,35 @@ home:
         mobile:
             title: "Mobile-first"
             description: "Interface optimisée pour les appareils mobiles et tablettes"
+    tutorial:
+        title: "Comment ça marche ?"
+        player:
+            title: "Joueur"
+            step1:
+                title: "Trouvez"
+                description: "Parcourez les tournois disponibles"
+            step2:
+                title: "Inscrivez-vous"
+                description: "Rejoignez un tournoi en un clic"
+            step3:
+                title: "Jouez"
+                description: "Suivez vos matchs et résultats"
+            cta: "Rechercher un tournoi"
+        organizer:
+            title: "Organisateur"
+            step1:
+                title: "Créez"
+                description: "Configurez votre tournoi"
+            step2:
+                title: "Partagez"
+                description: "Envoyez le lien aux joueurs"
+            step3:
+                title: "Gérez"
+                description: "Validez les inscriptions"
+            step4:
+                title: "Lancez"
+                description: "Arbitrez en temps réel"
+            cta: "Créer un tournoi"
 
 # ----------------------------------------------------------------------------
 # Authentication
