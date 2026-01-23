@@ -91,4 +91,13 @@ enum TournamentStatus: string
     {
         return in_array($this, [self::COMPLETED, self::CANCELLED], true);
     }
+
+    /**
+     * Check if tournament can be deleted.
+     * Only DRAFT and PUBLISHED tournaments can be deleted (not started yet).
+     */
+    public function isDeletable(): bool
+    {
+        return in_array($this, [self::DRAFT, self::PUBLISHED], true);
+    }
 }

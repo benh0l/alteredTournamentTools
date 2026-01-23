@@ -82,7 +82,9 @@ class TournamentRepository extends ServiceEntityRepository
     public function findPublicTournamentsFiltered(
         ?TournamentFormat $format = null,
         ?\DateTimeImmutable $dateFrom = null,
-        ?\DateTimeImmutable $dateTo = null
+        ?\DateTimeImmutable $dateTo = null,
+        ?bool $isTumult = null,
+        ?bool $isSeasonFinalsQualifier = null
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
@@ -105,6 +107,16 @@ class TournamentRepository extends ServiceEntityRepository
         if ($dateTo !== null) {
             $qb->andWhere('t.date <= :dateTo')
                 ->setParameter('dateTo', $dateTo);
+        }
+
+        if ($isTumult === true) {
+            $qb->andWhere('t.isTumult = :isTumult')
+                ->setParameter('isTumult', true);
+        }
+
+        if ($isSeasonFinalsQualifier === true) {
+            $qb->andWhere('t.isSeasonFinalsQualifier = :isSeasonFinalsQualifier')
+                ->setParameter('isSeasonFinalsQualifier', true);
         }
 
         $tournaments = $qb->orderBy('t.date', 'ASC')
@@ -171,6 +183,8 @@ class TournamentRepository extends ServiceEntityRepository
      * @param TournamentFormat|null $format    Optional format filter
      * @param \DateTimeImmutable|null $dateFrom Optional date range start
      * @param \DateTimeImmutable|null $dateTo   Optional date range end
+     * @param bool|null            $isTumult   Optional tumult filter
+     * @param bool|null            $isSeasonFinalsQualifier Optional qualifier filter
      *
      * @return array<int, array{tournament: Tournament, distance: float}>
      */
@@ -180,7 +194,9 @@ class TournamentRepository extends ServiceEntityRepository
         float $radiusKm = 50.0,
         ?TournamentFormat $format = null,
         ?\DateTimeImmutable $dateFrom = null,
-        ?\DateTimeImmutable $dateTo = null
+        ?\DateTimeImmutable $dateTo = null,
+        ?bool $isTumult = null,
+        ?bool $isSeasonFinalsQualifier = null
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
@@ -207,6 +223,17 @@ class TournamentRepository extends ServiceEntityRepository
         if ($dateTo !== null) {
             $qb->andWhere('t.date <= :dateTo')
                 ->setParameter('dateTo', $dateTo);
+        }
+
+        // Tournament type filters
+        if ($isTumult === true) {
+            $qb->andWhere('t.isTumult = :isTumult')
+                ->setParameter('isTumult', true);
+        }
+
+        if ($isSeasonFinalsQualifier === true) {
+            $qb->andWhere('t.isSeasonFinalsQualifier = :isSeasonFinalsQualifier')
+                ->setParameter('isSeasonFinalsQualifier', true);
         }
 
         // Get all matching tournaments

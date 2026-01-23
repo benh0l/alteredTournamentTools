@@ -166,6 +166,18 @@ class Tournament
     #[ORM\Column(name: 'results_published', type: 'boolean')]
     private bool $resultsPublished = false;
 
+    /**
+     * Whether this is a Tumult tournament.
+     */
+    #[ORM\Column(name: 'is_tumult', type: 'boolean')]
+    private bool $isTumult = false;
+
+    /**
+     * Whether this tournament is a Season Finals Qualifier.
+     */
+    #[ORM\Column(name: 'is_season_finals_qualifier', type: 'boolean')]
+    private bool $isSeasonFinalsQualifier = false;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'tournament', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -684,6 +696,42 @@ class Tournament
     public function publishResults(): self
     {
         $this->resultsPublished = true;
+
+        return $this;
+    }
+
+    /**
+     * Check if this is a Tumult tournament.
+     */
+    public function isTumult(): bool
+    {
+        return $this->isTumult;
+    }
+
+    /**
+     * Set whether this is a Tumult tournament.
+     */
+    public function setIsTumult(bool $isTumult): self
+    {
+        $this->isTumult = $isTumult;
+
+        return $this;
+    }
+
+    /**
+     * Check if this tournament is a Season Finals Qualifier.
+     */
+    public function isSeasonFinalsQualifier(): bool
+    {
+        return $this->isSeasonFinalsQualifier;
+    }
+
+    /**
+     * Set whether this tournament is a Season Finals Qualifier.
+     */
+    public function setIsSeasonFinalsQualifier(bool $isSeasonFinalsQualifier): self
+    {
+        $this->isSeasonFinalsQualifier = $isSeasonFinalsQualifier;
 
         return $this;
     }

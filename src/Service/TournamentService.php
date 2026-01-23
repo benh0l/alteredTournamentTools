@@ -31,7 +31,8 @@ final class TournamentService
         $tournament->setStatus(TournamentStatus::DRAFT);
 
         // Auto-grant ROLE_ORGANIZER on first tournament creation
-        if (!$organizer->hasRole('ROLE_ORGANIZER')) {
+        // Skip if user already has ROLE_ADMIN (which includes ROLE_ORGANIZER via hierarchy)
+        if (!$organizer->hasRole('ROLE_ORGANIZER') && !$organizer->hasRole('ROLE_ADMIN')) {
             $organizer->addRole('ROLE_ORGANIZER');
             $this->logger->info('Auto-granted ROLE_ORGANIZER to user', [
                 'user_id' => $organizer->getId(),
@@ -93,16 +94,22 @@ final class TournamentService
 
     /**
      * Delete a tournament.
-     * Only allowed if tournament is in DRAFT status.
+     * Only allowed if tournament is in DRAFT or PUBLISHED status (not started yet).
      */
     public function deleteTournament(Tournament $tournament): void
     {
-        if ($tournament->getStatus() !== TournamentStatus::DRAFT) {
-            throw new \LogicException('Cannot delete tournament that is not in DRAFT status');
+        if (!$tournament->getStatus()->isDeletable()) {
+            throw new \LogicException('Cannot delete tournament that has already started');
         }
 
         $tournamentId = $tournament->getId();
         $tournamentName = $tournament->getName();
+        $registrationCount = $tournament->getRegistrations()->count();
+
+        // Remove all registrations first (for published tournaments)
+        foreach ($tournament->getRegistrations() as $registration) {
+            $this->entityManager->remove($registration);
+        }
 
         $this->entityManager->remove($tournament);
         $this->entityManager->flush();
@@ -110,6 +117,7 @@ final class TournamentService
         $this->logger->info('Tournament deleted', [
             'tournament_id' => $tournamentId,
             'tournament_name' => $tournamentName,
+            'registrations_removed' => $registrationCount,
         ]);
     }
 

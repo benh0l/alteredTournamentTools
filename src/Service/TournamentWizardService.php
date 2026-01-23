@@ -174,6 +174,12 @@ final class TournamentWizardService
             if (isset($wizardData[9]['alteredGgLink'])) {
                 $tournament->setAlteredGgLink($wizardData[9]['alteredGgLink']);
             }
+            if (isset($wizardData[9]['isTumult'])) {
+                $tournament->setIsTumult((bool) $wizardData[9]['isTumult']);
+            }
+            if (isset($wizardData[9]['isSeasonFinalsQualifier'])) {
+                $tournament->setIsSeasonFinalsQualifier((bool) $wizardData[9]['isSeasonFinalsQualifier']);
+            }
         }
 
         $tournament->setOrganizer($organizer);

@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Enum\TournamentFormat;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -73,6 +74,21 @@ class TournamentSearchType extends AbstractType
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-input',
+                ],
+            ])
+            // Tournament type filters
+            ->add('isTumult', CheckboxType::class, [
+                'label' => 'tournament.search.is_tumult',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+            ])
+            ->add('isSeasonFinalsQualifier', CheckboxType::class, [
+                'label' => 'tournament.search.is_season_finals_qualifier',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
                 ],
             ])
             // Hidden fields for coordinates (set by JavaScript/geocoding)

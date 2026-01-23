@@ -10,6 +10,31 @@
     </div>
 
     {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-6'}}) }}
+        {# Tournament Type Flags #}
+        <div class="flex flex-wrap gap-4 pb-6 mb-6" style="border-bottom: 1px solid var(--border-default);">
+            <label class="flex-1 min-w-[200px] flex items-center p-4 rounded-xl cursor-pointer border-2 transition-all hover:border-orange-400" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+                {{ form_widget(form.isTumult, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                <div class="ml-3">
+                    <span class="flex items-center text-sm font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:flame', {class: 'w-5 h-5 mr-2 text-orange-500'}) }}
+                        {{ 'form.tournament.is_tumult'|trans }}
+                    </span>
+                    <span class="text-xs" style="color: var(--text-muted);">{{ 'form.tournament.is_tumult_help'|trans }}</span>
+                </div>
+            </label>
+
+            <label class="flex-1 min-w-[200px] flex items-center p-4 rounded-xl cursor-pointer border-2 transition-all hover:border-yellow-400" style="background-color: var(--bg-subtle); border-color: var(--border-default);">
+                {{ form_widget(form.isSeasonFinalsQualifier, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                <div class="ml-3">
+                    <span class="flex items-center text-sm font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:award', {class: 'w-5 h-5 mr-2 text-yellow-500'}) }}
+                        {{ 'form.tournament.is_season_finals_qualifier'|trans }}
+                    </span>
+                    <span class="text-xs" style="color: var(--text-muted);">{{ 'form.tournament.is_season_finals_qualifier_help'|trans }}</span>
+                </div>
+            </label>
+        </div>
+
         {# Description #}
         <div>
             <label for="{{ form.description.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">

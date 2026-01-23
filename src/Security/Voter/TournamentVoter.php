@@ -16,8 +16,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter for Tournament entity permissions.
  *
  * Permission Matrix:
- * - EDIT: Organizer only, DRAFT status only
- * - DELETE: Organizer only, DRAFT status only (no registrations check done in service)
+ * - EDIT: Organizer only, DRAFT or PUBLISHED (not started) status
+ * - DELETE: Organizer only, DRAFT or PUBLISHED (not started) status
  * - MANAGE: Organizer only, any status (for dashboard access, publish, start)
  * - VIEW: Public tournaments visible to all, private to organizer only
  * - VIEW_DASHBOARD: Organizer, registered players, or anyone for public ONGOING/COMPLETED tournaments
@@ -97,8 +97,8 @@ final class TournamentVoter extends Voter
     }
 
     /**
-     * Can delete: Must be organizer AND DRAFT status.
-     * Additional registration check is done in the service layer.
+     * Can delete: Must be organizer AND tournament not started (DRAFT or PUBLISHED without rounds).
+     * Registrations are removed by the service layer when deleting a published tournament.
      */
     private function canDelete(Tournament $tournament, User $user): bool
     {

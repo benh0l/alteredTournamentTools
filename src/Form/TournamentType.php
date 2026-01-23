@@ -11,6 +11,7 @@ use App\Enum\TournamentFormat;
 use App\Enum\TournamentStructure;
 use App\Enum\TournamentVisibility;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -253,6 +254,30 @@ final class TournamentType extends AbstractType
                 'constraints' => [
                     new Url(['message' => 'validation.url_invalid']),
                 ],
+            ])
+
+            // Tournament Type Flags
+            ->add('isTumult', CheckboxType::class, [
+                'label' => 'form.tournament.is_tumult',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.is_tumult_help',
+            ])
+            ->add('isSeasonFinalsQualifier', CheckboxType::class, [
+                'label' => 'form.tournament.is_season_finals_qualifier',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.is_season_finals_qualifier_help',
             ]);
     }
 

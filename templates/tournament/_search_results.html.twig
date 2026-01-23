@@ -18,14 +18,26 @@
                                     {% if tournament.time %}a {{ tournament.time|date('H:i') }}{% endif %}
                                 </p>
                             </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full
-                                {% if tournament.format.value starts with 'constructed' %}
-                                    bg-blue-500/20 text-blue-800 dark:text-blue-300
-                                {% else %}
-                                    bg-purple-500/20 text-purple-800 dark:text-purple-300
-                                {% endif %}">
-                                {{ tournament.format.label|trans }}
-                            </span>
+                            <div class="flex flex-wrap gap-1 justify-end">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full
+                                    {% if tournament.format.value starts with 'constructed' %}
+                                        bg-blue-500/20 text-blue-800 dark:text-blue-300
+                                    {% else %}
+                                        bg-purple-500/20 text-purple-800 dark:text-purple-300
+                                    {% endif %}">
+                                    {{ tournament.format.label|trans }}
+                                </span>
+                                {% if tournament.isTumult %}
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-500/20 text-orange-800 dark:text-orange-300">
+                                    Tumult
+                                </span>
+                                {% endif %}
+                                {% if tournament.isSeasonFinalsQualifier %}
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-500/20 text-yellow-800 dark:text-yellow-300">
+                                    Qualifier
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 

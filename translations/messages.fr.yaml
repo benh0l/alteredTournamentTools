@@ -470,6 +470,8 @@ tournament:
         near_location: "près de <strong>%location%</strong>"
         view_list: "Liste"
         view_map: "Carte"
+        is_tumult: "Tumult uniquement"
+        is_season_finals_qualifier: "Qualifiers Season Finals"
 
     show:
         information: "Informations"
@@ -1256,6 +1258,10 @@ form:
         elimination_match_format: "Format des matchs (Élimination)"
         altered_gg_link: "Lien Altered.gg (optionnel)"
         altered_gg_placeholder: "https://altered.gg/..."
+        is_tumult: "Tournoi Tumult"
+        is_tumult_help: "Cochez si ce tournoi est un événement Tumult"
+        is_season_finals_qualifier: "Qualifier Season Finals"
+        is_season_finals_qualifier_help: "Cochez si ce tournoi qualifie pour les Season Finals"
 
     registration:
         faction: "Faction"

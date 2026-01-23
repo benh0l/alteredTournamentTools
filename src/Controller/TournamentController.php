@@ -50,6 +50,8 @@ final class TournamentController extends AbstractController
         $dateFromStr = $request->query->get('dateFrom');
         $dateToStr = $request->query->get('dateTo');
         $radius = (float) ($request->query->get('radius') ?: 50);
+        $isTumult = $request->query->getBoolean('isTumult', false) ?: null;
+        $isSeasonFinalsQualifier = $request->query->getBoolean('isSeasonFinalsQualifier', false) ?: null;
 
         // Parse format
         $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
@@ -83,14 +85,18 @@ final class TournamentController extends AbstractController
                 $radius,
                 $format,
                 $dateFrom,
-                $dateTo
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
             );
         } elseif ($hasSearchParams) {
             // Search without location but with filters
             $searchResults = $this->tournamentRepository->findPublicTournamentsFiltered(
                 $format,
                 $dateFrom,
-                $dateTo
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
             );
         } else {
             // No filters, show all public tournaments
