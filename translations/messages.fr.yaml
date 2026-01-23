@@ -235,7 +235,7 @@ home:
     my_registrations: "Mes inscriptions"
     landing:
         title: "Altered Tournament Tools"
-        subtitle: "Organisez et gérez vos tournois de cartes Altered en toute simplicité"
+        subtitle: "Jouez, organisez et gérez vos tournois Altered en toute simplicité"
         create_account: "Créer un compte"
         sign_in: "Se connecter"
         upcoming: "Prochains tournois"
