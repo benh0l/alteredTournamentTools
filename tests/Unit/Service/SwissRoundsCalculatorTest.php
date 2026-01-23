@@ -38,7 +38,7 @@ final class SwissRoundsCalculatorTest extends TestCase
     public static function playerCountProvider(): array
     {
         return [
-            '4 players = 3 rounds (min)' => [4, 3],
+            '4 players = 2 rounds' => [4, 2],
             '5 players = 3 rounds' => [5, 3],
             '6 players = 3 rounds' => [6, 3],
             '7 players = 3 rounds' => [7, 3],
@@ -57,8 +57,8 @@ final class SwissRoundsCalculatorTest extends TestCase
     public function testCalculateBaseRoundsWithLessThanMinimumPlayers(): void
     {
         // Below minimum should return minimum rounds
-        $this->assertSame(3, $this->calculator->calculateBaseRounds(2));
-        $this->assertSame(3, $this->calculator->calculateBaseRounds(3));
+        $this->assertSame(2, $this->calculator->calculateBaseRounds(2));
+        $this->assertSame(2, $this->calculator->calculateBaseRounds(3));
     }
 
     public function testCalculateBaseRoundsRespectsMaximumRounds(): void

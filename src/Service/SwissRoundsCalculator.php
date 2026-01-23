@@ -26,7 +26,7 @@ final class SwissRoundsCalculator
 {
     private const MIN_PLAYERS = 4;
     private const MAX_PLAYERS = 128;
-    private const MIN_ROUNDS = 3;
+    private const MIN_ROUNDS = 2;
     private const MAX_ROUNDS = 10;
 
     /**

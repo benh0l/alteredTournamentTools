@@ -1,0 +1,155 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'contact.admin.view.title'|trans }} #{{ report.id }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4 max-w-4xl">
+        {# Back link #}
+        <a
+            href="{{ path('admin_contact_reports') }}"
+            class="inline-flex items-center text-sm font-medium mb-6 hover:underline"
+            style="color: var(--text-secondary);"
+        >
+            {{ ux_icon('lucide:arrow-left', {class: 'h-4 w-4 mr-1'}) }}
+            {{ 'contact.admin.view.back'|trans }}
+        </a>
+
+        {# Report Card #}
+        <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+            {# Header #}
+            <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: var(--border-color);">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-xl font-bold" style="color: var(--text-primary);">
+                        {{ report.subject.label|trans }}
+                    </h1>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ report.status.color }} text-white" id="status-badge">
+                        {{ report.status.label|trans }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {# Status dropdown #}
+                    <select
+                        id="status-select"
+                        class="form-input rounded-lg text-sm"
+                        onchange="updateStatus(this.value)"
+                    >
+                        {% for status in statuses %}
+                            <option value="{{ status.value }}" {% if report.status.value == status.value %}selected{% endif %}>
+                                {{ status.label|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    {# Delete button #}
+                    <form
+                        action="{{ path('admin_contact_report_delete', {id: report.id}) }}"
+                        method="post"
+                        onsubmit="return confirm('{{ 'contact.admin.view.delete_confirm'|trans }}')"
+                    >
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-report-' ~ report.id) }}">
+                        <button
+                            type="submit"
+                            class="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                            title="{{ 'contact.admin.action.delete'|trans }}"
+                        >
+                            {{ ux_icon('lucide:trash-2', {class: 'h-5 w-5'}) }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {# User info #}
+            <div class="px-6 py-4 border-b" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
+                <div class="flex items-center gap-4">
+                    <div class="flex-shrink-0">
+                        {% if report.user.avatar %}
+                            <img
+                                src="{{ asset('uploads/avatars/' ~ report.user.avatar) }}"
+                                alt="{{ report.user.pseudo }}"
+                                class="w-12 h-12 rounded-full object-cover"
+                            >
+                        {% else %}
+                            <div class="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center">
+                                <span class="text-white font-bold text-lg">
+                                    {{ report.user.pseudo|slice(0, 1)|upper }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="font-medium" style="color: var(--text-primary);">
+                            {{ report.user.pseudo }}
+                        </p>
+                        <p class="text-sm" style="color: var(--text-muted);">
+                            {{ report.user.email }}
+                        </p>
+                    </div>
+                    <div class="ml-auto text-right">
+                        <p class="text-sm" style="color: var(--text-muted);">
+                            {{ 'contact.admin.view.sent_at'|trans }}
+                        </p>
+                        <p class="text-sm font-medium" style="color: var(--text-secondary);">
+                            {{ report.createdAt|date('d/m/Y H:i') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {# Message #}
+            <div class="px-6 py-6">
+                <h2 class="text-sm font-medium mb-3" style="color: var(--text-muted);">
+                    {{ 'contact.admin.view.message'|trans }}
+                </h2>
+                <div class="prose dark:prose-invert max-w-none">
+                    <p class="whitespace-pre-wrap" style="color: var(--text-primary);">{{ report.message }}</p>
+                </div>
+            </div>
+
+            {# Page URL if present #}
+            {% if report.pageUrl %}
+                <div class="px-6 py-4 border-t" style="border-color: var(--border-color);">
+                    <h2 class="text-sm font-medium mb-2" style="color: var(--text-muted);">
+                        {{ 'contact.admin.view.page_url'|trans }}
+                    </h2>
+                    <a
+                        href="{{ report.pageUrl }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-sm text-primary-600 hover:text-primary-700 break-all"
+                    >
+                        {{ report.pageUrl }}
+                        {{ ux_icon('lucide:external-link', {class: 'h-3 w-3 inline ml-1'}) }}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+async function updateStatus(status) {
+    try {
+        const response = await fetch('{{ path('admin_contact_report_status', {id: report.id}) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: 'status=' + encodeURIComponent(status),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const badge = document.getElementById('status-badge');
+            badge.textContent = data.statusLabel;
+            badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + data.statusColor + ' text-white';
+        }
+    } catch (error) {
+        console.error('Error updating status:', error);
+    }
+}
+</script>
+{% endblock %}

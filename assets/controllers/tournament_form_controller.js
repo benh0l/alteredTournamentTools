@@ -119,7 +119,7 @@ export default class extends Controller {
             suggestedRounds += 1;
         }
 
-        suggestedRounds = Math.max(3, Math.min(suggestedRounds, 10));
+        suggestedRounds = Math.max(2, Math.min(suggestedRounds, 10));
 
         const explanation = this.roundsRecommendedValue
             .replace('%rounds%', suggestedRounds)

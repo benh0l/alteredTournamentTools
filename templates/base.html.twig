@@ -639,16 +639,23 @@
                         <span class="text-white font-semibold">Altered Tournament Tools</span>
                     </div>
 
-                    {# Ko-fi support button #}
-                    <a href="https://ko-fi.com/Benhol"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#FF5E5B] hover:bg-[#ff4744] shadow-lg hover:shadow-xl hover:scale-105 transition-all mb-4 md:mb-0 group">
-                        {{ ux_icon('lucide:heart', {class: 'w-5 h-5 text-white group-hover:animate-pulse'}) }}
-                        <span class="text-white text-sm font-bold">
-                            {% if app.request.locale == 'fr' %}Soutenir le projet{% else %}Support the project{% endif %}
-                        </span>
-                    </a>
+                    <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                        {# Ko-fi support button #}
+                        <a href="https://ko-fi.com/Benhol"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#FF5E5B] hover:bg-[#ff4744] shadow-lg hover:shadow-xl hover:scale-105 transition-all group">
+                            {{ ux_icon('lucide:heart', {class: 'w-5 h-5 text-white group-hover:animate-pulse'}) }}
+                            <span class="text-white text-sm font-bold">
+                                {% if app.request.locale == 'fr' %}Soutenir le projet{% else %}Support the project{% endif %}
+                            </span>
+                        </a>
+
+                        {# Contact/Report button - Only for logged-in users #}
+                        {% if app.user %}
+                            {% include 'contact/_modal.html.twig' %}
+                        {% endif %}
+                    </div>
 
                     <div class="text-white/70 text-sm">
                         &copy; {{ 'now'|date('Y') }} {% if app.request.locale == 'fr' %}Tous droits réservés{% else %}All rights reserved{% endif %}

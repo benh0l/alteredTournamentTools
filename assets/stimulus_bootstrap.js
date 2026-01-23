@@ -1,4 +1,5 @@
 import { startStimulusApp } from '@symfony/stimulus-bundle';
+import ContactModalController from './controllers/contact_modal_controller.js';
 
 // Start Stimulus application with auto-discovery
 const app = startStimulusApp();
@@ -11,4 +12,4 @@ app.debug = true;
 window.Stimulus = app;
 
 // Register any custom, 3rd party controllers here
-// app.register('some_controller_name', SomeImportedController);
+app.register('contact-modal', ContactModalController);

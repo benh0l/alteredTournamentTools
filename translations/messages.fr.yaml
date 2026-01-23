@@ -1310,3 +1310,73 @@ js:
         bracket_label: "Bracket de %players% joueurs"
         bracket_byes_label: "Bracket de %bracket% (%byes% BYEs nécessaires)"
         rounds_recommended: "%rounds% rondes recommandées pour %players% joueurs"
+
+# ----------------------------------------------------------------------------
+# Contact / Report Feature
+# ----------------------------------------------------------------------------
+contact:
+    button:
+        label: "Signaler un problème"
+    modal:
+        title: "Nous contacter"
+    form:
+        subject: "Sujet"
+        message: "Message"
+        message_placeholder: "Décrivez votre problème ou votre question..."
+        message_hint: "Minimum 10 caractères, maximum 2000"
+        cancel: "Annuler"
+        submit: "Envoyer"
+    subject:
+        bug: "Signaler un bug"
+        contact: "Contact"
+    status:
+        new: "Nouveau"
+        read: "Lu"
+        resolved: "Résolu"
+    success:
+        title: "Message envoyé !"
+        message: "Merci pour votre retour. Nous vous répondrons dans les plus brefs délais."
+    error:
+        validation: "Veuillez corriger les erreurs du formulaire."
+    message:
+        not_blank: "Le message est requis."
+        min_length: "Le message doit contenir au moins 10 caractères."
+        max_length: "Le message ne peut pas dépasser 2000 caractères."
+    admin:
+        title: "Rapports de contact"
+        subtitle: "Gérez les retours et signalements des utilisateurs"
+        new_reports: "{1} 1 nouveau rapport|]1,Inf[ %count% nouveaux rapports"
+        filter:
+            status: "Statut"
+            all: "Tous"
+            clear: "Effacer les filtres"
+        table:
+            status: "Statut"
+            subject: "Sujet"
+            user: "Utilisateur"
+            message: "Message"
+            date: "Date"
+            actions: "Actions"
+        action:
+            view: "Voir"
+            delete: "Supprimer"
+        pagination:
+            showing: "%total% rapport(s) au total"
+            prev: "Précédent"
+            next: "Suivant"
+        empty:
+            title: "Aucun rapport"
+            subtitle: "Aucun rapport de contact pour le moment."
+        view:
+            title: "Rapport"
+            back: "Retour à la liste"
+            sent_at: "Envoyé le"
+            message: "Message"
+            page_url: "Page concernée"
+            delete_confirm: "Êtes-vous sûr de vouloir supprimer ce rapport ?"
+        success:
+            status_updated: "Statut mis à jour"
+            deleted: "Rapport supprimé"
+        error:
+            invalid_status: "Statut invalide"
+            invalid_token: "Token CSRF invalide"
