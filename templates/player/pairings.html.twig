@@ -145,41 +145,62 @@
     {% if current_round and current_round.startedAt %}
     <script>
         (function() {
-            const timerElement = document.getElementById('round-timer');
-            if (!timerElement) return;
+            let timerInterval = null;
 
-            const startedAt = timerElement.dataset.startedAt;
-            if (!startedAt) return;
+            function init() {
+                const timerElement = document.getElementById('round-timer');
+                if (!timerElement) return;
 
-            const startTime = new Date(startedAt);
-            const maxTimerMinutes = 90; // Timer stops at 90 minutes
+                const startedAt = timerElement.dataset.startedAt;
+                if (!startedAt) return;
 
-            function updateTimer() {
-                const now = new Date();
-                let elapsed = Math.floor((now - startTime) / 1000);
+                const startTime = new Date(startedAt);
+                const maxTimerMinutes = 90; // Timer stops at 90 minutes
 
-                // Cap at 90 minutes (5400 seconds)
-                const maxSeconds = maxTimerMinutes * 60;
-                if (elapsed > maxSeconds) {
-                    elapsed = maxSeconds;
+                function updateTimer() {
+                    const now = new Date();
+                    let elapsed = Math.floor((now - startTime) / 1000);
+
+                    // Cap at 90 minutes (5400 seconds)
+                    const maxSeconds = maxTimerMinutes * 60;
+                    if (elapsed > maxSeconds) {
+                        elapsed = maxSeconds;
+                    }
+
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+
+                    timerElement.textContent =
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
                 }
 
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
+                // Clear any existing interval
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
 
-                timerElement.textContent =
-                    String(minutes).padStart(2, '0') + ':' +
-                    String(seconds).padStart(2, '0');
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
             }
 
+            function cleanup() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            // Cleanup on Turbo navigation
+            document.addEventListener('turbo:before-visit', cleanup);
+            document.addEventListener('turbo:before-render', cleanup);
+            window.addEventListener('beforeunload', cleanup);
+
+            // Initialize
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                    updateTimer();
-                    setInterval(updateTimer, 1000);
-                });
+                document.addEventListener('DOMContentLoaded', init);
             } else {
-                updateTimer();
-                setInterval(updateTimer, 1000);
+                init();
             }
         })();
     </script>

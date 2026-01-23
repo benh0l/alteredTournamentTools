@@ -136,38 +136,60 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tournamentId = {{ tournament.id }};
+        (function() {
+            let pollingInterval = null;
 
-            // Try SSE first, fall back to polling
-            let usePolling = false;
-            let eventSource = null;
+            function init() {
+                const tournamentId = {{ tournament.id }};
 
-            function updateLastUpdate() {
-                const el = document.getElementById('last-update');
-                if (el) {
-                    const now = new Date();
-                    el.textContent = 'Mis a jour: ' +
-                        String(now.getHours()).padStart(2, '0') + ':' +
-                        String(now.getMinutes()).padStart(2, '0') + ':' +
-                        String(now.getSeconds()).padStart(2, '0');
+                function updateLastUpdate() {
+                    const el = document.getElementById('last-update');
+                    if (el) {
+                        const now = new Date();
+                        el.textContent = 'Mis a jour: ' +
+                            String(now.getHours()).padStart(2, '0') + ':' +
+                            String(now.getMinutes()).padStart(2, '0') + ':' +
+                            String(now.getSeconds()).padStart(2, '0');
+                    }
+                }
+
+                function pollForUpdates() {
+                    fetch('/api/dashboard/' + tournamentId + '/state')
+                        .then(response => response.json())
+                        .then(data => {
+                            updateLastUpdate();
+                        })
+                        .catch(error => console.error('Polling error:', error));
+                }
+
+                // Clear any existing interval before starting new one
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+
+                // Start polling every 30 seconds for live standings
+                pollingInterval = setInterval(pollForUpdates, 30000);
+            }
+
+            function cleanup() {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
                 }
             }
 
-            function pollForUpdates() {
-                fetch('/api/dashboard/' + tournamentId + '/state')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Reload page to get updated standings
-                        // In a more sophisticated version, we'd update the DOM directly
-                        updateLastUpdate();
-                    })
-                    .catch(error => console.error('Polling error:', error));
-            }
+            // Cleanup on Turbo navigation
+            document.addEventListener('turbo:before-visit', cleanup);
+            document.addEventListener('turbo:before-render', cleanup);
+            window.addEventListener('beforeunload', cleanup);
 
-            // Start polling every 30 seconds for live standings
-            setInterval(pollForUpdates, 30000);
-        });
+            // Initialize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
     </script>
 {% endblock %}
 {% endif %}
