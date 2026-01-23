@@ -654,6 +654,7 @@
     <script>
         (function() {
             let timerInterval = null;
+            const abortController = new AbortController();
 
             function init() {
                 const timerElement = document.getElementById('match-timer');
@@ -708,16 +709,17 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                 }
+                abortController.abort();
             }
 
-            // Cleanup on Turbo navigation
-            document.addEventListener('turbo:before-visit', cleanup);
-            document.addEventListener('turbo:before-render', cleanup);
-            window.addEventListener('beforeunload', cleanup);
+            // Cleanup on Turbo navigation - AbortController removes listeners automatically
+            document.addEventListener('turbo:before-visit', cleanup, { signal: abortController.signal });
+            document.addEventListener('turbo:before-render', cleanup, { signal: abortController.signal });
+            window.addEventListener('beforeunload', cleanup, { signal: abortController.signal });
 
             // Initialize
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
+                document.addEventListener('DOMContentLoaded', init, { signal: abortController.signal });
             } else {
                 init();
             }

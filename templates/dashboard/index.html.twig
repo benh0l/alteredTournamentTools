@@ -508,6 +508,7 @@
             const tournamentId = {{ tournament.id }};
             const roundDuration = 50; // minutes
             const maxTimerMinutes = 90; // Timer stops at 90 minutes
+            const abortController = new AbortController();
 
             // Translations for connection status
             const translations = {
@@ -775,18 +776,19 @@
                     clearInterval(timerInterval);
                     timerInterval = null;
                 }
+                abortController.abort();
             }
 
             {% if tournament.ongoing and current_round %}
                 // Use polling only (SSE disabled due to navigation issues on WAMP)
                 startPolling();
 
-                // Cleanup on page unload
-                window.addEventListener('beforeunload', cleanup);
+                // Cleanup on page unload - AbortController removes listeners automatically
+                window.addEventListener('beforeunload', cleanup, { signal: abortController.signal });
 
                 // Cleanup for Turbo navigation (if Turbo is active)
-                document.addEventListener('turbo:before-visit', cleanup);
-                document.addEventListener('turbo:before-render', cleanup);
+                document.addEventListener('turbo:before-visit', cleanup, { signal: abortController.signal });
+                document.addEventListener('turbo:before-render', cleanup, { signal: abortController.signal });
             {% endif %}
         });
     </script>

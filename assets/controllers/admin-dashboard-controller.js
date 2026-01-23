@@ -24,11 +24,26 @@ export default class extends Controller {
         mercureUrl: String
     };
 
+    eventSource = null;
+    reconnectTimeout = null;
+    refreshTimeout = null;
+    isDisconnected = false;
+
     connect() {
+        this.isDisconnected = false;
         this.connectToMercure();
     }
 
     disconnect() {
+        this.isDisconnected = true;
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        if (this.refreshTimeout) {
+            clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = null;
+        }
         if (this.eventSource) {
             this.eventSource.close();
             this.eventSource = null;
@@ -36,6 +51,8 @@ export default class extends Controller {
     }
 
     connectToMercure() {
+        if (this.isDisconnected) return;
+
         if (!this.mercureUrlValue) {
             console.warn('Admin dashboard: Mercure URL not configured');
             return;
@@ -54,8 +71,10 @@ export default class extends Controller {
 
             this.eventSource.onerror = (error) => {
                 console.error('Admin dashboard SSE error:', error);
-                // Reconnect after 5 seconds
-                setTimeout(() => this.connectToMercure(), 5000);
+                // Reconnect after 5 seconds if not disconnected
+                if (!this.isDisconnected) {
+                    this.reconnectTimeout = setTimeout(() => this.connectToMercure(), 5000);
+                }
             };
         } catch (error) {
             console.error('Failed to connect to Mercure:', error);
@@ -141,12 +160,15 @@ export default class extends Controller {
     }
 
     refreshStats() {
+        if (this.isDisconnected) return;
+
         // Debounce refresh to avoid too many requests
         if (this.refreshTimeout) {
             clearTimeout(this.refreshTimeout);
         }
 
         this.refreshTimeout = setTimeout(() => {
+            if (this.isDisconnected) return;
             // Simple page refresh - in production, use an API endpoint
             window.location.reload();
         }, 2000);
