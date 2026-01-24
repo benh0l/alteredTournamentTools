@@ -1320,6 +1320,22 @@ js:
 # ----------------------------------------------------------------------------
 # Contact / Report Feature
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Error Pages
+# ----------------------------------------------------------------------------
+error:
+    "500":
+        title: "Oups !"
+        subtitle: "Le serveur fait une pause cafe"
+        message: "Pas de panique ! Notre serveur a rencontre un petit souci technique. Ce n'est pas de ta faute, nos hamsters dans la salle serveur ont probablement besoin d'une pause."
+        what_to_do: "Que faire ?"
+        tip_refresh: "Rafraichis la page dans quelques instants"
+        tip_connection: "Verifie ta connexion internet"
+        tip_contact: "Si le probleme persiste, contacte-nous !"
+        back_home: "Retour a l'accueil"
+        retry: "Reessayer"
+        code: "Erreur 500 - Erreur interne du serveur"
+
 contact:
     button:
         label: "Signaler un problème"

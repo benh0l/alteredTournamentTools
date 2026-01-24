@@ -1319,6 +1319,22 @@ js:
 # ----------------------------------------------------------------------------
 # Contact / Report Feature
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Error Pages
+# ----------------------------------------------------------------------------
+error:
+    "500":
+        title: "Oops!"
+        subtitle: "The server is taking a coffee break"
+        message: "Don't panic! Our server encountered a small technical issue. It's not your fault, our hamsters in the server room probably need a break."
+        what_to_do: "What to do?"
+        tip_refresh: "Refresh the page in a few moments"
+        tip_connection: "Check your internet connection"
+        tip_contact: "If the problem persists, contact us!"
+        back_home: "Back to home"
+        retry: "Try again"
+        code: "Error 500 - Internal server error"
+
 contact:
     button:
         label: "Report an issue"
