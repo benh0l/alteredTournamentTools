@@ -326,23 +326,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         {% if registration.faction %}
-                            {% set factionColors = {
-                                'axiom': {'bg': 'rgba(59, 130, 246, 0.2)', 'text': '#3b82f6', 'border': '#3b82f6'},
-                                'bravos': {'bg': 'rgba(239, 68, 68, 0.2)', 'text': '#ef4444', 'border': '#ef4444'},
-                                'lyra': {'bg': 'rgba(168, 85, 247, 0.2)', 'text': '#a855f7', 'border': '#a855f7'},
-                                'muna': {'bg': 'rgba(34, 197, 94, 0.2)', 'text': '#22c55e', 'border': '#22c55e'},
-                                'ordis': {'bg': 'rgba(245, 158, 11, 0.2)', 'text': '#f59e0b', 'border': '#f59e0b'}
-                            } %}
-                            {% set colors = factionColors[registration.faction.value] ?? {'bg': 'rgba(107, 114, 128, 0.2)', 'text': '#6b7280', 'border': '#6b7280'} %}
+                            {% set factionColor = registration.faction.color %}
                             <div class="flex items-center gap-3">
                                 {% if registration.heroImage %}
-                                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2" style="border-color: {{ colors.border }};">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2" style="border-color: {{ factionColor }};">
                                         <img src="{{ registration.heroImage }}" alt="{{ registration.heroLabel }}" class="w-full h-full object-cover">
                                     </div>
                                 {% endif %}
                                 <div class="flex flex-col gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ colors.bg }}; color: {{ colors.text }};">
-                                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: {{ colors.text }};"></span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ factionColor }}20; color: {{ factionColor }};">
+                                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: {{ factionColor }};"></span>
                                         {{ registration.faction.label|trans }}
                                     </span>
                                     {% if registration.heroLabel %}
