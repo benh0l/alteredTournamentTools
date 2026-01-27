@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/tournaments')]
@@ -278,6 +279,73 @@ final class TournamentRegistrationsController extends AbstractController
             $this->logger->info('Player added to tournament by organizer', [
                 'player_id' => $player->getId(),
                 'player_pseudo' => $player->getPseudo(),
+                'tournament_id' => $tournament->getId(),
+                'organizer_id' => $this->getUser()->getId(),
+            ]);
+        } catch (AlreadyRegisteredException) {
+            $this->addFlash('error', $this->translator->trans('flash.error.player_already_registered'));
+        } catch (TournamentNotOpenException) {
+            $this->addFlash('error', $this->translator->trans('flash.error.registrations_not_accepted'));
+        }
+
+        return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/registrations/add-guest', name: 'tournament_registrations_add_guest', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function addGuestPlayer(Request $request, Tournament $tournament): Response
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if (!$this->isCsrfTokenValid('add_guest' . $tournament->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $guestName = trim($request->request->getString('guest_name', ''));
+        $decklistUrl = $request->request->getString('decklist_url', '');
+        $factionValue = $request->request->getString('faction', '');
+        $faction2Value = $request->request->getString('faction2', '');
+        $hero = $request->request->getString('hero', '');
+
+        if ($guestName === '') {
+            $this->addFlash('error', $this->translator->trans('flash.error.guest_name_required'));
+
+            return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+        }
+
+        // Create guest user with unique pseudo and fake email
+        $uuid = Uuid::v4()->toRfc4122();
+        $guestPseudo = 'guest_' . substr($uuid, 0, 8);
+        $guestEmail = 'guest-' . $uuid . '@tournament.local';
+
+        $guestUser = new User();
+        $guestUser->setEmail($guestEmail);
+        $guestUser->setPseudo($guestPseudo);
+        $guestUser->setName($guestName);
+        $guestUser->setPassword(''); // No password for guest users
+        $guestUser->setIsGuest(true);
+        $guestUser->setIsVerified(false);
+
+        $this->entityManager->persist($guestUser);
+        $this->entityManager->flush(); // Flush to get the user ID before registration
+
+        // Convert faction strings to Faction enum
+        $faction = $factionValue !== '' ? Faction::tryFrom($factionValue) : null;
+        $faction2 = $faction2Value !== '' ? Faction::tryFrom($faction2Value) : null;
+
+        try {
+            $this->registrationService->registerPlayerByOrganizer(
+                $guestUser,
+                $tournament,
+                $decklistUrl ?: null,
+                $faction,
+                $hero ?: null,
+                $faction2
+            );
+
+            $this->addFlash('success', sprintf($this->translator->trans('flash.success.guest_added'), $guestName));
+            $this->logger->info('Guest player added to tournament', [
+                'guest_name' => $guestName,
+                'guest_user_id' => $guestUser->getId(),
                 'tournament_id' => $tournament->getId(),
                 'organizer_id' => $this->getUser()->getId(),
             ]);

@@ -94,6 +94,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'theme_mode', type: 'string', length: 10, nullable: true)]
     private ?string $themeMode = 'light';
 
+    /**
+     * Whether this user is a guest (created by organizer, no real account).
+     */
+    #[ORM\Column(name: 'is_guest', type: 'boolean', options: ['default' => false])]
+    private bool $isGuest = false;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'player', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -299,6 +305,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function isGuest(): bool
+    {
+        return $this->isGuest;
+    }
+
+    public function setIsGuest(bool $isGuest): self
+    {
+        $this->isGuest = $isGuest;
 
         return $this;
     }

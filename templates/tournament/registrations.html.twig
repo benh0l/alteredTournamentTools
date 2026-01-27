@@ -235,6 +235,123 @@
             <p id="no-results" class="hidden theme-text-muted text-sm text-center py-4">
                 {{ 'tournament.registrations.no_user_found'|trans }}
             </p>
+
+            {# Guest Player Form #}
+            <div class="mt-6 pt-6 border-t" style="border-color: var(--border-default);">
+                <button type="button"
+                        id="toggle-guest-form"
+                        class="flex items-center text-sm font-medium theme-text-secondary hover:opacity-80">
+                    {{ ux_icon('lucide:user-plus-2', {class: 'w-4 h-4 mr-2 text-orange-500'}) }}
+                    {{ 'tournament.registrations.add_guest_title'|trans }}
+                    {{ ux_icon('lucide:chevron-down', {class: 'w-4 h-4 ml-1 transform transition-transform', id: 'guest-form-chevron'}) }}
+                </button>
+
+                <div id="guest-form" class="hidden mt-4">
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-4">
+                        <p class="text-xs text-orange-700 dark:text-orange-400">
+                            {{ ux_icon('lucide:info', {class: 'w-4 h-4 inline mr-1'}) }}
+                            {{ 'tournament.registrations.guest_notice'|trans }}
+                        </p>
+                    </div>
+
+                    <form action="{{ path('tournament_registrations_add_guest', {'id': tournament.id}) }}"
+                          method="POST"
+                          class="space-y-4"
+                          data-turbo="false"
+                          data-controller="registration-form"
+                          data-registration-form-heroes-value='{{ heroesData|json_encode|raw }}'
+                          data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                          data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_guest' ~ tournament.id) }}">
+
+                        <div>
+                            <label for="guest_name" class="block text-sm font-medium theme-text-secondary mb-2">
+                                {{ 'tournament.registrations.guest_name_label'|trans }} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text"
+                                   name="guest_name"
+                                   id="guest_name"
+                                   class="form-input"
+                                   placeholder="{{ 'tournament.registrations.guest_name_placeholder'|trans }}"
+                                   required>
+                        </div>
+
+                        {% if tournament.format.isConstructed %}
+                            <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
+                                <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
+                                    {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'tournament.registrations.faction_hero_title'|trans }}
+                                </h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="guest-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                                        </label>
+                                        <select name="faction"
+                                                id="guest-faction"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="faction"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    {% if tournament.format.isBifaction %}
+                                        <div>
+                                            <label for="guest-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                                {{ 'tournament.registrations.second_faction'|trans }}
+                                            </label>
+                                            <select name="faction2"
+                                                    id="guest-faction2"
+                                                    class="form-select text-sm"
+                                                    data-registration-form-target="faction2"
+                                                    data-action="change->registration-form#factionChanged">
+                                                <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                                {% for label, value in factionChoices %}
+                                                    <option value="{{ value }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="{{ tournament.format.isBifaction ? 'md:col-span-2' : '' }}">
+                                        <label for="guest-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ 'tournament.registrations.hero_label'|trans }}
+                                        </label>
+                                        <select name="hero"
+                                                id="guest-hero"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="hero"
+                                                disabled>
+                                            <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div>
+                            <label for="guest_decklist_url" class="block text-sm font-medium theme-text-secondary mb-2">
+                                {{ 'tournament.registrations.decklist_url_label'|trans }}
+                            </label>
+                            <input type="url"
+                                   name="decklist_url"
+                                   id="guest_decklist_url"
+                                   class="form-input"
+                                   placeholder="https://...">
+                        </div>
+
+                        <button type="submit"
+                                class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                            {{ 'tournament.registrations.add_guest_btn'|trans }}
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -313,6 +430,11 @@
                                     {% if registration.player.id == tournament.organizer.id %}
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-800 dark:text-purple-400">
                                             {{ 'tournament.registrations.organizer_badge'|trans }}
+                                        </span>
+                                    {% endif %}
+                                    {% if registration.player.guest %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-800 dark:text-orange-400">
+                                            {{ 'tournament.registrations.guest_badge'|trans }}
                                         </span>
                                     {% endif %}
                                 </div>
@@ -444,6 +566,22 @@
                     chevron.classList.toggle('rotate-180');
                 }
             });
+
+            // Toggle guest player form
+            const toggleGuestBtn = document.getElementById('toggle-guest-form');
+            const guestForm = document.getElementById('guest-form');
+            const guestChevron = document.getElementById('guest-form-chevron');
+
+            if (toggleGuestBtn && guestForm) {
+                toggleGuestBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    guestForm.classList.toggle('hidden');
+                    if (guestChevron) {
+                        guestChevron.classList.toggle('rotate-180');
+                    }
+                });
+            }
 
             // Search users with debounce
             if (searchInput) {
