@@ -8,6 +8,7 @@
 nav:
     home: "Home"
     tournaments: "Tournaments"
+    results: "Results"
     my_tournaments: "My tournaments"
     profile: "Profile"
     admin: "Administration"
@@ -446,6 +447,17 @@ tournament:
         filter_status: "Filter by status"
         all_formats: "All formats"
         all_statuses: "All statuses"
+        players_badge: "%count% players"
+    results_list:
+        page_title: "Tournament Results"
+        title: "Tournament Results"
+        subtitle: "View standings from completed tournaments"
+        find_tournament: "Find a tournament"
+        no_results: "No completed tournaments yet"
+        count: "completed tournament(s)"
+        players: "players"
+        view_standings: "Standings"
+        view_stats: "Stats"
 
     search:
         page_title: "Search for a tournament"

@@ -172,6 +172,25 @@ class TournamentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find public completed tournaments with published results.
+     *
+     * @return Tournament[]
+     */
+    public function findPublicCompletedTournaments(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->where('t.status = :status')
+            ->andWhere('t.visibility = :visibility')
+            ->setParameter('status', TournamentStatus::COMPLETED)
+            ->setParameter('visibility', TournamentVisibility::PUBLIC)
+            ->orderBy('t.completedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Find tournaments by location using Haversine formula (FR59).
      *
      * Returns tournaments within the specified radius from the given coordinates,

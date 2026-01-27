@@ -144,6 +144,15 @@
                                   {% endif %}">
                             {{ 'nav.tournaments'|trans }}
                         </a>
+                        <a href="{{ path('tournament_results_list') }}"
+                           class="px-3 py-2 rounded-lg font-medium transition-all
+                                  {% if app.request.attributes.get('_route') == 'tournament_results_list' %}
+                                      bg-white/20 text-white
+                                  {% else %}
+                                      text-white/90 hover:bg-white/10 hover:text-white
+                                  {% endif %}">
+                            {{ 'nav.results'|trans }}
+                        </a>
                         {% if app.user %}
                             <a href="{{ path('my_tournaments') }}"
                                class="px-3 py-2 rounded-lg font-medium transition-all
@@ -433,6 +442,14 @@
                                data-action="click->mobile-menu#close">
                                 {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
                                 {{ 'nav.tournaments'|trans }}
+                            </a>
+
+                            <a href="{{ path('tournament_results_list') }}"
+                               class="flex items-center px-4 py-3 rounded-xl font-medium transition-all"
+                               style="color: var(--text-primary);"
+                               data-action="click->mobile-menu#close">
+                                {{ ux_icon('lucide:medal', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                                {{ 'nav.results'|trans }}
                             </a>
 
                             {% if app.user %}

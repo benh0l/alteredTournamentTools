@@ -34,6 +34,16 @@ final class TournamentController extends AbstractController
     ) {
     }
 
+    #[Route('/results', name: 'tournament_results_list', methods: ['GET'])]
+    public function resultsList(): Response
+    {
+        $tournaments = $this->tournamentRepository->findPublicCompletedTournaments();
+
+        return $this->render('tournament/results_list.html.twig', [
+            'tournaments' => $tournaments,
+        ]);
+    }
+
     #[Route('', name: 'tournament_list', methods: ['GET'])]
     public function list(Request $request): Response
     {

@@ -286,6 +286,9 @@
 
                         {# Tags #}
                         <div class="mt-4 flex flex-wrap gap-2">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30">
+                                {{ 'tournament.list.players_badge'|trans({'%count%': tournament.expectedPlayers}) }}
+                            </span>
                             <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">
                                 {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
                             </span>

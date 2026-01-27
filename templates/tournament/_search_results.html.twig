@@ -19,6 +19,9 @@
                                 </p>
                             </div>
                             <div class="flex flex-wrap gap-1 justify-end">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-800 dark:text-green-300">
+                                    {{ 'tournament.list.players_badge'|trans({'%count%': tournament.expectedPlayers}) }}
+                                </span>
                                 <span class="px-2 py-1 text-xs font-medium rounded-full
                                     {% if tournament.format.value starts with 'constructed' %}
                                         bg-blue-500/20 text-blue-800 dark:text-blue-300
