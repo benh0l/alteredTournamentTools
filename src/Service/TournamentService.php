@@ -10,6 +10,8 @@ use App\Enum\TournamentStatus;
 use App\Repository\TournamentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class TournamentService
 {
@@ -17,6 +19,7 @@ final class TournamentService
         private readonly EntityManagerInterface $entityManager,
         private readonly TournamentRepository $tournamentRepository,
         private readonly LoggerInterface $logger,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -34,6 +37,7 @@ final class TournamentService
         // Skip if user already has ROLE_ADMIN (which includes ROLE_ORGANIZER via hierarchy)
         if (!$organizer->hasRole('ROLE_ORGANIZER') && !$organizer->hasRole('ROLE_ADMIN')) {
             $organizer->addRole('ROLE_ORGANIZER');
+            $this->refreshSecurityToken($organizer);
             $this->logger->info('Auto-granted ROLE_ORGANIZER to user', [
                 'user_id' => $organizer->getId(),
             ]);
@@ -161,5 +165,25 @@ final class TournamentService
 
         // Cap at reasonable maximum
         return min($baseRounds, 10);
+    }
+
+    /**
+     * Refresh the security token after user roles have been modified.
+     * This prevents session invalidation when roles are added dynamically.
+     */
+    private function refreshSecurityToken(User $user): void
+    {
+        $token = $this->tokenStorage->getToken();
+        if (null === $token) {
+            return;
+        }
+
+        $newToken = new UsernamePasswordToken(
+            $user,
+            'main',
+            $user->getRoles()
+        );
+
+        $this->tokenStorage->setToken($newToken);
     }
 }

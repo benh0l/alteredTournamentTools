@@ -210,6 +210,30 @@
                         {{ form_errors(form.topCutSize) }}
                     </div>
                 </div>
+
+                {# Tournament Type Flags #}
+                <div class="flex flex-wrap gap-4 pt-4" style="border-top: 1px solid var(--border-muted);">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.isTumult, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:zap', {class: 'w-4 h-4 inline mr-1 text-amber-500'}) }}
+                                {{ 'form.tournament.is_tumult'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.is_tumult_help'|trans }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.isSeasonFinalsQualifier, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:star', {class: 'w-4 h-4 inline mr-1 text-purple-500'}) }}
+                                {{ 'form.tournament.is_season_finals_qualifier'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.is_season_finals_qualifier_help'|trans }}</span>
+                        </span>
+                    </label>
+                </div>
             </div>
         </div>
 
