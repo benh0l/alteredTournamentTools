@@ -264,9 +264,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Get display name with team tag if set.
      * Format: [TAG] Pseudo or just Pseudo if no tag.
+     * For guest accounts, returns their real name instead.
      */
     public function getDisplayName(): string
     {
+        // For guests, return their real name
+        if ($this->isGuest && $this->name) {
+            return $this->name;
+        }
+
         if ($this->teamTag) {
             return '[' . $this->teamTag . '] ' . $this->pseudo;
         }

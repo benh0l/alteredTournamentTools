@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\MatchFormat;
 use App\Enum\MatchStatus;
 use App\Repository\TournamentMatchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -347,6 +348,7 @@ class TournamentMatch
 
     /**
      * Assign a BYE to player1 (auto-win).
+     * Score is 1-0 for BO1, 2-0 for BO3.
      */
     public function assignBye(): self
     {
@@ -354,9 +356,13 @@ class TournamentMatch
         $this->player2 = null;
         $this->status = MatchStatus::COMPLETED;
         $this->completedAt = new \DateTimeImmutable();
+
+        $format = $this->round->getTournament()->getMatchFormatForRound($this->round);
+        $byeScore = $format === MatchFormat::BO1 ? 1 : 2;
+
         $this->result = [
             'winnerId' => $this->player1->getId(),
-            'player1Score' => 2,
+            'player1Score' => $byeScore,
             'player2Score' => 0,
             'isBye' => true,
         ];

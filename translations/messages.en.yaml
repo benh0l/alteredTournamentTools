@@ -812,6 +812,8 @@ dashboard:
 
     timer:
         elapsed: "Time elapsed (%duration% min recommended)"
+        recommended_bo1: "30 min recommended"
+        recommended_bo3: "75 min recommended"
         color_legend:
             green: "< 35 min"
             orange: "35-50 min"

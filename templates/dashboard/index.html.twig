@@ -89,7 +89,14 @@
                                      data-round-duration="50">
                                     --:--
                                 </div>
-                                <p class="text-sm mt-3" style="color: var(--text-muted);">{{ 'dashboard.timer.elapsed'|trans({'%duration%': 50}) }}</p>
+                                {% set match_format = tournament.getMatchFormatForRound(current_round) %}
+                                <p class="text-sm mt-3" style="color: var(--text-muted);">
+                                    {% if match_format.value == 'bo1' %}
+                                        {{ 'dashboard.timer.recommended_bo1'|trans }}
+                                    {% else %}
+                                        {{ 'dashboard.timer.recommended_bo3'|trans }}
+                                    {% endif %}
+                                </p>
                             </div>
 
                             {# Timer color legend #}
