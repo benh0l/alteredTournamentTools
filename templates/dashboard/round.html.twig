@@ -12,8 +12,9 @@
                 {% if can_manage %}{{ 'dashboard.title_organizer'|trans }}{% else %}{{ 'dashboard.title'|trans }}{% endif %} - {{ 'dashboard.round.title'|trans({'%number%': round.roundNumber}) }}
             </p>
         </div>
-        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
-            &larr; {{ 'dashboard.round.back_to_dashboard'|trans }}
+        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="btn-secondary">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+            {{ 'dashboard.round.back_to_dashboard'|trans }}
         </a>
     </div>
 

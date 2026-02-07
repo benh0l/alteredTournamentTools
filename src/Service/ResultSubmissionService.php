@@ -120,14 +120,32 @@ class ResultSubmissionService
      * If both players have submitted:
      * - If they agree, validate the match
      * - If they disagree, create a dispute
+     *
+     * Special case: If opponent is a guest, auto-validate with single submission.
      */
     private function processSubmissions(TournamentMatch $match): void
     {
+        $submissions = $match->getSubmissions();
+
+        // Case 1: Single submission - check if opponent is a guest
+        if ($submissions->count() === 1) {
+            $submission = $submissions->first();
+            $submitter = $submission->getSubmittedBy();
+            $opponent = $this->getOpponent($match, $submitter);
+
+            if ($opponent !== null && $opponent->isGuest()) {
+                // Guest opponent - auto-validate with single submission
+                $this->validateMatchWithGuestOpponent($match, $submission);
+            }
+            return;
+        }
+
+        // Case 2: Both players submitted (existing logic)
         if (!$match->hasBothSubmissions()) {
             return;
         }
 
-        $submissions = $match->getSubmissions()->toArray();
+        $submissions = $submissions->toArray();
         $submission1 = $submissions[0];
         $submission2 = $submissions[1];
 
@@ -200,6 +218,33 @@ class ResultSubmissionService
         }
 
         return null;
+    }
+
+    /**
+     * Get the opponent user for a given submitter in a match.
+     */
+    private function getOpponent(TournamentMatch $match, User $submitter): ?User
+    {
+        $player1 = $match->getPlayer1()->getPlayer();
+        $player2 = $match->getPlayer2()?->getPlayer();
+
+        return ($player1 === $submitter) ? $player2 : $player1;
+    }
+
+    /**
+     * Validate a match when opponent is a guest (single submission auto-validation).
+     */
+    private function validateMatchWithGuestOpponent(TournamentMatch $match, MatchSubmission $submission): void
+    {
+        $match->complete($submission->toResultArray());
+        $match->addDisputeHistoryEntry('validated', [
+            'winnerId' => $submission->getClaimedWinnerId(),
+            'score' => [$submission->getPlayer1Score(), $submission->getPlayer2Score()],
+            'method' => 'guest-opponent-auto-validation',
+        ]);
+
+        $this->entityManager->flush();
+        $this->checkAndCompleteRound($match);
     }
 
     /**

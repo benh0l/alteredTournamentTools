@@ -5,8 +5,9 @@
 {% block body %}
 <div class="max-w-6xl mx-auto">
     <div class="mb-6">
-        <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
-            &larr; Retour au tournoi
+        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="btn-secondary">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+            Retour au dashboard
         </a>
     </div>
 
