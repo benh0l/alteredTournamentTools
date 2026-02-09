@@ -102,6 +102,13 @@
                         {{ 'profile.notifications.title'|trans }}
                     </a>
 
+                    <a href="{{ path('profile_privacy') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.privacy.title'|trans }}
+                    </a>
+
                     <a href="{{ path('app_profile_delete') }}"
                        class="flex items-center justify-center px-6 py-3 border-2 border-red-500/30 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all"
                        style="background-color: var(--card-bg);">

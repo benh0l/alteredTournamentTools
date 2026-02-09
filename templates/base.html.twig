@@ -101,7 +101,7 @@
         {% if app.request.locale == 'fr' %}Aller au contenu principal{% else %}Skip to main content{% endif %}
     </a>
 
-    <header class="shadow-lg theme-header-gradient">
+    <header class="shadow-lg theme-header-gradient sticky top-0 z-40">
         {% block header %}
             <nav class="container mx-auto px-4 py-4" data-controller="mobile-menu">
                 <div class="flex items-center justify-between">
@@ -674,12 +674,29 @@
                         {% endif %}
                     </div>
 
-                    <div class="text-white/70 text-sm">
-                        &copy; {{ 'now'|date('Y') }} {% if app.request.locale == 'fr' %}Tous droits réservés{% else %}All rights reserved{% endif %}
+                    <div class="flex flex-col items-center md:items-end space-y-2">
+                        {# Legal links #}
+                        <div class="flex items-center space-x-4 text-sm">
+                            <a href="{{ path('legal_privacy') }}" class="text-white/70 hover:text-white transition-colors">
+                                {{ 'legal.privacy.title'|trans }}
+                            </a>
+                            <a href="{{ path('legal_cookies') }}" class="text-white/70 hover:text-white transition-colors">
+                                {{ 'legal.cookies.title'|trans }}
+                            </a>
+                            <a href="{{ path('legal_terms') }}" class="text-white/70 hover:text-white transition-colors">
+                                {{ 'legal.terms.title'|trans }}
+                            </a>
+                        </div>
+                        <div class="text-white/70 text-sm">
+                            &copy; {{ 'now'|date('Y') }} {% if app.request.locale == 'fr' %}Tous droits réservés{% else %}All rights reserved{% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         {% endblock %}
     </footer>
+
+    {# Cookie consent banner - GDPR compliance #}
+    {% include 'components/_cookie_banner.html.twig' %}
 </body>
 </html>

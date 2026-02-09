@@ -43,4 +43,14 @@ class ResetPasswordRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    public function countExpired(): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.expiresAt < :now')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

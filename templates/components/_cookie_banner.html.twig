@@ -1,0 +1,101 @@
+{#
+    Cookie Consent Banner - GDPR Compliance
+
+    Include this in base.html.twig before closing </body>
+    The banner will automatically show if consent hasn't been given.
+#}
+<div data-controller="cookie-consent"
+     data-cookie-consent-consent-key-value="cookie_consent"
+     class="fixed bottom-0 left-0 right-0 z-50">
+
+    <div data-cookie-consent-target="banner"
+         class="hidden"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="cookie-banner-title"
+         aria-hidden="true">
+
+        {# Backdrop #}
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm"></div>
+
+        {# Banner content #}
+        <div class="relative mx-auto max-w-4xl px-4 pb-6">
+            <div class="rounded-2xl shadow-2xl border p-6"
+                 style="background-color: var(--card-bg); border-color: var(--border-default);">
+
+                <div class="flex flex-col md:flex-row md:items-start gap-4">
+                    {# Icon #}
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                             style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                            {{ ux_icon('lucide:cookie', {class: 'w-6 h-6 text-white'}) }}
+                        </div>
+                    </div>
+
+                    {# Content #}
+                    <div class="flex-1">
+                        <h2 id="cookie-banner-title" class="text-lg font-semibold mb-2" style="color: var(--text-primary);">
+                            {{ 'cookie_banner.title'|trans }}
+                        </h2>
+                        <p class="text-sm mb-4" style="color: var(--text-secondary);">
+                            {{ 'cookie_banner.description'|trans }}
+                            <a href="{{ path('legal_cookies') }}"
+                               class="underline hover:no-underline"
+                               style="color: var(--color-primary-500);">
+                                {{ 'cookie_banner.learn_more'|trans }}
+                            </a>
+                        </p>
+
+                        {# Cookie types info #}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            <div class="flex items-start space-x-2 p-3 rounded-lg" style="background-color: var(--bg-muted);">
+                                {{ ux_icon('lucide:shield-check', {class: 'w-5 h-5 flex-shrink-0', style: 'color: var(--color-success-500);'}) }}
+                                <div>
+                                    <span class="text-sm font-medium block" style="color: var(--text-primary);">
+                                        {{ 'cookie_banner.essential.title'|trans }}
+                                    </span>
+                                    <span class="text-xs" style="color: var(--text-secondary);">
+                                        {{ 'cookie_banner.essential.description'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-2 p-3 rounded-lg" style="background-color: var(--bg-muted);">
+                                {{ ux_icon('lucide:settings-2', {class: 'w-5 h-5 flex-shrink-0', style: 'color: var(--color-primary-500);'}) }}
+                                <div>
+                                    <span class="text-sm font-medium block" style="color: var(--text-primary);">
+                                        {{ 'cookie_banner.functional.title'|trans }}
+                                    </span>
+                                    <span class="text-xs" style="color: var(--text-secondary);">
+                                        {{ 'cookie_banner.functional.description'|trans }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Buttons #}
+                <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4 border-t" style="border-color: var(--border-default);">
+                    <button type="button"
+                            class="flex-1 sm:flex-none px-6 py-3 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all"
+                            style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));"
+                            data-action="click->cookie-consent#acceptAll">
+                        {{ ux_icon('lucide:check', {class: 'w-4 h-4 inline mr-2'}) }}
+                        {{ 'cookie_banner.accept_all'|trans }}
+                    </button>
+                    <button type="button"
+                            class="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium border transition-all"
+                            style="color: var(--text-primary); border-color: var(--border-default); background-color: var(--bg-muted);"
+                            data-action="click->cookie-consent#acceptEssential">
+                        {{ 'cookie_banner.accept_essential'|trans }}
+                    </button>
+                    <a href="{{ path('legal_privacy') }}"
+                       class="flex-1 sm:flex-none px-6 py-3 rounded-xl font-medium text-center transition-all"
+                       style="color: var(--text-secondary);">
+                        {{ 'cookie_banner.privacy_policy'|trans }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -81,6 +81,7 @@ common:
     rounds: "Rondes"
     match: "Match"
     matches: "Matchs"
+    back_home: "Retour à l'accueil"
 
 # ----------------------------------------------------------------------------
 # Enums - Tournament Status
@@ -426,6 +427,29 @@ profile:
         browser_coming_soon: "Bientôt disponible"
         auto_save_note: "Les modifications sont sauvegardées automatiquement."
         email_notifications: "Notifications par email"
+
+    privacy:
+        title: "Confidentialité"
+        page_title: "Paramètres de confidentialité - Altered Tournament Tools"
+        subtitle: "Gérez la visibilité de vos données personnelles"
+        saved: "Préférences sauvegardées"
+        visibility_title: "Visibilité du profil"
+        visibility_desc: "Contrôlez quelles informations sont visibles par les autres utilisateurs."
+        show_real_name: "Afficher mon nom réel"
+        show_real_name_desc: "Votre nom complet sera visible sur votre profil public"
+        show_in_results: "Apparaître dans les classements"
+        show_in_results_desc: "Votre pseudo apparaîtra dans les résultats publics des tournois"
+        show_match_history: "Afficher l'historique des matchs"
+        show_match_history_desc: "Les autres joueurs pourront voir votre historique de matchs"
+        your_rights_title: "Vos droits RGPD"
+        your_rights_desc: "Exercez vos droits sur vos données personnelles."
+        export_data: "Exporter mes données"
+        export_data_desc: "Téléchargez une copie de toutes vos données personnelles"
+        delete_account: "Supprimer mon compte"
+        delete_account_desc: "Supprimez définitivement votre compte et toutes vos données"
+        privacy_policy: "Politique de confidentialité"
+        privacy_policy_desc: "Consultez notre politique de protection des données"
+        auto_save_note: "Les modifications sont sauvegardées automatiquement."
 
     avatar: "Photo de profil"
     change_avatar: "Changer la photo"
@@ -1354,7 +1378,7 @@ error:
         tip_refresh: "Rafraichis la page dans quelques instants"
         tip_connection: "Verifie ta connexion internet"
         tip_contact: "Si le probleme persiste, contacte-nous !"
-        back_home: "Retour a l'accueil"
+        back_home: "Retour à l'accueil"
         retry: "Reessayer"
         code: "Erreur 500 - Erreur interne du serveur"
 
@@ -1424,3 +1448,218 @@ contact:
         error:
             invalid_status: "Statut invalide"
             invalid_token: "Token CSRF invalide"
+
+# ----------------------------------------------------------------------------
+# Legal Pages
+# ----------------------------------------------------------------------------
+legal:
+    privacy:
+        title: "Politique de Confidentialité"
+        last_updated: "Dernière mise à jour"
+        controller:
+            title: "1. Responsable du traitement"
+            text: "Les informations suivantes identifient le responsable du traitement de vos données personnelles :"
+            name_label: "Nom"
+            contact_label: "Contact"
+            contact: "Via le formulaire de contact du site"
+        collected:
+            title: "2. Données collectées"
+            intro: "Nous collectons les données personnelles suivantes :"
+            registration:
+                title: "Lors de l'inscription"
+                email: "Adresse email (obligatoire)"
+                pseudo: "Pseudo (obligatoire)"
+                name: "Nom réel (optionnel)"
+                avatar: "Photo de profil (optionnel)"
+                password: "Mot de passe (chiffré, non visible)"
+            tournament:
+                title: "Lors de l'utilisation"
+                registrations: "Inscriptions aux tournois"
+                results: "Résultats des matchs"
+                decklist: "Liens vers les decklists (optionnel)"
+        purpose:
+            title: "3. Finalités et bases légales"
+            purpose_col: "Finalité"
+            basis_col: "Base légale"
+            account: "Gestion de votre compte utilisateur"
+            tournament: "Gestion des tournois et inscriptions"
+            notifications: "Envoi de notifications (rappels, résultats)"
+            security: "Sécurité et prévention des fraudes"
+            basis_contract: "Exécution du contrat"
+            basis_consent: "Consentement"
+            basis_legitimate: "Intérêt légitime"
+        retention:
+            title: "4. Durée de conservation"
+            account: "Données de compte : conservées jusqu'à suppression du compte"
+            tournament: "Historique des tournois : 3 ans après la fin du tournoi"
+            logs: "Journaux techniques : 14 jours"
+        sharing:
+            title: "5. Partage des données"
+            intro: "Vos données peuvent être partagées avec les services tiers suivants :"
+            processors_title: "Sous-traitants"
+            nominatim_title: "OpenStreetMap (Nominatim)"
+            nominatim_purpose: "Géocodage des adresses de tournois pour afficher les cartes"
+            nominatim_data: "Adresses des lieux de tournois uniquement"
+            nominatim_location: "Serveurs situés dans l'Union Européenne"
+            nominatim_policy: "Politique de confidentialité : privacy.osmfoundation.org"
+            no_analytics: "Nous n'utilisons aucun service d'analyse tiers (Google Analytics, etc.)"
+            no_advertising: "Nous n'utilisons aucune plateforme publicitaire"
+            no_sale: "Nous ne vendons jamais vos données personnelles à des tiers."
+        rights:
+            title: "6. Vos droits"
+            intro: "Conformément au RGPD, vous disposez des droits suivants :"
+            access:
+                title: "Droit d'accès"
+                text: "Obtenir une copie de vos données personnelles"
+            rectification:
+                title: "Droit de rectification"
+                text: "Corriger vos données inexactes ou incomplètes"
+            erasure:
+                title: "Droit à l'effacement"
+                text: "Demander la suppression de vos données"
+            portability:
+                title: "Droit à la portabilité"
+                text: "Recevoir vos données dans un format structuré"
+            objection:
+                title: "Droit d'opposition"
+                text: "Vous opposer au traitement de vos données"
+            exercise: "Pour exercer ces droits, utilisez les options dans votre profil ou contactez-nous via le formulaire de contact."
+        complaint:
+            title: "7. Réclamation"
+            text: "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la CNIL (Commission Nationale de l'Informatique et des Libertés) : www.cnil.fr"
+        cookies:
+            title: "8. Cookies"
+            text: "Nous utilisons des cookies essentiels au fonctionnement du site. Pour plus d'informations, consultez notre"
+            link: "politique de cookies"
+        changes:
+            title: "9. Modifications"
+            text: "Cette politique peut être mise à jour. La date de dernière mise à jour est indiquée en haut de page. Nous vous encourageons à la consulter régulièrement."
+
+    cookies:
+        title: "Politique de Cookies"
+        what:
+            title: "Qu'est-ce qu'un cookie ?"
+            text: "Un cookie est un petit fichier texte stocké sur votre appareil lorsque vous visitez un site web. Les cookies permettent au site de se souvenir de vos actions et préférences."
+        used:
+            title: "Cookies utilisés"
+        essential:
+            title: "Cookies essentiels"
+            text: "Ces cookies sont nécessaires au fonctionnement du site. Ils ne peuvent pas être désactivés."
+        functional:
+            title: "Cookies fonctionnels"
+            text: "Ces cookies améliorent votre expérience utilisateur."
+        table:
+            name: "Nom"
+            purpose: "Finalité"
+            duration: "Durée"
+        session:
+            purpose: "Maintien de votre session utilisateur"
+            duration: "7 jours"
+        remember:
+            purpose: "Connexion automatique (Remember me)"
+            duration: "7 jours"
+        consent:
+            purpose: "Enregistrement de vos choix de cookies"
+            duration: "1 an"
+        localstorage:
+            title: "Stockage local"
+            text: "En plus des cookies, nous utilisons le stockage local du navigateur :"
+        theme:
+            purpose: "Sauvegarde de vos préférences de thème (couleur, mode sombre)"
+        thirdparty:
+            title: "Cookies tiers"
+            text: "Nous n'utilisons actuellement aucun cookie de tracking ou d'analyse tiers. Aucune donnée n'est partagée avec des plateformes publicitaires."
+        manage:
+            title: "Gérer vos cookies"
+            text: "Vous pouvez configurer votre navigateur pour refuser les cookies. Consultez les paramètres de votre navigateur pour plus d'informations."
+            warning: "La désactivation des cookies essentiels peut empêcher le bon fonctionnement du site (connexion, session)."
+        preferences:
+            title: "Modifier vos préférences"
+            text: "Vous pouvez modifier vos préférences de cookies à tout moment :"
+            button: "Gérer mes cookies"
+
+    terms:
+        title: "Conditions Générales d'Utilisation"
+        purpose:
+            title: "1. Objet"
+            text: "Altered Tournament Tools est une plateforme gratuite permettant d'organiser et de participer à des tournois du jeu de cartes Altered TCG. Les présentes CGU régissent l'utilisation de ce service."
+        acceptance:
+            title: "2. Acceptation des conditions"
+            text: "En créant un compte ou en utilisant le service, vous acceptez les présentes conditions d'utilisation ainsi que notre politique de confidentialité."
+        registration:
+            title: "3. Inscription"
+            age: "Vous devez avoir au moins 13 ans pour créer un compte"
+            accuracy: "Les informations fournies doivent être exactes"
+            security: "Vous êtes responsable de la confidentialité de vos identifiants"
+            one_account: "Un seul compte par personne est autorisé"
+        obligations:
+            title: "4. Obligations des utilisateurs"
+            intro: "En utilisant le service, vous vous engagez à :"
+            respect: "Respecter les autres utilisateurs"
+            fair_play: "Jouer de manière loyale et sportive"
+            no_abuse: "Ne pas tenter de manipuler les résultats ou le système"
+            no_illegal: "Ne pas utiliser le service à des fins illégales"
+            no_spam: "Ne pas envoyer de spam ou de contenu non sollicité"
+        organizer:
+            title: "5. Responsabilités des organisateurs"
+            intro: "Les organisateurs de tournois s'engagent à :"
+            accurate_info: "Fournir des informations exactes sur leurs événements"
+            manage_event: "Gérer leur tournoi de manière équitable"
+            communicate: "Communiquer clairement avec les participants"
+            fair_results: "Valider les résultats de manière impartiale"
+        ip:
+            title: "6. Propriété intellectuelle"
+            platform: "La plateforme Altered Tournament Tools et son code sont protégés. Toute reproduction non autorisée est interdite."
+            altered: "Altered TCG est une marque déposée d'Equinox. Cette plateforme n'est pas affiliée à Equinox."
+        liability:
+            title: "7. Limitation de responsabilité"
+            service: "Le service est fourni en l'état. Nous ne garantissons pas une disponibilité continue ou l'absence de bugs."
+            events: "Nous ne sommes pas responsables des événements organisés via la plateforme ni des litiges entre participants."
+        termination:
+            title: "8. Résiliation"
+            user: "Vous pouvez supprimer votre compte à tout moment depuis votre profil"
+            platform: "Nous nous réservons le droit de suspendre ou supprimer tout compte en cas de violation des CGU"
+        modifications:
+            title: "9. Modifications des CGU"
+            text: "Nous pouvons modifier ces conditions à tout moment. Les utilisateurs seront informés des changements significatifs. L'utilisation continue du service vaut acceptation des nouvelles conditions."
+        law:
+            title: "10. Droit applicable"
+            text: "Les présentes CGU sont régies par le droit français. Tout litige sera soumis aux tribunaux compétents de France."
+        privacy:
+            title: "11. Protection des données"
+            text: "Pour en savoir plus sur le traitement de vos données personnelles, consultez notre"
+            link: "politique de confidentialité"
+        contact:
+            title: "12. Contact"
+            text: "Pour toute question concernant ces conditions, utilisez le formulaire de contact disponible sur le site."
+
+# ----------------------------------------------------------------------------
+# Cookie Banner
+# ----------------------------------------------------------------------------
+privacy_settings:
+    title: "Paramètres de confidentialité"
+    description: "Contrôlez la visibilité de vos informations personnelles"
+    show_real_name:
+        label: "Afficher mon nom réel"
+        help: "Si activé, votre nom réel sera visible par les autres utilisateurs"
+    show_in_results:
+        label: "Apparaître dans les résultats publics"
+        help: "Si désactivé, votre pseudo sera masqué dans les classements publics"
+    show_match_history:
+        label: "Historique des matchs public"
+        help: "Si désactivé, votre historique de matchs ne sera pas visible par les autres"
+    saved: "Paramètres de confidentialité enregistrés"
+
+cookie_banner:
+    title: "Nous respectons votre vie privée"
+    description: "Nous utilisons des cookies essentiels pour le fonctionnement du site et des cookies fonctionnels pour améliorer votre expérience."
+    learn_more: "En savoir plus"
+    accept_all: "Accepter tout"
+    accept_essential: "Essentiels uniquement"
+    privacy_policy: "Politique de confidentialité"
+    essential:
+        title: "Essentiels"
+        description: "Session, authentification, sécurité"
+    functional:
+        title: "Fonctionnels"
+        description: "Préférences de thème et langue"

@@ -95,6 +95,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $themeMode = 'light';
 
     /**
+     * Privacy settings for GDPR compliance.
+     *
+     * @var array{show_real_name: bool, show_in_results: bool, show_match_history: bool}
+     */
+    #[ORM\Column(name: 'privacy_settings', type: 'json')]
+    private array $privacySettings = [
+        'show_real_name' => false,
+        'show_in_results' => true,
+        'show_match_history' => true,
+    ];
+
+    /**
      * Whether this user is a guest (created by organizer, no real account).
      */
     #[ORM\Column(name: 'is_guest', type: 'boolean', options: ['default' => false])]
@@ -410,6 +422,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Get privacy settings.
+     *
+     * @return array{show_real_name: bool, show_in_results: bool, show_match_history: bool}
+     */
+    public function getPrivacySettings(): array
+    {
+        return $this->privacySettings;
+    }
+
+    /**
+     * Set privacy settings.
+     *
+     * @param array{show_real_name?: bool, show_in_results?: bool, show_match_history?: bool} $privacySettings
+     */
+    public function setPrivacySettings(array $privacySettings): self
+    {
+        $this->privacySettings = array_merge($this->privacySettings, $privacySettings);
+
+        return $this;
+    }
+
+    /**
+     * Check if real name should be displayed publicly.
+     */
+    public function shouldShowRealName(): bool
+    {
+        return $this->privacySettings['show_real_name'] ?? false;
+    }
+
+    /**
+     * Check if user should appear in public results.
+     */
+    public function shouldShowInResults(): bool
+    {
+        return $this->privacySettings['show_in_results'] ?? true;
+    }
+
+    /**
+     * Check if match history should be public.
+     */
+    public function shouldShowMatchHistory(): bool
+    {
+        return $this->privacySettings['show_match_history'] ?? true;
     }
 
     /**

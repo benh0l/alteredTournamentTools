@@ -79,6 +79,7 @@ common:
     rounds: "Rounds"
     match: "Match"
     matches: "Matches"
+    back_home: "Back to home"
 
 # ----------------------------------------------------------------------------
 # Enums - Tournament Status
@@ -424,6 +425,29 @@ profile:
         browser_coming_soon: "Coming soon"
         auto_save_note: "Changes are saved automatically."
         email_notifications: "Email notifications"
+
+    privacy:
+        title: "Privacy"
+        page_title: "Privacy Settings - Altered Tournament Tools"
+        subtitle: "Manage the visibility of your personal data"
+        saved: "Preferences saved"
+        visibility_title: "Profile visibility"
+        visibility_desc: "Control which information is visible to other users."
+        show_real_name: "Show my real name"
+        show_real_name_desc: "Your full name will be visible on your public profile"
+        show_in_results: "Appear in rankings"
+        show_in_results_desc: "Your username will appear in public tournament results"
+        show_match_history: "Show match history"
+        show_match_history_desc: "Other players will be able to see your match history"
+        your_rights_title: "Your GDPR rights"
+        your_rights_desc: "Exercise your rights over your personal data."
+        export_data: "Export my data"
+        export_data_desc: "Download a copy of all your personal data"
+        delete_account: "Delete my account"
+        delete_account_desc: "Permanently delete your account and all your data"
+        privacy_policy: "Privacy policy"
+        privacy_policy_desc: "View our data protection policy"
+        auto_save_note: "Changes are saved automatically."
 
     avatar: "Profile picture"
     change_avatar: "Change picture"
@@ -1423,3 +1447,218 @@ contact:
         error:
             invalid_status: "Invalid status"
             invalid_token: "Invalid CSRF token"
+
+# ----------------------------------------------------------------------------
+# Legal Pages
+# ----------------------------------------------------------------------------
+legal:
+    privacy:
+        title: "Privacy Policy"
+        last_updated: "Last updated"
+        controller:
+            title: "1. Data Controller"
+            text: "The following information identifies the controller responsible for your personal data:"
+            name_label: "Name"
+            contact_label: "Contact"
+            contact: "Via the website contact form"
+        collected:
+            title: "2. Data Collected"
+            intro: "We collect the following personal data:"
+            registration:
+                title: "During registration"
+                email: "Email address (required)"
+                pseudo: "Username (required)"
+                name: "Real name (optional)"
+                avatar: "Profile picture (optional)"
+                password: "Password (encrypted, not visible)"
+            tournament:
+                title: "During use"
+                registrations: "Tournament registrations"
+                results: "Match results"
+                decklist: "Decklist links (optional)"
+        purpose:
+            title: "3. Purposes and Legal Basis"
+            purpose_col: "Purpose"
+            basis_col: "Legal basis"
+            account: "User account management"
+            tournament: "Tournament and registration management"
+            notifications: "Sending notifications (reminders, results)"
+            security: "Security and fraud prevention"
+            basis_contract: "Contract execution"
+            basis_consent: "Consent"
+            basis_legitimate: "Legitimate interest"
+        retention:
+            title: "4. Data Retention"
+            account: "Account data: kept until account deletion"
+            tournament: "Tournament history: 3 years after tournament ends"
+            logs: "Technical logs: 14 days"
+        sharing:
+            title: "5. Data Sharing"
+            intro: "Your data may be shared with the following third-party services:"
+            processors_title: "Data Processors"
+            nominatim_title: "OpenStreetMap (Nominatim)"
+            nominatim_purpose: "Geocoding of tournament addresses for map display"
+            nominatim_data: "Tournament venue addresses only"
+            nominatim_location: "Servers located in the European Union"
+            nominatim_policy: "Privacy policy: privacy.osmfoundation.org"
+            no_analytics: "We do not use any third-party analytics services (Google Analytics, etc.)"
+            no_advertising: "We do not use any advertising platforms"
+            no_sale: "We never sell your personal data to third parties."
+        rights:
+            title: "6. Your Rights"
+            intro: "Under GDPR, you have the following rights:"
+            access:
+                title: "Right of access"
+                text: "Obtain a copy of your personal data"
+            rectification:
+                title: "Right of rectification"
+                text: "Correct inaccurate or incomplete data"
+            erasure:
+                title: "Right to erasure"
+                text: "Request deletion of your data"
+            portability:
+                title: "Right to portability"
+                text: "Receive your data in a structured format"
+            objection:
+                title: "Right to object"
+                text: "Object to the processing of your data"
+            exercise: "To exercise these rights, use the options in your profile or contact us via the contact form."
+        complaint:
+            title: "7. Complaint"
+            text: "If you believe your rights are not being respected, you can file a complaint with the relevant data protection authority in your country."
+        cookies:
+            title: "8. Cookies"
+            text: "We use cookies essential for the site to function. For more information, see our"
+            link: "cookie policy"
+        changes:
+            title: "9. Changes"
+            text: "This policy may be updated. The last update date is shown at the top of the page. We encourage you to review it regularly."
+
+    cookies:
+        title: "Cookie Policy"
+        what:
+            title: "What is a cookie?"
+            text: "A cookie is a small text file stored on your device when you visit a website. Cookies allow the site to remember your actions and preferences."
+        used:
+            title: "Cookies Used"
+        essential:
+            title: "Essential Cookies"
+            text: "These cookies are necessary for the site to function. They cannot be disabled."
+        functional:
+            title: "Functional Cookies"
+            text: "These cookies improve your user experience."
+        table:
+            name: "Name"
+            purpose: "Purpose"
+            duration: "Duration"
+        session:
+            purpose: "Maintaining your user session"
+            duration: "7 days"
+        remember:
+            purpose: "Automatic login (Remember me)"
+            duration: "7 days"
+        consent:
+            purpose: "Recording your cookie choices"
+            duration: "1 year"
+        localstorage:
+            title: "Local Storage"
+            text: "In addition to cookies, we use browser local storage:"
+        theme:
+            purpose: "Saving your theme preferences (color, dark mode)"
+        thirdparty:
+            title: "Third-party Cookies"
+            text: "We currently do not use any third-party tracking or analytics cookies. No data is shared with advertising platforms."
+        manage:
+            title: "Managing Your Cookies"
+            text: "You can configure your browser to refuse cookies. Check your browser settings for more information."
+            warning: "Disabling essential cookies may prevent the site from functioning properly (login, session)."
+        preferences:
+            title: "Update Your Preferences"
+            text: "You can change your cookie preferences at any time:"
+            button: "Manage my cookies"
+
+    terms:
+        title: "Terms of Service"
+        purpose:
+            title: "1. Purpose"
+            text: "Altered Tournament Tools is a free platform for organizing and participating in Altered TCG card game tournaments. These Terms govern the use of this service."
+        acceptance:
+            title: "2. Acceptance of Terms"
+            text: "By creating an account or using the service, you accept these terms of use and our privacy policy."
+        registration:
+            title: "3. Registration"
+            age: "You must be at least 13 years old to create an account"
+            accuracy: "The information provided must be accurate"
+            security: "You are responsible for keeping your credentials confidential"
+            one_account: "Only one account per person is allowed"
+        obligations:
+            title: "4. User Obligations"
+            intro: "By using the service, you agree to:"
+            respect: "Respect other users"
+            fair_play: "Play fairly and sportingly"
+            no_abuse: "Not attempt to manipulate results or the system"
+            no_illegal: "Not use the service for illegal purposes"
+            no_spam: "Not send spam or unsolicited content"
+        organizer:
+            title: "5. Organizer Responsibilities"
+            intro: "Tournament organizers agree to:"
+            accurate_info: "Provide accurate information about their events"
+            manage_event: "Manage their tournament fairly"
+            communicate: "Communicate clearly with participants"
+            fair_results: "Validate results impartially"
+        ip:
+            title: "6. Intellectual Property"
+            platform: "The Altered Tournament Tools platform and its code are protected. Any unauthorized reproduction is prohibited."
+            altered: "Altered TCG is a trademark of Equinox. This platform is not affiliated with Equinox."
+        liability:
+            title: "7. Limitation of Liability"
+            service: "The service is provided as is. We do not guarantee continuous availability or the absence of bugs."
+            events: "We are not responsible for events organized through the platform or disputes between participants."
+        termination:
+            title: "8. Termination"
+            user: "You can delete your account at any time from your profile"
+            platform: "We reserve the right to suspend or delete any account in case of Terms violation"
+        modifications:
+            title: "9. Changes to Terms"
+            text: "We may modify these terms at any time. Users will be notified of significant changes. Continued use of the service constitutes acceptance of the new terms."
+        law:
+            title: "10. Applicable Law"
+            text: "These Terms are governed by French law. Any dispute will be submitted to the competent courts of France."
+        privacy:
+            title: "11. Data Protection"
+            text: "To learn more about how we process your personal data, see our"
+            link: "privacy policy"
+        contact:
+            title: "12. Contact"
+            text: "For any questions about these terms, use the contact form available on the site."
+
+# ----------------------------------------------------------------------------
+# Cookie Banner
+# ----------------------------------------------------------------------------
+privacy_settings:
+    title: "Privacy Settings"
+    description: "Control the visibility of your personal information"
+    show_real_name:
+        label: "Show my real name"
+        help: "If enabled, your real name will be visible to other users"
+    show_in_results:
+        label: "Appear in public results"
+        help: "If disabled, your username will be hidden in public rankings"
+    show_match_history:
+        label: "Public match history"
+        help: "If disabled, your match history will not be visible to others"
+    saved: "Privacy settings saved"
+
+cookie_banner:
+    title: "We respect your privacy"
+    description: "We use essential cookies for the site to function and functional cookies to improve your experience."
+    learn_more: "Learn more"
+    accept_all: "Accept all"
+    accept_essential: "Essential only"
+    privacy_policy: "Privacy policy"
+    essential:
+        title: "Essential"
+        description: "Session, authentication, security"
+    functional:
+        title: "Functional"
+        description: "Theme and language preferences"

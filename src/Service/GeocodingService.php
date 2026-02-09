@@ -83,7 +83,7 @@ class GeocodingService
             $data = $response->toArray();
 
             if (empty($data)) {
-                $this->logger->info('Geocoding: No results found', ['address' => $address]);
+                $this->logger->info('Geocoding: No results found');
 
                 return null;
             }
@@ -96,7 +96,6 @@ class GeocodingService
             ];
         } catch (\Exception $e) {
             $this->logger->error('Nominatim API error', [
-                'address' => $address,
                 'error' => $e->getMessage(),
             ]);
 

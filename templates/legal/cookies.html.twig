@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'legal.cookies.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    <div class="card p-8">
+        <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">
+            {{ 'legal.cookies.title'|trans }}
+        </h1>
+
+        <p class="text-sm mb-8" style="color: var(--text-secondary);">
+            {{ 'legal.privacy.last_updated'|trans }}: {{ 'now'|date('d/m/Y') }}
+        </p>
+
+        <div class="prose max-w-none" style="color: var(--text-primary);">
+
+            {# Section 1: What are cookies #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.what.title'|trans }}
+                </h2>
+                <p>{{ 'legal.cookies.what.text'|trans }}</p>
+            </section>
+
+            {# Section 2: Cookies we use #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.used.title'|trans }}
+                </h2>
+
+                {# Essential cookies #}
+                <h3 class="text-lg font-medium mb-3 mt-6">{{ 'legal.cookies.essential.title'|trans }}</h3>
+                <p class="mb-4">{{ 'legal.cookies.essential.text'|trans }}</p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse mb-6">
+                        <thead>
+                            <tr style="background-color: var(--bg-muted);">
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.name'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.purpose'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.duration'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border p-3 font-mono text-sm" style="border-color: var(--border-default);">ALTERED_SESSID</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.session.purpose'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.session.duration'|trans }}</td>
+                            </tr>
+                            <tr>
+                                <td class="border p-3 font-mono text-sm" style="border-color: var(--border-default);">REMEMBERME</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.remember.purpose'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.remember.duration'|trans }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Functional cookies #}
+                <h3 class="text-lg font-medium mb-3 mt-6">{{ 'legal.cookies.functional.title'|trans }}</h3>
+                <p class="mb-4">{{ 'legal.cookies.functional.text'|trans }}</p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse mb-6">
+                        <thead>
+                            <tr style="background-color: var(--bg-muted);">
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.name'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.purpose'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.duration'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border p-3 font-mono text-sm" style="border-color: var(--border-default);">cookie_consent</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.consent.purpose'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.consent.duration'|trans }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {# Section 3: Local Storage #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.localstorage.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.cookies.localstorage.text'|trans }}</p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse mb-6">
+                        <thead>
+                            <tr style="background-color: var(--bg-muted);">
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.name'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.cookies.table.purpose'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border p-3 font-mono text-sm" style="border-color: var(--border-default);">theme</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.cookies.theme.purpose'|trans }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {# Section 4: Third-party cookies #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.thirdparty.title'|trans }}
+                </h2>
+                <p>{{ 'legal.cookies.thirdparty.text'|trans }}</p>
+            </section>
+
+            {# Section 5: Managing cookies #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.manage.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.cookies.manage.text'|trans }}</p>
+                <div class="p-4 rounded-lg mb-4" style="background-color: var(--bg-muted);">
+                    <p class="text-sm">
+                        {{ ux_icon('lucide:alert-triangle', {class: 'w-4 h-4 inline mr-2', style: 'color: var(--color-warning-500);'}) }}
+                        {{ 'legal.cookies.manage.warning'|trans }}
+                    </p>
+                </div>
+            </section>
+
+            {# Section 6: Update preferences #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.cookies.preferences.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.cookies.preferences.text'|trans }}</p>
+                <button type="button"
+                        class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));"
+                        onclick="window.dispatchEvent(new CustomEvent('cookie-consent:show'))">
+                    {{ ux_icon('lucide:settings', {class: 'w-4 h-4 mr-2'}) }}
+                    {{ 'legal.cookies.preferences.button'|trans }}
+                </button>
+            </section>
+
+        </div>
+
+        {# Back button #}
+        <div class="mt-8 pt-6 border-t" style="border-color: var(--border-default);">
+            <a href="{{ path('app_home') }}" class="btn-secondary inline-flex items-center">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'common.back_home'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
