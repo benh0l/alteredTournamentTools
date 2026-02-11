@@ -3,148 +3,266 @@
 {% block title %}Ronde {{ round.roundNumber }} - {{ tournament.name }}{% endblock %}
 
 {% block body %}
-<div class="max-w-6xl mx-auto">
-    <div class="mb-6">
-        <a href="{{ path('round_list', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
-            &larr; Retour aux rondes
+<div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="mb-4 sm:mb-6">
+        <a href="{{ path('round_list', {id: tournament.id}) }}" class="inline-flex items-center hover:underline text-sm sm:text-base" style="color: var(--color-primary-600);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-1 sm:mr-2'}) }}
+            <span class="hidden sm:inline">{{ 'round.back_to_rounds'|trans }}</span>
+            <span class="sm:hidden">{{ 'common.back'|trans }}</span>
         </a>
     </div>
 
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Ronde {{ round.roundNumber }}</h1>
-        <span class="{{ round.status.badgeClasses }} px-3 py-1 rounded text-sm">
+    <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold truncate" style="color: var(--text-primary);">{{ 'dashboard.round.title'|trans({'%number%': round.roundNumber}) }}</h1>
+        <span class="{{ round.status.badgeClasses }} px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-shrink-0">
             {{ round.status.label|trans }}
         </span>
     </div>
 
     {% if round.startedAt %}
-        <p class="mb-6" style="color: var(--text-secondary);">
-            Demarree le {{ round.startedAt|date('d/m/Y H:i') }}
+        <p class="mb-4 sm:mb-6 text-sm sm:text-base" style="color: var(--text-secondary);">
+            {{ 'round.started_at'|trans({'%date%': round.startedAt|date('d/m/Y H:i')}) }}
             {% if round.completedAt %}
-                - Terminee le {{ round.completedAt|date('d/m/Y H:i') }}
+                - {{ 'round.completed_at'|trans({'%date%': round.completedAt|date('d/m/Y H:i')}) }}
             {% endif %}
         </p>
     {% endif %}
 
     <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
-        <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
-            <thead style="background-color: var(--bg-subtle);">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Table
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Joueur 1
-                    </th>
-                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Score
-                    </th>
-                    <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Joueur 2
-                    </th>
-                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Statut
-                    </th>
-                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody style="background-color: var(--card-bg);">
-                {% for match in matches %}
-                    {% set isUserInMatch = user_registration_id and (match.player1.id == user_registration_id or (match.player2 and match.player2.id == user_registration_id)) %}
-                    {% set canSubmit = not match.completed and not match.isByeMatch and (is_organizer or isUserInMatch) %}
-                    <tr class="{% if isUserInMatch %}bg-blue-500/10{% endif %}" style="border-bottom: 1px solid var(--border-default);">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: var(--text-primary);">
-                            {{ match.tableNumber }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
-                            {{ match.player1.player.displayName }}
-                            {% if user_registration_id and match.player1.id == user_registration_id %}
-                                <span class="ml-1 text-xs" style="color: var(--color-primary-600);">(vous)</span>
+        {# Mobile view: Cards #}
+        <div class="lg:hidden p-3 sm:p-4 space-y-3">
+            {% for match in matches %}
+                {% set isUserInMatch = user_registration_id and (match.player1.id == user_registration_id or (match.player2 and match.player2.id == user_registration_id)) %}
+                {% set canSubmit = not match.completed and not match.isByeMatch and (is_organizer or isUserInMatch) %}
+                <div class="rounded-lg p-4 {% if isUserInMatch %}bg-blue-500/10 border-blue-300 dark:border-blue-500/50{% elseif match.disputed %}bg-red-500/10{% endif %}" style="background-color: var(--bg-subtle); border: 1px solid {% if isUserInMatch %}{% elseif match.disputed %}{% else %}var(--border-default){% endif %};">
+                    {# Header: Table number + Status #}
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium px-2 py-1 rounded" style="background-color: var(--card-bg); color: var(--text-secondary);">
+                            {{ 'common.table'|trans }} {{ match.tableNumber }}
+                        </span>
+                        <span class="{{ match.status.badgeClasses }} px-2 py-1 rounded text-xs">
+                            {{ match.status.label|trans }}
+                        </span>
+                    </div>
+
+                    {# Players and Score #}
+                    <div class="flex items-center justify-between gap-2">
+                        {# Player 1 #}
+                        <div class="flex-1 text-center">
+                            <div class="text-sm font-medium truncate {% if match.winner and match.winner == match.player1 %}text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
+                                {{ match.player1.player.displayName }}
+                                {% if user_registration_id and match.player1.id == user_registration_id %}
+                                    <span class="text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                {% endif %}
+                            </div>
+                            {% if match.winner and match.winner == match.player1 %}
+                                <div class="text-xs text-green-600">{{ 'dashboard.matches.winner'|trans }}</div>
                             {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-primary);">
+                        </div>
+
+                        {# Score #}
+                        <div class="flex-shrink-0 px-3">
                             {% if match.completed %}
                                 {% if match.winner %}
-                                    {{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}
+                                    <span class="text-lg font-bold" style="color: var(--text-primary);">{{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}</span>
                                 {% else %}
-                                    <span class="text-amber-600 font-medium" title="Egalite">{{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}</span>
+                                    <span class="text-lg font-bold text-amber-600" title="{{ 'dashboard.matches.draw'|trans }}">{{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}</span>
                                 {% endif %}
                             {% elseif match.isByeMatch %}
-                                BYE
+                                <span class="text-sm" style="color: var(--text-muted);">{{ 'home.bye'|trans }}</span>
                             {% else %}
-                                -
+                                <span class="text-lg font-bold" style="color: var(--text-muted);">vs</span>
                             {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right {% if match.winner and match.player2 and match.winner == match.player2 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
+                        </div>
+
+                        {# Player 2 #}
+                        <div class="flex-1 text-center">
                             {% if match.player2 %}
-                                {{ match.player2.player.displayName }}
-                                {% if user_registration_id and match.player2.id == user_registration_id %}
-                                    <span class="ml-1 text-xs" style="color: var(--color-primary-600);">(vous)</span>
+                                <div class="text-sm font-medium truncate {% if match.winner and match.player2 and match.winner == match.player2 %}text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
+                                    {{ match.player2.player.displayName }}
+                                    {% if user_registration_id and match.player2.id == user_registration_id %}
+                                        <span class="text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                    {% endif %}
+                                </div>
+                                {% if match.winner and match.winner == match.player2 %}
+                                    <div class="text-xs text-green-600">{{ 'dashboard.matches.winner'|trans }}</div>
                                 {% endif %}
                             {% else %}
-                                <span class="italic" style="color: var(--text-muted);">BYE</span>
+                                <span class="text-sm italic" style="color: var(--text-muted);">{{ 'home.bye'|trans }}</span>
                             {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <span class="{{ match.status.badgeClasses }} px-2 py-1 rounded text-xs">
-                                {{ match.status.label|trans }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            {% if match.isByeMatch %}
-                                <span class="text-sm" style="color: var(--text-muted);">-</span>
-                            {% elseif match.completed %}
-                                {% if is_organizer %}
-                                    <a href="{{ path('match_submit_form', {id: match.id}) }}"
-                                       class="text-purple-600 hover:text-purple-800 text-sm">
-                                        Corriger
-                                    </a>
-                                {% else %}
-                                    <span class="text-green-600 text-sm">Termine</span>
-                                {% endif %}
-                            {% elseif match.disputed %}
-                                {% if is_organizer %}
-                                    <a href="{{ path('dispute_show', {tournamentId: tournament.id, matchId: match.id}) }}"
-                                       class="text-red-600 hover:text-red-800 text-sm font-medium">
-                                        Resoudre
-                                    </a>
-                                {% else %}
-                                    <span class="text-red-600 text-sm">Litige</span>
-                                {% endif %}
-                            {% elseif canSubmit %}
+                        </div>
+                    </div>
+
+                    {# Action button #}
+                    <div class="mt-3 pt-3" style="border-top: 1px solid var(--border-default);">
+                        {% if match.isByeMatch %}
+                            <span class="block text-center text-sm" style="color: var(--text-muted);">-</span>
+                        {% elseif match.completed %}
+                            {% if is_organizer %}
                                 <a href="{{ path('match_submit_form', {id: match.id}) }}"
-                                   class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition
-                                          {% if is_organizer and not isUserInMatch %}
-                                              bg-purple-500/20 text-purple-600 dark:text-purple-400 hover:bg-purple-500/30
-                                          {% else %}
-                                              bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30
-                                          {% endif %}">
-                                    {{ ux_icon('lucide:pencil', {class: 'w-4 h-4 mr-1'}) }}
-                                    {% if is_organizer and not isUserInMatch %}
-                                        Valider
-                                    {% else %}
-                                        Soumettre
-                                    {% endif %}
+                                   class="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors text-purple-600 dark:text-purple-400" style="background-color: var(--card-bg); border: 1px solid var(--border-default);">
+                                    {{ 'round.correct'|trans }}
                                 </a>
                             {% else %}
-                                <span class="text-sm" style="color: var(--text-muted);">-</span>
+                                <span class="block text-center text-sm text-green-600">{{ 'dashboard.matches.match_completed'|trans }}</span>
                             {% endif %}
-                        </td>
+                        {% elseif match.disputed %}
+                            {% if is_organizer %}
+                                <a href="{{ path('dispute_show', {tournamentId: tournament.id, matchId: match.id}) }}"
+                                   class="block w-full text-center px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors">
+                                    {{ 'dashboard.matches.resolve'|trans }}
+                                </a>
+                            {% else %}
+                                <span class="block text-center text-sm text-red-600">{{ 'round.dispute'|trans }}</span>
+                            {% endif %}
+                        {% elseif canSubmit %}
+                            <a href="{{ path('match_submit_form', {id: match.id}) }}"
+                               class="block w-full text-center px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm
+                                      {% if is_organizer and not isUserInMatch %}
+                                          bg-purple-500 text-white hover:bg-purple-600
+                                      {% else %}
+                                          bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600
+                                      {% endif %}">
+                                {{ ux_icon('lucide:pencil', {class: 'w-4 h-4 inline mr-1'}) }}
+                                {% if is_organizer and not isUserInMatch %}
+                                    {{ 'round.validate'|trans }}
+                                {% else %}
+                                    {{ 'dashboard.matches.submit'|trans }}
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <span class="block text-center text-sm" style="color: var(--text-muted);">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-8" style="color: var(--text-muted);">
+                    {{ 'dashboard.round.no_matches'|trans }}
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Desktop view: Table #}
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
+                <thead style="background-color: var(--bg-subtle);">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'common.table'|trans }}
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'dashboard.matches.player1'|trans }}
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'common.score'|trans }}
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'dashboard.matches.player2'|trans }}
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'common.status'|trans }}
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'common.actions'|trans }}
+                        </th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for match in matches %}
+                        {% set isUserInMatch = user_registration_id and (match.player1.id == user_registration_id or (match.player2 and match.player2.id == user_registration_id)) %}
+                        {% set canSubmit = not match.completed and not match.isByeMatch and (is_organizer or isUserInMatch) %}
+                        <tr class="{% if isUserInMatch %}bg-blue-500/10{% endif %}" style="border-bottom: 1px solid var(--border-default);">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: var(--text-primary);">
+                                {{ match.tableNumber }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
+                                {{ match.player1.player.displayName }}
+                                {% if user_registration_id and match.player1.id == user_registration_id %}
+                                    <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-primary);">
+                                {% if match.completed %}
+                                    {% if match.winner %}
+                                        {{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}
+                                    {% else %}
+                                        <span class="text-amber-600 font-medium" title="{{ 'dashboard.matches.draw'|trans }}">{{ match.player1Score ?? '-' }} - {{ match.player2Score ?? '-' }}</span>
+                                    {% endif %}
+                                {% elseif match.isByeMatch %}
+                                    {{ 'home.bye'|trans }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right {% if match.winner and match.player2 and match.winner == match.player2 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
+                                {% if match.player2 %}
+                                    {{ match.player2.player.displayName }}
+                                    {% if user_registration_id and match.player2.id == user_registration_id %}
+                                        <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="italic" style="color: var(--text-muted);">{{ 'home.bye'|trans }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="{{ match.status.badgeClasses }} px-2 py-1 rounded text-xs">
+                                    {{ match.status.label|trans }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if match.isByeMatch %}
+                                    <span class="text-sm" style="color: var(--text-muted);">-</span>
+                                {% elseif match.completed %}
+                                    {% if is_organizer %}
+                                        <a href="{{ path('match_submit_form', {id: match.id}) }}"
+                                           class="text-purple-600 hover:text-purple-800 text-sm">
+                                            {{ 'round.correct'|trans }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-green-600 text-sm">{{ 'dashboard.matches.match_completed'|trans }}</span>
+                                    {% endif %}
+                                {% elseif match.disputed %}
+                                    {% if is_organizer %}
+                                        <a href="{{ path('dispute_show', {tournamentId: tournament.id, matchId: match.id}) }}"
+                                           class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                            {{ 'dashboard.matches.resolve'|trans }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-red-600 text-sm">{{ 'round.dispute'|trans }}</span>
+                                    {% endif %}
+                                {% elseif canSubmit %}
+                                    <a href="{{ path('match_submit_form', {id: match.id}) }}"
+                                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition
+                                              {% if is_organizer and not isUserInMatch %}
+                                                  bg-purple-500/20 text-purple-600 dark:text-purple-400 hover:bg-purple-500/30
+                                              {% else %}
+                                                  bg-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30
+                                              {% endif %}">
+                                        {{ ux_icon('lucide:pencil', {class: 'w-4 h-4 mr-1'}) }}
+                                        {% if is_organizer and not isUserInMatch %}
+                                            {{ 'round.validate'|trans }}
+                                        {% else %}
+                                            {{ 'dashboard.matches.submit'|trans }}
+                                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    <span class="text-sm" style="color: var(--text-muted);">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="mt-6 flex justify-between items-center">
-        <div style="color: var(--text-secondary);">
-            {{ round.completedMatchesCount }}/{{ matches|length }} matchs termines
+    <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="text-sm" style="color: var(--text-secondary);">
+            {{ 'dashboard.round.matches_completed'|trans({'%completed%': round.completedMatchesCount, '%total%': matches|length}) }}
         </div>
         <a href="{{ path('round_standings', {id: tournament.id}) }}"
-           class="hover:underline" style="color: var(--color-primary-600);">
-            Voir le classement &rarr;
+           class="hover:underline text-sm sm:text-base" style="color: var(--color-primary-600);">
+            {{ 'dashboard.matches.standings'|trans }} &rarr;
         </a>
     </div>
 </div>

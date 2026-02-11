@@ -46,6 +46,8 @@ action:
 # Common Labels
 # ----------------------------------------------------------------------------
 common:
+    back: "Retour"
+    you: "vous"
     yes: "Oui"
     no: "Non"
     or: "ou"
@@ -875,6 +877,8 @@ dashboard:
         player2: "Joueur 2"
         draw: "Égalité"
         standings: "Classement"
+        winner: "Gagnant"
+        match_completed: "Match terminé"
 
     connection:
         connected: "Connecté"
@@ -964,6 +968,17 @@ match:
         contact_organizer: "Veuillez contacter l'organisateur pour résoudre ce litige."
 
 # ----------------------------------------------------------------------------
+# Round
+# ----------------------------------------------------------------------------
+round:
+    back_to_rounds: "Retour aux rondes"
+    started_at: "Démarrée le %date%"
+    completed_at: "Terminée le %date%"
+    correct: "Corriger"
+    dispute: "Litige"
+    validate: "Valider"
+
+# ----------------------------------------------------------------------------
 # Dispute
 # ----------------------------------------------------------------------------
 dispute:
@@ -1010,15 +1025,29 @@ dispute:
 # ----------------------------------------------------------------------------
 standings:
     title: "Classement"
+    page_title: "Classement - %tournament%"
+    back_to_dashboard: "Retour au dashboard"
+    no_standings: "Aucun classement disponible. Le tournoi n'a pas encore démarré."
     rank: "Rang"
     player: "Joueur"
+    hero: "Héros"
     points: "Points"
+    wdl: "V-N-D"
     omw: "OMW%"
+    omw_tooltip: "Opponent Match Win Percentage"
     gw: "GW%"
     ogw: "OGW%"
     wins: "V"
+    wins_short: "V"
     losses: "D"
+    losses_short: "D"
     draws: "N"
+    draws_short: "N"
+
+    legend:
+        points: "3 par victoire, 1 par égalité, 0 par défaite"
+        wdl: "Victoires - Nuls (égalités) - Défaites"
+        omw: "Pourcentage de victoires moyen des adversaires rencontrés (départage)"
 
     final:
         title: "Classement final"

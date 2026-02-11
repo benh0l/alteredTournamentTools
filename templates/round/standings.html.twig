@@ -1,44 +1,110 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Classement - {{ tournament.name }}{% endblock %}
+{% block title %}{{ 'standings.page_title'|trans({'%tournament%': tournament.name}) }}{% endblock %}
 
 {% block body %}
-<div class="max-w-6xl mx-auto">
-    <div class="mb-6">
+<div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="mb-4 sm:mb-6">
         <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="btn-secondary">
-            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
-            Retour au dashboard
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
+            <span class="hidden sm:inline">{{ 'standings.back_to_dashboard'|trans }}</span>
         </a>
     </div>
 
-    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">{{ tournament.name }} - Classement</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6" style="color: var(--text-primary);">
+        <span class="hidden sm:inline">{{ tournament.name }} - </span>{{ 'standings.title'|trans }}
+    </h1>
 
     {% if standings|length == 0 %}
         <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 text-center">
-            <p class="text-yellow-800 dark:text-yellow-400">Aucun classement disponible. Le tournoi n'a pas encore demarre.</p>
+            <p class="text-yellow-800 dark:text-yellow-400">{{ 'standings.no_standings'|trans }}</p>
         </div>
     {% else %}
-        <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+        {# Mobile view: Cards #}
+        <div class="lg:hidden space-y-3">
+            {% for standing in standings %}
+                <div class="rounded-lg overflow-hidden {% if loop.index <= 8 %}border-l-4 border-l-green-500{% endif %}" style="background-color: var(--card-bg); border: 1px solid var(--border-default);">
+                    {# Header: Rank + Points #}
+                    <div class="flex justify-between items-center px-4 py-2" style="background-color: var(--bg-subtle); border-bottom: 1px solid var(--border-default);">
+                        <span class="text-lg font-bold" style="color: var(--text-primary);">
+                            #{{ loop.index }}
+                            {% if loop.index == 1 %}
+                                <span class="ml-1">🥇</span>
+                            {% elseif loop.index == 2 %}
+                                <span class="ml-1">🥈</span>
+                            {% elseif loop.index == 3 %}
+                                <span class="ml-1">🥉</span>
+                            {% endif %}
+                        </span>
+                        <span class="text-lg font-bold" style="color: var(--text-primary);">
+                            {{ standing.matchPoints }} <span class="text-sm font-normal" style="color: var(--text-muted);">pts</span>
+                        </span>
+                    </div>
+
+                    {# Player info: Hero + Name #}
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        {% if standing.registration.hero %}
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden border-2" style="border-color: {{ standing.registration.faction ? standing.registration.faction.color : 'var(--border-muted)' }};">
+                                <img src="{{ standing.registration.heroImage }}" alt="{{ standing.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-200\'><span class=\'text-xs text-gray-500\'>?</span></div>'">
+                            </div>
+                        {% else %}
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--bg-subtle); border: 1px solid var(--border-default);">
+                                <span style="color: var(--text-muted);">?</span>
+                            </div>
+                        {% endif %}
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate" style="color: var(--text-primary);">
+                                {{ standing.registration.player.displayName }}
+                                {% if standing.hasReceivedBye %}
+                                    <span class="text-xs" style="color: var(--text-muted);">(BYE)</span>
+                                {% endif %}
+                            </div>
+                            {% if standing.registration.hero %}
+                                <div class="text-sm" style="color: var(--text-muted);">{{ standing.registration.heroLabel }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Stats row #}
+                    <div class="flex justify-between items-center px-4 py-2 text-sm" style="background-color: var(--bg-subtle); border-top: 1px solid var(--border-default);">
+                        <div>
+                            <span class="text-green-600 font-medium">{{ standing.wins }}{{ 'standings.wins_short'|trans }}</span>
+                            <span style="color: var(--text-muted);">-</span>
+                            <span class="text-amber-600 font-medium">{{ standing.draws }}{{ 'standings.draws_short'|trans }}</span>
+                            <span style="color: var(--text-muted);">-</span>
+                            <span class="text-red-600 font-medium">{{ standing.losses }}{{ 'standings.losses_short'|trans }}</span>
+                        </div>
+                        <div style="color: var(--text-secondary);">
+                            <span class="text-xs" style="color: var(--text-muted);">OMW:</span>
+                            {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Desktop view: Table #}
+        <div class="hidden lg:block rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
             <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
                 <thead style="background-color: var(--bg-subtle);">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Rang
+                            {{ 'standings.rank'|trans }}
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Joueur
+                            {{ 'common.player'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Heros
+                            {{ 'standings.hero'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Points
+                            {{ 'standings.points'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            V-N-D
+                            {{ 'standings.wdl'|trans }}
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Opponent Match Win Percentage" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            OMW%
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="{{ 'standings.omw_tooltip'|trans }}" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'standings.omw'|trans }}
                         </th>
                     </tr>
                 </thead>
@@ -81,10 +147,11 @@
             </table>
         </div>
 
-        <div class="mt-4 text-sm" style="color: var(--text-secondary);">
-            <p><strong>Points:</strong> 3 par victoire, 1 par egalite, 0 par defaite</p>
-            <p><strong>V-N-D:</strong> Victoires - Nuls (egalites) - Defaites</p>
-            <p><strong>OMW%:</strong> Pourcentage de victoires moyen des adversaires rencontres (departage)</p>
+        {# Legend #}
+        <div class="mt-4 text-xs sm:text-sm space-y-1" style="color: var(--text-secondary);">
+            <p><strong>{{ 'standings.points'|trans }}:</strong> {{ 'standings.legend.points'|trans }}</p>
+            <p><strong>{{ 'standings.wdl'|trans }}:</strong> {{ 'standings.legend.wdl'|trans }}</p>
+            <p><strong>{{ 'standings.omw'|trans }}:</strong> {{ 'standings.legend.omw'|trans }}</p>
         </div>
     {% endif %}
 </div>

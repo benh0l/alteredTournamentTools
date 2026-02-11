@@ -46,6 +46,8 @@ action:
 # Common Labels
 # ----------------------------------------------------------------------------
 common:
+    back: "Back"
+    you: "you"
     yes: "Yes"
     no: "No"
     or: "or"
@@ -874,6 +876,8 @@ dashboard:
         player2: "Player 2"
         draw: "Draw"
         standings: "Standings"
+        winner: "Winner"
+        match_completed: "Match completed"
 
     connection:
         connected: "Connected"
@@ -963,6 +967,17 @@ match:
         contact_organizer: "Please contact the organizer to resolve this dispute."
 
 # ----------------------------------------------------------------------------
+# Round
+# ----------------------------------------------------------------------------
+round:
+    back_to_rounds: "Back to rounds"
+    started_at: "Started on %date%"
+    completed_at: "Completed on %date%"
+    correct: "Correct"
+    dispute: "Dispute"
+    validate: "Validate"
+
+# ----------------------------------------------------------------------------
 # Dispute
 # ----------------------------------------------------------------------------
 dispute:
@@ -1009,15 +1024,29 @@ dispute:
 # ----------------------------------------------------------------------------
 standings:
     title: "Standings"
+    page_title: "Standings - %tournament%"
+    back_to_dashboard: "Back to dashboard"
+    no_standings: "No standings available. The tournament has not started yet."
     rank: "Rank"
     player: "Player"
+    hero: "Hero"
     points: "Points"
+    wdl: "W-D-L"
     omw: "OMW%"
+    omw_tooltip: "Opponent Match Win Percentage"
     gw: "GW%"
     ogw: "OGW%"
     wins: "W"
+    wins_short: "W"
     losses: "L"
+    losses_short: "L"
     draws: "D"
+    draws_short: "D"
+
+    legend:
+        points: "3 per win, 1 per draw, 0 per loss"
+        wdl: "Wins - Draws - Losses"
+        omw: "Average win percentage of opponents faced (tiebreaker)"
 
     final:
         title: "Final Standings"
