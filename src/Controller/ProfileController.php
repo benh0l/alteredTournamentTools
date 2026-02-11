@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Form\ChangePasswordProfileFormType;
 use App\Form\DeleteAccountFormType;
 use App\Form\ProfileEditFormType;
+use App\Repository\UserRepository;
 use App\Service\AccountDeletionService;
 use App\Service\AvatarUploadService;
+use App\Service\PlayerStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -194,5 +197,76 @@ final class ProfileController extends AbstractController
         );
 
         return $response;
+    }
+
+    #[Route('/match-history', name: 'app_profile_match_history', methods: ['GET'])]
+    public function matchHistory(PlayerStatsService $statsService): Response
+    {
+        $user = $this->getUser();
+        $stats = $statsService->getPlayerStats($user);
+
+        return $this->render('profile/match_history.html.twig', [
+            'user' => $user,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/head-to-head/{opponentId}', name: 'app_profile_head_to_head', methods: ['GET'], requirements: ['opponentId' => '\d+'])]
+    public function headToHead(
+        int $opponentId,
+        UserRepository $userRepository,
+        PlayerStatsService $statsService,
+    ): Response {
+        $user = $this->getUser();
+        $opponent = $userRepository->find($opponentId);
+
+        if (!$opponent) {
+            throw $this->createNotFoundException('Joueur non trouvé');
+        }
+
+        // Don't allow viewing H2H against yourself
+        if ($opponent->getId() === $user->getId()) {
+            return $this->redirectToRoute('app_profile_match_history');
+        }
+
+        $stats = $statsService->getHeadToHeadStats($user, $opponent);
+
+        return $this->render('profile/head_to_head.html.twig', [
+            'user' => $user,
+            'opponent' => $opponent,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/search-players', name: 'app_profile_search_players', methods: ['GET'])]
+    public function searchPlayers(
+        Request $request,
+        UserRepository $userRepository,
+    ): JsonResponse {
+        $query = $request->query->get('q', '');
+        $currentUser = $this->getUser();
+
+        if (strlen($query) < 2) {
+            return new JsonResponse([]);
+        }
+
+        $result = $userRepository->searchUsers($query, null, 1, 10);
+        $users = [];
+
+        foreach ($result['users'] as $user) {
+            // Exclude current user and guest accounts from search
+            if ($user->getId() === $currentUser->getId() || $user->isGuest()) {
+                continue;
+            }
+
+            $users[] = [
+                'id' => $user->getId(),
+                'displayName' => $user->getDisplayName(),
+                'pseudo' => $user->getPseudo(),
+                'avatar' => $user->getAvatar(),
+            ];
+        }
+
+        return new JsonResponse($users);
     }
 }
