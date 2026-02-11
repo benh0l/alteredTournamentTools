@@ -1,0 +1,221 @@
+{#
+    Share-friendly stats template for image capture.
+    This template is designed for html2canvas capture with:
+    - Solid dark background (no transparency)
+    - Clean layout optimized for sharing
+    - Key stats: overview, faction champions, distributions, winrates
+    - Branding footer
+#}
+<div data-share-image-target="content" class="share-content" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 24px; border-radius: 16px; width: 900px; font-family: system-ui, -apple-system, sans-serif;">
+    {# Header #}
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #ffffff; font-size: 24px; font-weight: bold; margin: 0 0 4px 0;">{{ tournament.name }}</h1>
+        <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+            {{ 'share.stats.subtitle'|trans }} - {{ tournament.completedAt|date('d/m/Y') }}
+        </p>
+    </div>
+
+    {# Tournament overview stats #}
+    <div style="display: flex; justify-content: space-around; margin-bottom: 24px; padding: 16px; background-color: #374151; border-radius: 12px;">
+        <div style="text-align: center;">
+            <p style="color: #60a5fa; font-size: 32px; font-weight: bold; margin: 0;">{{ meta_stats.player_count }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.players'|trans }}</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="color: #34d399; font-size: 32px; font-weight: bold; margin: 0;">{{ meta_stats.rounds_played }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.rounds'|trans }}</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="color: #a78bfa; font-size: 32px; font-weight: bold; margin: 0;">{{ meta_stats.total_matches }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.matches'|trans }}</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="color: #f472b6; font-size: 32px; font-weight: bold; margin: 0;">{{ meta_stats.total_games }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.games'|trans }}</p>
+        </div>
+    </div>
+
+    {# Faction Champions (if available) #}
+    {% if faction_champions|length > 0 %}
+    <div style="margin-bottom: 24px;">
+        <h2 style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
+            <span style="margin-right: 8px;">&#128081;</span> {{ 'share.faction_champions'|trans }}
+        </h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+            {% for key, champion in faction_champions|slice(0, 6) %}
+            <div style="background: linear-gradient(135deg, {{ champion.faction.color }}20, {{ champion.faction.color }}40); border: 2px solid {{ champion.faction.color }}60; border-radius: 12px; padding: 14px; text-align: center; width: 140px;">
+                <div style="position: relative; display: inline-block;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid {{ champion.faction.color }}; margin: 0 auto 10px;">
+                        {% if champion.heroImage %}
+                            <img src="{{ champion.heroImage }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background-color: {{ champion.faction.color }}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                                {{ champion.player|slice(0,1)|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <span style="position: absolute; top: -4px; right: -4px; background-color: {{ champion.faction.color }}; color: white; font-size: 11px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">#{{ champion.rank }}</span>
+                </div>
+                <p style="color: #ffffff; font-size: 13px; font-weight: 600; margin: 0 0 4px 0; word-wrap: break-word; margin-top: -12px;">{{ champion.player }}</p>
+                <p style="color: {{ champion.faction.color }}; font-size: 11px; font-weight: 500; margin: 0 0 6px 0;">{{ champion.faction.label|trans }}</p>
+                <p style="color: #9ca3af; font-size: 11px; margin: 0;">
+                    <span style="color: #22c55e;">{{ champion.wins }}V</span> - <span style="color: #ef4444;">{{ champion.losses }}D</span>
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Faction & Hero Distribution side by side #}
+    {% if faction_distribution|length > 0 or hero_distribution|length > 0 %}
+    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        {# Faction Distribution #}
+        {% if faction_distribution|length > 0 %}
+        <div style="flex: 1; background-color: #374151; border-radius: 12px; padding: 16px;">
+            <h2 style="color: #ffffff; font-size: 14px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
+                <span style="margin-right: 8px;">&#128737;</span> Factions
+            </h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                {% for key, data in faction_distribution %}
+                <div style="display: flex; align-items: center; background-color: #4b5563; border-radius: 8px; padding: 6px 10px; gap: 6px;">
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ data.color }}; flex-shrink: 0;"></span>
+                    <span style="color: #ffffff; font-size: 11px; font-weight: 500; margin-top: -12px;">{{ data.label|trans }}</span>
+                    <span style="color: #9ca3af; font-size: 11px; margin-top: -12px;">{{ data.count }} ({{ data.percentage }}%)</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Hero Distribution #}
+        {% if hero_distribution|length > 0 %}
+        <div style="flex: 1; background-color: #374151; border-radius: 12px; padding: 16px;">
+            <h2 style="color: #ffffff; font-size: 14px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
+                <span style="margin-right: 8px;">&#129332;</span> Heros
+            </h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                {% for key, data in hero_distribution|slice(0, 8) %}
+                <div style="display: flex; align-items: center; background-color: #4b5563; border-radius: 8px; padding: 4px 8px; gap: 6px;">
+                    {% if data.image %}
+                        <img src="{{ data.image }}" alt="" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover; border: 1px solid {{ data.color }};">
+                    {% else %}
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ data.color }}; flex-shrink: 0;"></span>
+                    {% endif %}
+                    <span style="color: #ffffff; font-size: 10px; font-weight: 500; margin-top: -12px;">{{ data.label }}</span>
+                    <span style="color: #9ca3af; font-size: 10px; margin-top: -12px;">{{ data.count }}</span>
+                </div>
+                {% endfor %}
+                {% if hero_distribution|length > 8 %}
+                <div style="display: flex; align-items: center; background-color: #4b5563; border-radius: 8px; padding: 4px 8px;">
+                    <span style="color: #9ca3af; font-size: 10px; margin-top: -12px;">+{{ hero_distribution|length - 8 }} autres</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Hero Winrates #}
+    {% if hero_winrates|length > 0 %}
+    <div style="margin-bottom: 24px;">
+        <h2 style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
+            <span style="margin-right: 8px;">&#127942;</span> Winrate par Heros
+        </h2>
+        <div style="background-color: #374151; border-radius: 12px; padding: 12px;">
+            {% for key, data in hero_winrates|slice(0, 6) %}
+            <div style="display: flex; align-items: center; gap: 12px; {% if not loop.last %}margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #4b5563;{% endif %}">
+                {# Hero image #}
+                {% if data.image %}
+                    <img src="{{ data.image }}" alt="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid {{ data.color }}; flex-shrink: 0;">
+                {% else %}
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background-color: {{ data.color }}; flex-shrink: 0;"></div>
+                {% endif %}
+
+                {# Hero name #}
+                <div style="width: 100px; flex-shrink: 0;">
+                    <span style="color: #ffffff; font-size: 12px; font-weight: 500; margin-top: -12px; display: block;">{{ data.label }}</span>
+                </div>
+
+                {# Progress bar #}
+                <div style="flex: 1; height: 20px; background-color: #4b5563; border-radius: 10px; overflow: hidden;">
+                    <div style="height: 100%; width: {{ data.winrate }}%; background: linear-gradient(90deg, {{ data.color }}99, {{ data.color }}); border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px;">
+                        {% if data.winrate >= 20 %}
+                        <span style="color: #ffffff; font-size: 10px; font-weight: bold; margin-top: -10px;">{{ data.winrate }}%</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Stats #}
+                <div style="width: 80px; text-align: right; flex-shrink: 0;">
+                    <span style="color: #22c55e; font-size: 11px; margin-top: -12px;">{{ data.wins }}V</span>
+                    <span style="color: #6b7280; margin-top: -12px;"> / </span>
+                    <span style="color: #ef4444; font-size: 11px; margin-top: -12px;">{{ data.losses }}D</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% if hero_winrates|length > 6 %}
+            <div style="text-align: center; padding-top: 8px; color: #6b7280; font-size: 11px;">
+                +{{ hero_winrates|length - 6 }} autres heros
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Top 3 performers (compact) #}
+    <div style="margin-bottom: 20px;">
+        <h2 style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
+            <span style="margin-right: 8px;">&#127941;</span> {{ 'share.top_performers'|trans }}
+        </h2>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+            {% for entry in standings|slice(0, 3) %}
+            <div style="background-color: #374151; border-radius: 12px; padding: 16px; text-align: center; width: 180px; {% if loop.index == 1 %}border: 2px solid #fbbf24;{% elseif loop.index == 2 %}border: 2px solid #9ca3af;{% else %}border: 2px solid #d97706;{% endif %}">
+                {# Medal #}
+                <div style="margin-bottom: 10px;">
+                    {% if loop.index == 1 %}
+                        <span style="font-size: 32px;">&#129351;</span>
+                    {% elseif loop.index == 2 %}
+                        <span style="font-size: 32px;">&#129352;</span>
+                    {% else %}
+                        <span style="font-size: 32px;">&#129353;</span>
+                    {% endif %}
+                </div>
+
+                {# Hero image #}
+                {% if entry.registration.heroImage %}
+                <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid {{ entry.registration.faction ? entry.registration.faction.color : '#6b7280' }}; margin: 0 auto 10px;">
+                    <img src="{{ entry.registration.heroImage }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                {# Player name #}
+                <p style="color: #ffffff; font-size: 14px; font-weight: 600; margin: 0 0 4px 0; word-wrap: break-word; margin-top: -12px;">{{ entry.registration.player.displayName }}</p>
+
+                {# Hero label #}
+                {% if entry.registration.heroLabel %}
+                <p style="color: #9ca3af; font-size: 11px; margin: 0 0 8px 0; margin-top: -12px;">{{ entry.registration.heroLabel }}</p>
+                {% endif %}
+
+                {# Stats #}
+                <p style="color: #ffffff; font-size: 16px; font-weight: bold; margin: 0; margin-top: -8px;">{{ entry.matchPoints }} pts</p>
+                <p style="color: #9ca3af; font-size: 11px; margin: 6px 0 0 0; margin-top: -8px;">
+                    <span style="color: #22c55e;">{{ entry.wins }}V</span> -
+                    <span style="color: #f59e0b;">{{ entry.draws }}N</span> -
+                    <span style="color: #ef4444;">{{ entry.losses }}D</span>
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Branding footer #}
+    <div style="display: flex; align-items: center; justify-content: center; padding-top: 16px; border-top: 1px solid #374151;">
+        <img src="{{ asset('assets/logo/alteredTT_logo-sPNTRlM.png') }}" alt="Logo" style="width: 32px; height: 32px; margin-right: 12px; border-radius: 6px;">
+        <div>
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">{{ 'share.branding'|trans }}</p>
+            <p style="color: #60a5fa; font-size: 12px; margin: 0;">altered-tournament-tools.com</p>
+        </div>
+    </div>
+</div>

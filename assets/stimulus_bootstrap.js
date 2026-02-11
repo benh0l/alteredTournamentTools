@@ -1,5 +1,6 @@
 import { startStimulusApp } from '@symfony/stimulus-bundle';
 import ContactModalController from './controllers/contact_modal_controller.js';
+import ShareImageController from './controllers/share_image_controller.js';
 
 // Start Stimulus application with auto-discovery
 const app = startStimulusApp();
@@ -13,3 +14,4 @@ window.Stimulus = app;
 
 // Register any custom, 3rd party controllers here
 app.register('contact-modal', ContactModalController);
+app.register('share-image', ShareImageController);

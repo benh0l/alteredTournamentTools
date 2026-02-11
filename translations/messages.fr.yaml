@@ -1072,6 +1072,43 @@ stats:
     hero_popularity: "Popularité des héros"
 
 # ----------------------------------------------------------------------------
+# Results
+# ----------------------------------------------------------------------------
+results:
+    final_standings: "Classement Final"
+    stats: "Statistiques du tournoi"
+    legend: "V = Victoires | N = Nuls (égalités) | D = Défaites | Points = Points de match | OMW% = % victoires adversaires | GW% = % victoires games"
+
+# ----------------------------------------------------------------------------
+# Share
+# ----------------------------------------------------------------------------
+share:
+    button: "Partager"
+    players: "Joueurs"
+    rounds: "Rondes"
+    format: "Format"
+    matches: "Matchs"
+    games: "Games"
+    and_more: "+ %count% autres joueurs"
+    branding: "Organise ton tournoi sur"
+    faction_champions: "Champions par Faction"
+    top_performers: "Top Performers"
+
+    standings:
+        subtitle: "Classement Final"
+
+    stats:
+        subtitle: "Statistiques"
+
+    modal:
+        title: "Partager l'image"
+        generating: "Génération de l'image en cours..."
+        download: "Télécharger"
+        copy: "Copier"
+        share: "Partager..."
+        help: "Téléchargez l'image ou copiez-la pour la coller dans Discord, Twitter, etc."
+
+# ----------------------------------------------------------------------------
 # Admin
 # ----------------------------------------------------------------------------
 admin:

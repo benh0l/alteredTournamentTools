@@ -1071,6 +1071,43 @@ stats:
     hero_popularity: "Hero popularity"
 
 # ----------------------------------------------------------------------------
+# Results
+# ----------------------------------------------------------------------------
+results:
+    final_standings: "Final Standings"
+    stats: "Tournament Statistics"
+    legend: "W = Wins | D = Draws | L = Losses | Points = Match points | OMW% = Opponent match win % | GW% = Game win %"
+
+# ----------------------------------------------------------------------------
+# Share
+# ----------------------------------------------------------------------------
+share:
+    button: "Share"
+    players: "Players"
+    rounds: "Rounds"
+    format: "Format"
+    matches: "Matches"
+    games: "Games"
+    and_more: "+ %count% more players"
+    branding: "Organize your tournament on"
+    faction_champions: "Faction Champions"
+    top_performers: "Top Performers"
+
+    standings:
+        subtitle: "Final Standings"
+
+    stats:
+        subtitle: "Statistics"
+
+    modal:
+        title: "Share Image"
+        generating: "Generating image..."
+        download: "Download"
+        copy: "Copy"
+        share: "Share..."
+        help: "Download the image or copy it to paste in Discord, Twitter, etc."
+
+# ----------------------------------------------------------------------------
 # Admin
 # ----------------------------------------------------------------------------
 admin:

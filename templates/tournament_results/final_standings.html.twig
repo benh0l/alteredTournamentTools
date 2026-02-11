@@ -3,17 +3,28 @@
 {% block title %}Classement Final - {{ tournament.name }}{% endblock %}
 
 {% block body %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto"
+     data-controller="share-image"
+     data-share-image-tournament-name-value="{{ tournament.name }}"
+     data-share-image-type-value="standings">
     {# Header #}
     <div class="mb-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ tournament.name }}</h1>
-                <p style="color: var(--text-secondary);">Classement Final</p>
+        <div class="flex items-center justify-between gap-4">
+            <div class="min-w-0 flex-1">
+                <h1 class="text-2xl font-bold truncate" style="color: var(--text-primary);">{{ tournament.name }}</h1>
+                <p style="color: var(--text-secondary);">{{ 'results.final_standings'|trans }}</p>
             </div>
-            <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
-                &larr; Retour
-            </a>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button data-action="click->share-image#openModal"
+                        class="btn-secondary inline-flex items-center gap-2">
+                    {{ ux_icon('lucide:share-2', {class: 'w-4 h-4'}) }}
+                    <span class="hidden sm:inline">{{ 'share.button'|trans }}</span>
+                </button>
+                <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="btn-secondary inline-flex items-center">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
+                    <span class="hidden sm:inline">{{ 'common.back'|trans }}</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -147,7 +158,15 @@
 
     {# Legend #}
     <div class="mt-4 text-xs" style="color: var(--text-muted);">
-        <p>V = Victoires | N = Nuls (egalites) | D = Defaites | Points = Points de match | OMW% = % victoires adversaires | GW% = % victoires games</p>
+        <p>{{ 'results.legend'|trans }}</p>
     </div>
+
+    {# Hidden share content (for image generation) #}
+    <div style="position: fixed; left: -9999px; top: 0; opacity: 0; pointer-events: none;" aria-hidden="true">
+        {{ include('tournament_results/_share_standings.html.twig') }}
+    </div>
+
+    {# Share modal #}
+    {{ include('components/_share_modal.html.twig') }}
 </div>
 {% endblock %}
