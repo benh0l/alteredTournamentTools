@@ -395,6 +395,78 @@ class TournamentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find all tournaments grouped by category for admin dashboard.
+     * Categories: active (published/ongoing), drafts, finished (completed/cancelled), all
+     *
+     * @return array{active: array, drafts: array, finished: array, all: array}
+     */
+    public function findAllGroupedByCategory(): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->leftJoin('t.rounds', 'r')
+            ->addSelect('r')
+            ->orderBy('t.date', 'DESC');
+
+        $tournaments = $qb->getQuery()->getResult();
+
+        $em = $this->getEntityManager();
+        $grouped = [
+            'active' => [],
+            'drafts' => [],
+            'finished' => [],
+            'all' => [],
+        ];
+
+        foreach ($tournaments as $tournament) {
+            // Count registrations for this tournament
+            $playerCount = (int) $em->createQueryBuilder()
+                ->select('COUNT(reg.id)')
+                ->from('App\Entity\Registration', 'reg')
+                ->where('reg.tournament = :tournament')
+                ->setParameter('tournament', $tournament)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            // Find current round number
+            $currentRound = null;
+            $rounds = $tournament->getRounds();
+            if (!$rounds->isEmpty()) {
+                $maxRound = 0;
+                foreach ($rounds as $round) {
+                    if ($round->getRoundNumber() > $maxRound) {
+                        $maxRound = $round->getRoundNumber();
+                    }
+                }
+                $currentRound = $maxRound;
+            }
+
+            $data = [
+                'tournament' => $tournament,
+                'playerCount' => $playerCount,
+                'currentRound' => $currentRound,
+            ];
+
+            // Add to 'all' category
+            $grouped['all'][] = $data;
+
+            // Categorize by status
+            $status = $tournament->getStatus();
+            if ($status === TournamentStatus::DRAFT) {
+                $grouped['drafts'][] = $data;
+            } elseif ($status === TournamentStatus::PUBLISHED || $status === TournamentStatus::ONGOING) {
+                $grouped['active'][] = $data;
+            } else {
+                // COMPLETED or CANCELLED
+                $grouped['finished'][] = $data;
+            }
+        }
+
+        return $grouped;
+    }
+
+    /**
      * Count all active tournaments.
      */
     public function countActive(): int
