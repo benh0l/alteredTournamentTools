@@ -16,11 +16,14 @@
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <button data-action="click->share-image#openModal"
-                        class="btn-secondary inline-flex items-center gap-2">
+                        class="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+                        style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
                     {{ ux_icon('lucide:share-2', {class: 'w-4 h-4'}) }}
                     <span class="hidden sm:inline">{{ 'share.button'|trans }}</span>
                 </button>
-                <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="btn-secondary inline-flex items-center">
+                <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                   class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+                   style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
                     {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
                     <span class="hidden sm:inline">{{ 'common.back'|trans }}</span>
                 </a>

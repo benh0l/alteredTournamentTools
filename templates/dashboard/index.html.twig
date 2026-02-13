@@ -42,6 +42,44 @@
         </div>
     </div>
 
+    {# Player Drop Section - Show for registered players in ongoing tournaments #}
+    {% if player_registration and tournament.ongoing %}
+        <div class="card-gradient p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    {% if player_registration.isDropped %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                            {{ ux_icon('lucide:user-x', {class: 'w-4 h-4 mr-2'}) }}
+                            {{ 'drop.status.dropped'|trans|default('Vous avez abandonne le tournoi') }}
+                        </span>
+                        {% if player_registration.droppedAt %}
+                            <span class="ml-3 text-sm" style="color: var(--text-muted);">
+                                {{ 'drop.dropped_at'|trans({'%date%': player_registration.droppedAt|date('d/m/Y H:i')})|default('Abandonne le ' ~ player_registration.droppedAt|date('d/m/Y H:i')) }}
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                            {{ ux_icon('lucide:user-check', {class: 'w-4 h-4 mr-2'}) }}
+                            {{ 'drop.status.active'|trans|default('Vous participez au tournoi') }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if not player_registration.isDropped %}
+                    <button type="button"
+                            id="drop-button"
+                            data-has-active-match="{{ has_active_match ? 'true' : 'false' }}"
+                            data-tournament-id="{{ tournament.id }}"
+                            data-csrf-token="{{ csrf_token('drop-' ~ tournament.id) }}"
+                            class="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-sm font-medium">
+                        {{ ux_icon('lucide:log-out', {class: 'w-4 h-4 mr-2'}) }}
+                        {{ 'drop.button.abandon'|trans|default('Abandonner le tournoi') }}
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
     {# No rounds yet #}
     {% if not tournament.hasRounds %}
         <div class="card-gradient p-8 text-center">
@@ -797,6 +835,57 @@
                 document.addEventListener('turbo:before-visit', cleanup, { signal: abortController.signal });
                 document.addEventListener('turbo:before-render', cleanup, { signal: abortController.signal });
             {% endif %}
+
+            // =========================================================================
+            // Drop Button Handler
+            // =========================================================================
+            const dropButton = document.getElementById('drop-button');
+            if (dropButton) {
+                dropButton.addEventListener('click', async function() {
+                    const hasActiveMatch = this.dataset.hasActiveMatch === 'true';
+                    const tournamentId = this.dataset.tournamentId;
+                    const csrfToken = this.dataset.csrfToken;
+
+                    let confirmMessage = '{{ 'drop.confirm.message'|trans|default('Etes-vous sur de vouloir abandonner le tournoi ?')|e('js') }}\n\n';
+                    confirmMessage += '{{ 'drop.confirm.consequences'|trans|default('- Vous ne participerez plus aux rondes suivantes\\n- Vous ne pourrez pas vous qualifier pour le top cut\\n- Vous resterez dans le classement avec vos points actuels')|e('js') }}';
+
+                    if (hasActiveMatch) {
+                        confirmMessage += '\n\n{{ 'drop.confirm.active_match_warning'|trans|default('⚠️ Vous avez un match en cours. Il sera declare forfait.')|e('js') }}';
+                    }
+
+                    if (!confirm(confirmMessage)) {
+                        return;
+                    }
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('_token', csrfToken);
+                        if (hasActiveMatch) {
+                            formData.append('forfeit_match', '1');
+                        }
+
+                        const response = await fetch('/tournaments/' + tournamentId + '/drop', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            // Reload page to show updated status
+                            window.location.reload();
+                        } else {
+                            alert(data.error || '{{ 'drop.error.generic'|trans|default('Une erreur est survenue')|e('js') }}');
+                        }
+                    } catch (error) {
+                        console.error('Drop error:', error);
+                        alert('{{ 'drop.error.connection'|trans|default('Erreur de connexion')|e('js') }}');
+                    }
+                });
+            }
         });
     </script>
 {% endblock %}

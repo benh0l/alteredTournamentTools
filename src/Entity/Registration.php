@@ -17,6 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_registrations_tournament', columns: ['tournament_id'])]
 #[ORM\Index(name: 'idx_registrations_player', columns: ['player_id'])]
 #[ORM\Index(name: 'idx_registrations_registered_at', columns: ['registered_at'])]
+#[ORM\Index(name: 'idx_registrations_dropped_at', columns: ['dropped_at'])]
 #[UniqueEntity(fields: ['tournament', 'player'], message: 'Ce joueur est deja inscrit a ce tournoi')]
 class Registration
 {
@@ -51,6 +52,9 @@ class Registration
 
     #[ORM\Column(name: 'unregister_token', type: 'string', length: 64, unique: true)]
     private string $unregisterToken;
+
+    #[ORM\Column(name: 'dropped_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $droppedAt = null;
 
     public function __construct(Tournament $tournament, User $player)
     {
@@ -149,5 +153,42 @@ class Registration
     public function getUnregisterToken(): string
     {
         return $this->unregisterToken;
+    }
+
+    public function getDroppedAt(): ?\DateTimeImmutable
+    {
+        return $this->droppedAt;
+    }
+
+    /**
+     * Check if the player has dropped from the tournament.
+     */
+    public function isDropped(): bool
+    {
+        return $this->droppedAt !== null;
+    }
+
+    /**
+     * Mark the player as dropped from the tournament.
+     * Sets droppedAt to current timestamp if not already dropped.
+     */
+    public function drop(): self
+    {
+        if ($this->droppedAt === null) {
+            $this->droppedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Reverse a drop action (organizer only).
+     * Clears the droppedAt timestamp.
+     */
+    public function undrop(): self
+    {
+        $this->droppedAt = null;
+
+        return $this;
     }
 }

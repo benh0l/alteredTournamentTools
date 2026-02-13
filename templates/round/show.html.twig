@@ -5,10 +5,11 @@
 {% block body %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6">
     <div class="mb-4 sm:mb-6">
-        <a href="{{ path('round_list', {id: tournament.id}) }}" class="inline-flex items-center hover:underline text-sm sm:text-base" style="color: var(--color-primary-600);">
-            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-1 sm:mr-2'}) }}
+        <a href="{{ path('round_list', {id: tournament.id}) }}"
+           class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+           style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
             <span class="hidden sm:inline">{{ 'round.back_to_rounds'|trans }}</span>
-            <span class="sm:hidden">{{ 'common.back'|trans }}</span>
         </a>
     </div>
 
@@ -261,8 +262,10 @@
             {{ 'dashboard.round.matches_completed'|trans({'%completed%': round.completedMatchesCount, '%total%': matches|length}) }}
         </div>
         <a href="{{ path('round_standings', {id: tournament.id}) }}"
-           class="hover:underline text-sm sm:text-base" style="color: var(--color-primary-600);">
-            {{ 'dashboard.matches.standings'|trans }} &rarr;
+           class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+           style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+            {{ 'dashboard.matches.standings'|trans }}
+            {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-2'}) }}
         </a>
     </div>
 </div>

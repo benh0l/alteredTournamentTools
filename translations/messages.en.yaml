@@ -1078,6 +1078,14 @@ standings:
     losses_short: "L"
     draws: "D"
     draws_short: "D"
+    status: "Status"
+    dropped: "DROPPED"
+    active: "Active"
+    action:
+        drop: "Drop"
+        undrop: "Reinstate"
+    confirm:
+        drop: "Confirm drop of %player%?"
 
     legend:
         points: "3 per win, 1 per draw, 0 per loss"
@@ -1093,6 +1101,24 @@ standings:
         first: "1st"
         second: "2nd"
         third: "3rd"
+
+# ----------------------------------------------------------------------------
+# Drop Functionality
+# ----------------------------------------------------------------------------
+drop:
+    status:
+        dropped: "You have dropped from the tournament"
+        active: "You are participating in the tournament"
+    dropped_at: "Dropped on %date%"
+    button:
+        abandon: "Drop from tournament"
+    confirm:
+        message: "Are you sure you want to drop from the tournament?"
+        consequences: "- You will not participate in future rounds\n- You cannot qualify for top cut\n- You will remain in standings with your current points"
+        active_match_warning: "⚠️ You have an active match. It will be declared a forfeit."
+    error:
+        generic: "An error occurred"
+        connection: "Connection error"
 
 # ----------------------------------------------------------------------------
 # Statistics

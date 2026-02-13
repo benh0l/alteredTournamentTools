@@ -465,4 +465,23 @@ class TournamentMatchRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Find an active (PENDING or ONGOING) match for a registration.
+     * Returns null if no active match exists.
+     */
+    public function findActiveMatchForRegistration(Registration $registration): ?TournamentMatch
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.round', 'r')
+            ->where('r.tournament = :tournament')
+            ->andWhere('(m.player1 = :registration OR m.player2 = :registration)')
+            ->andWhere('m.status IN (:statuses)')
+            ->setParameter('tournament', $registration->getTournament())
+            ->setParameter('registration', $registration)
+            ->setParameter('statuses', [MatchStatus::PENDING, MatchStatus::ONGOING])
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

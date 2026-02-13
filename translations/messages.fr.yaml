@@ -1079,6 +1079,14 @@ standings:
     losses_short: "D"
     draws: "N"
     draws_short: "N"
+    status: "Statut"
+    dropped: "ABANDONNE"
+    active: "Actif"
+    action:
+        drop: "Drop"
+        undrop: "Réintégrer"
+    confirm:
+        drop: "Confirmer le drop de %player% ?"
 
     legend:
         points: "3 par victoire, 1 par égalité, 0 par défaite"
@@ -1094,6 +1102,24 @@ standings:
         first: "1er"
         second: "2ème"
         third: "3ème"
+
+# ----------------------------------------------------------------------------
+# Drop Functionality
+# ----------------------------------------------------------------------------
+drop:
+    status:
+        dropped: "Vous avez abandonné le tournoi"
+        active: "Vous participez au tournoi"
+    dropped_at: "Abandonné le %date%"
+    button:
+        abandon: "Abandonner le tournoi"
+    confirm:
+        message: "Êtes-vous sûr de vouloir abandonner le tournoi ?"
+        consequences: "- Vous ne participerez plus aux rondes suivantes\n- Vous ne pourrez pas vous qualifier pour le top cut\n- Vous resterez dans le classement avec vos points actuels"
+        active_match_warning: "⚠️ Vous avez un match en cours. Il sera déclaré forfait."
+    error:
+        generic: "Une erreur est survenue"
+        connection: "Erreur de connexion"
 
 # ----------------------------------------------------------------------------
 # Statistics

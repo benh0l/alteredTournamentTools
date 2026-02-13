@@ -293,9 +293,13 @@ final class RoundController extends AbstractController
             return $b->getOpponentMatchWinPercentage() <=> $a->getOpponentMatchWinPercentage();
         });
 
+        // Check if user can manage (organizer) for drop actions
+        $canManage = $this->isGranted(TournamentVoter::MANAGE, $tournament);
+
         return $this->render('round/standings.html.twig', [
             'tournament' => $tournament,
             'standings' => $sortedStandings,
+            'can_manage' => $canManage,
         ]);
     }
 

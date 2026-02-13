@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Tournament;
+use App\Entity\User;
 use App\Enum\MatchStatus;
 use App\Enum\TournamentStructure;
+use App\Repository\RegistrationRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
+use App\Service\DropService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,6 +37,8 @@ final class DashboardController extends AbstractController
     public function __construct(
         private readonly TournamentMatchRepository $matchRepository,
         private readonly BracketService $bracketService,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly DropService $dropService,
     ) {
     }
 
@@ -71,6 +76,18 @@ final class DashboardController extends AbstractController
             }
         }
 
+        // Get player registration for drop functionality
+        $playerRegistration = null;
+        $hasActiveMatch = false;
+        /** @var User|null $user */
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
+            if ($playerRegistration !== null && !$playerRegistration->isDropped()) {
+                $hasActiveMatch = $this->dropService->hasActiveMatch($playerRegistration);
+            }
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'tournament' => $tournament,
             'current_round' => $currentRound,
@@ -81,6 +98,8 @@ final class DashboardController extends AbstractController
             'can_manage' => $canManage,
             'is_bracket_complete' => $isBracketComplete,
             'can_advance_bracket' => $canAdvanceBracket,
+            'player_registration' => $playerRegistration,
+            'has_active_match' => $hasActiveMatch,
         ]);
     }
 

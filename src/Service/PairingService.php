@@ -163,6 +163,13 @@ class PairingService
         // Calculate current standings
         $standings = $this->calculateStandings($tournament);
 
+        // Filter out dropped players from pairing
+        // Dropped players should not participate in future rounds
+        $activeStandings = array_filter(
+            $standings,
+            fn (PlayerStandings $standing): bool => !$standing->getRegistration()->isDropped()
+        );
+
         // Create the new round
         $newRoundNumber = $previousRound->getRoundNumber() + 1;
         $round = new Round();
@@ -170,8 +177,8 @@ class PairingService
         $round->setRoundNumber($newRoundNumber);
         $tournament->addRound($round);
 
-        // Generate pairings using Swiss algorithm
-        $pairings = $this->generateSwissPairings($standings);
+        // Generate pairings using Swiss algorithm (only active players)
+        $pairings = $this->generateSwissPairings($activeStandings);
 
         // Create matches
         $tableNumber = 1;

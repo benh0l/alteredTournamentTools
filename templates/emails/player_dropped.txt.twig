@@ -1,0 +1,24 @@
+{% extends 'emails/base.txt.twig' %}
+
+{% block content %}
+{{ 'email.player_dropped.title'|trans|default('RETRAIT DU TOURNOI') }}
+================================
+
+{{ 'email.common.greeting'|trans({'%name%': playerName})|default('Bonjour ' ~ playerName ~ ',') }}
+
+{{ 'email.player_dropped.body'|trans({'%tournament%': tournamentName})|default('Nous vous informons que l\'organisateur vous a retire du tournoi "' ~ tournamentName ~ '".') }}
+
+{% if reason %}
+{{ 'email.player_dropped.reason'|trans|default('Motif indique') }}:
+{{ reason }}
+
+{% endif %}
+{{ 'email.player_dropped.consequences'|trans|default('Consequences du retrait :') }}
+- {{ 'email.player_dropped.consequence_pairing'|trans|default('Vous ne serez plus appaire pour les rondes suivantes') }}
+- {{ 'email.player_dropped.consequence_topcut'|trans|default('Vous ne pourrez pas vous qualifier pour le top cut') }}
+- {{ 'email.player_dropped.consequence_standings'|trans|default('Vos points acquis restent dans le classement') }}
+
+{{ 'email.player_dropped.contact'|trans|default('Si vous avez des questions, veuillez contacter l\'organisateur du tournoi.') }}
+
+{{ 'email.player_dropped.thanks'|trans|default('Merci d\'avoir participe et bonne chance pour vos prochains tournois !') }}
+{% endblock %}

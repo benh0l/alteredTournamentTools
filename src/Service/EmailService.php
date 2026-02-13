@@ -128,4 +128,28 @@ final class EmailService
 
         $this->mailer->send($email);
     }
+
+    /**
+     * Send notification when a player is dropped from a tournament by the organizer.
+     */
+    public function sendPlayerDroppedNotification(
+        string $toEmail,
+        string $playerName,
+        string $tournamentName,
+        string $reason = ''
+    ): void {
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->fromAddress, 'Altered Tournament Tools'))
+            ->to($toEmail)
+            ->subject(sprintf('Retrait du tournoi - %s', $tournamentName))
+            ->htmlTemplate('emails/player_dropped.html.twig')
+            ->textTemplate('emails/player_dropped.txt.twig')
+            ->context([
+                'playerName' => $playerName,
+                'tournamentName' => $tournamentName,
+                'reason' => $reason,
+            ]);
+
+        $this->mailer->send($email);
+    }
 }

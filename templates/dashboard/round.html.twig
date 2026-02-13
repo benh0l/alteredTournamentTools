@@ -12,7 +12,7 @@
                 {% if can_manage %}{{ 'dashboard.title_organizer'|trans }}{% else %}{{ 'dashboard.title'|trans }}{% endif %} - {{ 'dashboard.round.title'|trans({'%number%': round.roundNumber}) }}
             </p>
         </div>
-        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="btn-secondary flex-shrink-0">
+        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0" style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
             {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
             <span class="hidden sm:inline">{{ 'dashboard.round.back_to_dashboard'|trans }}</span>
         </a>
@@ -120,8 +120,10 @@
                             {{ 'dashboard.matches.title'|trans({'%number%': round.roundNumber}) }}
                         </h2>
                         <a href="{{ path('round_standings', {id: tournament.id}) }}"
-                           class="hover:underline text-sm" style="color: var(--color-primary-600);">
-                            {{ 'dashboard.matches.standings'|trans }} &rarr;
+                           class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-xl border-2 shadow-sm hover:shadow-md transition-all duration-200"
+                           style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                            {{ 'dashboard.matches.standings'|trans }}
+                            {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-1'}) }}
                         </a>
                     </div>
                 </div>

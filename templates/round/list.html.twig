@@ -5,9 +5,9 @@
 {% block body %}
 <div class="max-w-6xl mx-auto">
     <div class="mb-6">
-        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="btn-secondary">
+        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200" style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
             {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
-            Retour au dashboard
+            {{ 'standings.back_to_dashboard'|trans|default('Retour au dashboard') }}
         </a>
     </div>
 
@@ -130,8 +130,10 @@
 
     <div class="mt-6">
         <a href="{{ path('round_standings', {id: tournament.id}) }}"
-           class="hover:underline" style="color: var(--color-primary-600);">
-            Voir le classement &rarr;
+           class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+           style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+            {{ 'dashboard.matches.standings'|trans|default('Voir le classement') }}
+            {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-2'}) }}
         </a>
     </div>
 </div>

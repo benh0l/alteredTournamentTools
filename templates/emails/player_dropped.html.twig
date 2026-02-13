@@ -1,0 +1,45 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}{{ 'email.player_dropped.subject'|trans({'%tournament%': tournamentName})|default('Retrait du tournoi - ' ~ tournamentName) }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #c53030; margin-bottom: 20px;">{{ 'email.player_dropped.title'|trans|default('Retrait du tournoi') }}</h2>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.common.greeting'|trans({'%name%': playerName})|default('Bonjour ' ~ playerName ~ ',') }}
+</p>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.player_dropped.body'|trans({'%tournament%': tournamentName})|default('Nous vous informons que l\'organisateur vous a retire du tournoi "' ~ tournamentName ~ '".') }}
+</p>
+
+{% if reason %}
+<div style="background-color: #fff5f5; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #c53030;">
+    <h3 style="color: #c53030; margin-bottom: 10px; font-size: 16px; margin-top: 0;">
+        {{ 'email.player_dropped.reason'|trans|default('Motif indique') }}
+    </h3>
+    <p style="margin: 0; color: #4a5568;">
+        {{ reason }}
+    </p>
+</div>
+{% endif %}
+
+<div style="background-color: #f7fafc; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="color: #2d3748; margin-bottom: 15px; font-size: 16px; margin-top: 0;">
+        {{ 'email.player_dropped.consequences'|trans|default('Consequences du retrait :') }}
+    </h3>
+    <ul style="margin: 0; padding-left: 20px; color: #4a5568;">
+        <li style="margin-bottom: 8px;">{{ 'email.player_dropped.consequence_pairing'|trans|default('Vous ne serez plus appaire pour les rondes suivantes') }}</li>
+        <li style="margin-bottom: 8px;">{{ 'email.player_dropped.consequence_topcut'|trans|default('Vous ne pourrez pas vous qualifier pour le top cut') }}</li>
+        <li style="margin-bottom: 0;">{{ 'email.player_dropped.consequence_standings'|trans|default('Vos points acquis restent dans le classement') }}</li>
+    </ul>
+</div>
+
+<p style="font-size: 16px; color: #4a5568; margin-bottom: 20px;">
+    {{ 'email.player_dropped.contact'|trans|default('Si vous avez des questions, veuillez contacter l\'organisateur du tournoi.') }}
+</p>
+
+<p style="font-size: 14px; color: #718096; margin-top: 30px; text-align: center;">
+    {{ 'email.player_dropped.thanks'|trans|default('Merci d\'avoir participe et bonne chance pour vos prochains tournois !') }}
+</p>
+{% endblock %}
