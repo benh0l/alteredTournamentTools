@@ -356,6 +356,53 @@
                                     {{ ux_icon('lucide:check-circle', {class: 'w-6 h-6'}) }}
                                     <span class="font-semibold">{{ 'tournament.show.registered'|trans }}</span>
                                 </div>
+
+                                {# Check-in Section #}
+                                {% if tournament.checkInEnabled %}
+                                    <div class="mb-4 p-4 rounded-lg border" style="border-color: var(--border-default); background-color: var(--bg-subtle);">
+                                        <h3 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--text-secondary);">
+                                            {{ ux_icon('lucide:user-check', {class: 'w-4 h-4 mr-2'}) }}
+                                            {{ 'tournament.checkin.title'|trans }}
+                                        </h3>
+
+                                        {% if registration.isCheckedIn %}
+                                            {# Already checked in #}
+                                            <div class="flex items-center space-x-3 text-emerald-600 dark:text-emerald-400 p-3 bg-emerald-500/20 rounded-lg">
+                                                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5'}) }}
+                                                <div>
+                                                    <span class="font-semibold">{{ 'tournament.checkin.confirmed'|trans }}</span>
+                                                    {% if registration.checkedInAt %}
+                                                        <span class="text-sm ml-1" style="color: var(--text-muted);">
+                                                            ({{ registration.checkedInAt|date('H:i') }})
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% elseif tournament.checkInOpen %}
+                                            {# Check-in is open, show button #}
+                                            <div class="flex items-center space-x-3 text-amber-600 dark:text-amber-400 p-3 bg-amber-500/20 rounded-lg mb-3">
+                                                {{ ux_icon('lucide:clock', {class: 'w-5 h-5'}) }}
+                                                <span>{{ 'tournament.checkin.open_message'|trans }}</span>
+                                            </div>
+                                            <form action="{{ path('tournament_checkin', {id: tournament.id}) }}" method="POST">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('checkin-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="w-full inline-flex items-center justify-center px-4 py-3 text-white rounded-xl font-semibold transition-all shadow-md"
+                                                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                                                    {{ ux_icon('lucide:user-check', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'tournament.checkin.button'|trans }}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            {# Check-in enabled but not open yet #}
+                                            <div class="flex items-center space-x-3 p-3 rounded-lg" style="color: var(--text-muted); background-color: var(--bg-subtle);">
+                                                {{ ux_icon('lucide:clock', {class: 'w-5 h-5'}) }}
+                                                <span>{{ 'tournament.checkin.not_open_yet'|trans }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
                                 <div class="flex items-center justify-between">
                                     <a href="{{ path('tournament_registration_edit', {'id': tournament.id}) }}"
                                        class="inline-flex items-center text-sm font-medium hover:opacity-80"

@@ -180,6 +180,9 @@ final class TournamentWizardService
             if (isset($wizardData[9]['isSeasonFinalsQualifier'])) {
                 $tournament->setIsSeasonFinalsQualifier((bool) $wizardData[9]['isSeasonFinalsQualifier']);
             }
+            if (isset($wizardData[9]['checkInEnabled'])) {
+                $tournament->setCheckInEnabled((bool) $wizardData[9]['checkInEnabled']);
+            }
         }
 
         $tournament->setOrganizer($organizer);

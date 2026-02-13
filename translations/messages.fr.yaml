@@ -568,6 +568,24 @@ tournament:
         view_on_altered: "Voir sur Altered.gg"
         entry_fee: "Prix d'entrée"
 
+    checkin:
+        title: "Check-in"
+        confirmed: "Vous avez confirmé votre présence"
+        open_message: "Le check-in est ouvert ! Confirmez votre présence."
+        button: "Je suis présent"
+        not_open_yet: "Le check-in n'est pas encore ouvert"
+        organizer:
+            title: "Gestion du check-in"
+            status_open: "Check-in ouvert"
+            status_closed: "Check-in fermé"
+            checked_in: "présents"
+            open_btn: "Ouvrir le check-in"
+            close_btn: "Fermer le check-in"
+            remove_absent_btn: "Retirer les absents"
+            remove_absent_confirm: "Retirer tous les joueurs qui ne se sont pas présentés ? Cette action est irréversible."
+            checkin_btn: "Présent"
+            undo: "Annuler"
+
     completed:
         title: "Tournoi terminé"
         completed_at: "%date% - %rounds% ronde|%date% - %rounds% rondes"
@@ -652,6 +670,7 @@ tournament:
             faction_hero: "Faction / Héros"
             decklist: "Decklist"
             registered_at: "Inscrit le"
+            checkin: "Check-in"
             actions: "Actions"
         organizer_badge: "Organisateur"
         guest_badge: "Invité"
@@ -808,6 +827,8 @@ tournament:
             altered_gg_link: "Lien Altered.gg"
             altered_gg_placeholder: "https://altered.gg/..."
             altered_gg_hint: "Lien vers l'événement sur Altered.gg si existant."
+            check_in_enabled: "Activer le check-in"
+            check_in_enabled_help: "Les joueurs devront confirmer leur présence avant le début du tournoi"
             optional_info: "Tous ces champs sont optionnels. Vous pourrez les modifier après la création du tournoi."
         step10:
             title: "Récapitulatif"
@@ -1298,6 +1319,12 @@ flash:
         message_sent_to_user: "Message envoyé à %pseudo%."
         registrations_closed: "Les inscriptions sont fermées."
         registrations_reopened: "Les inscriptions sont réouvertes."
+        checkin_success: "Votre présence a été confirmée !"
+        checkin_opened: "Le check-in est maintenant ouvert."
+        checkin_closed: "Le check-in est maintenant fermé."
+        player_checked_in: "%player% a été marqué présent."
+        player_checkin_undone: "Le check-in de %player% a été annulé."
+        absent_players_removed: "%count% joueur(s) absent(s) retiré(s) du tournoi."
         results_published: "Les résultats du tournoi ont été publiés."
         user_roles_updated: "Les rôles de l'utilisateur ont été mis à jour."
         user_deleted_gdpr: "L'utilisateur a été supprimé conformément au RGPD."
@@ -1344,6 +1371,12 @@ flash:
         cannot_edit_after_start: "Impossible de modifier votre inscription une fois le tournoi commencé."
         cannot_unregister_after_start: "Impossible de se désinscrire une fois le tournoi commencé."
         tournament_not_completed: "Le tournoi doit être terminé pour publier les résultats."
+        checkin_not_available: "Le check-in n'est pas disponible pour ce tournoi."
+        checkin_not_enabled: "Le check-in n'est pas activé pour ce tournoi."
+        already_checked_in: "Vous êtes déjà marqué présent."
+        cannot_checkin_dropped: "Impossible de faire le check-in pour un joueur qui a abandonné."
+        player_already_checked_in: "Ce joueur est déjà marqué présent."
+        player_not_checked_in: "Ce joueur n'est pas marqué présent."
 
     warning:
         match_not_in_dispute: "Ce match n'est pas en litige."
@@ -1357,6 +1390,7 @@ flash:
     info:
         match_already_completed: "Ce match est déjà terminé."
         results_already_published: "Les résultats sont déjà publiés."
+        no_absent_players: "Tous les joueurs se sont présentés."
 
 # ----------------------------------------------------------------------------
 # Validation Messages
@@ -1439,6 +1473,8 @@ form:
         is_tumult_help: "Cochez si ce tournoi est un événement Tumult"
         is_season_finals_qualifier: "Qualifier Season Finals"
         is_season_finals_qualifier_help: "Cochez si ce tournoi qualifie pour les Season Finals"
+        check_in_enabled: "Activer le check-in"
+        check_in_enabled_help: "Permet aux joueurs de confirmer leur présence avant le début du tournoi"
 
     registration:
         faction: "Faction"

@@ -79,6 +79,17 @@ final class AdditionalDetailsType extends AbstractType
                     'class' => 'form-checkbox-label',
                 ],
                 'help' => 'Cochez si ce tournoi qualifie pour les Season Finals',
+            ])
+            ->add('checkInEnabled', CheckboxType::class, [
+                'label' => 'tournament.wizard.step9.check_in_enabled',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'tournament.wizard.step9.check_in_enabled_help',
             ]);
     }
 

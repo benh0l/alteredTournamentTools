@@ -233,6 +233,16 @@
                             <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.is_season_finals_qualifier_help'|trans }}</span>
                         </span>
                     </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.checkInEnabled, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:user-check', {class: 'w-4 h-4 inline mr-1 text-cyan-500'}) }}
+                                {{ 'form.tournament.check_in_enabled'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.check_in_enabled_help'|trans }}</span>
+                        </span>
+                    </label>
                 </div>
             </div>
         </div>

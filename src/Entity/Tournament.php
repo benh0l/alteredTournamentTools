@@ -178,6 +178,18 @@ class Tournament
     #[ORM\Column(name: 'is_season_finals_qualifier', type: 'boolean')]
     private bool $isSeasonFinalsQualifier = false;
 
+    /**
+     * Whether check-in is enabled for this tournament.
+     */
+    #[ORM\Column(name: 'check_in_enabled', type: 'boolean')]
+    private bool $checkInEnabled = false;
+
+    /**
+     * Whether check-in is currently open (organizer controls this).
+     */
+    #[ORM\Column(name: 'check_in_open', type: 'boolean')]
+    private bool $checkInOpen = false;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'tournament', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -737,6 +749,70 @@ class Tournament
     }
 
     /**
+     * Check if check-in is enabled for this tournament.
+     */
+    public function isCheckInEnabled(): bool
+    {
+        return $this->checkInEnabled;
+    }
+
+    /**
+     * Set whether check-in is enabled for this tournament.
+     */
+    public function setCheckInEnabled(bool $checkInEnabled): self
+    {
+        $this->checkInEnabled = $checkInEnabled;
+
+        return $this;
+    }
+
+    /**
+     * Check if check-in is currently open.
+     */
+    public function isCheckInOpen(): bool
+    {
+        return $this->checkInOpen;
+    }
+
+    /**
+     * Set whether check-in is currently open.
+     */
+    public function setCheckInOpen(bool $checkInOpen): self
+    {
+        $this->checkInOpen = $checkInOpen;
+
+        return $this;
+    }
+
+    /**
+     * Open check-in for players.
+     */
+    public function openCheckIn(): self
+    {
+        $this->checkInOpen = true;
+
+        return $this;
+    }
+
+    /**
+     * Close check-in for players.
+     */
+    public function closeCheckIn(): self
+    {
+        $this->checkInOpen = false;
+
+        return $this;
+    }
+
+    /**
+     * Check if a player can check-in to this tournament.
+     */
+    public function canCheckIn(): bool
+    {
+        return $this->checkInEnabled && $this->checkInOpen && $this->isPublished();
+    }
+
+    /**
      * Check if tournament can be edited.
      * Editing is allowed in DRAFT and PUBLISHED status until the first round is generated.
      */
@@ -917,6 +993,28 @@ class Tournament
     public function getRegistrationCount(): int
     {
         return $this->registrations->count();
+    }
+
+    /**
+     * Get the count of checked-in players.
+     */
+    public function getCheckedInCount(): int
+    {
+        return $this->registrations->filter(
+            fn (Registration $registration): bool => $registration->isCheckedIn()
+        )->count();
+    }
+
+    /**
+     * Get registrations that have not checked in yet.
+     *
+     * @return Collection<int, Registration>
+     */
+    public function getNotCheckedInRegistrations(): Collection
+    {
+        return $this->registrations->filter(
+            fn (Registration $registration): bool => !$registration->isCheckedIn() && !$registration->isDropped()
+        );
     }
 
     /**

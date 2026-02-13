@@ -278,6 +278,17 @@ final class TournamentType extends AbstractType
                     'class' => 'form-checkbox-label',
                 ],
                 'help' => 'form.tournament.is_season_finals_qualifier_help',
+            ])
+            ->add('checkInEnabled', CheckboxType::class, [
+                'label' => 'form.tournament.check_in_enabled',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.check_in_enabled_help',
             ]);
     }
 

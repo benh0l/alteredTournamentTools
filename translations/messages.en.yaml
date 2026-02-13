@@ -567,6 +567,24 @@ tournament:
         view_on_altered: "View on Altered.gg"
         entry_fee: "Entry fee"
 
+    checkin:
+        title: "Check-in"
+        confirmed: "You have confirmed your attendance"
+        open_message: "Check-in is open! Confirm your attendance."
+        button: "I'm here"
+        not_open_yet: "Check-in is not open yet"
+        organizer:
+            title: "Check-in Management"
+            status_open: "Check-in open"
+            status_closed: "Check-in closed"
+            checked_in: "present"
+            open_btn: "Open check-in"
+            close_btn: "Close check-in"
+            remove_absent_btn: "Remove absent players"
+            remove_absent_confirm: "Remove all players who haven't checked in? This action is irreversible."
+            checkin_btn: "Present"
+            undo: "Undo"
+
     completed:
         title: "Tournament completed"
         completed_at: "%date% - %rounds% round|%date% - %rounds% rounds"
@@ -651,6 +669,7 @@ tournament:
             faction_hero: "Faction / Hero"
             decklist: "Decklist"
             registered_at: "Registered on"
+            checkin: "Check-in"
             actions: "Actions"
         organizer_badge: "Organizer"
         guest_badge: "Guest"
@@ -807,6 +826,8 @@ tournament:
             altered_gg_link: "Altered.gg link"
             altered_gg_placeholder: "https://altered.gg/..."
             altered_gg_hint: "Link to the event on Altered.gg if exists."
+            check_in_enabled: "Enable check-in"
+            check_in_enabled_help: "Players will need to confirm their attendance before the tournament starts"
             optional_info: "All these fields are optional. You can modify them after creating the tournament."
         step10:
             title: "Summary"
@@ -1297,6 +1318,12 @@ flash:
         message_sent_to_user: "Message sent to %pseudo%."
         registrations_closed: "Registrations are closed."
         registrations_reopened: "Registrations are reopened."
+        checkin_success: "Your attendance has been confirmed!"
+        checkin_opened: "Check-in is now open."
+        checkin_closed: "Check-in is now closed."
+        player_checked_in: "%player% has been marked as present."
+        player_checkin_undone: "%player%'s check-in has been cancelled."
+        absent_players_removed: "%count% absent player(s) removed from the tournament."
         results_published: "Tournament results have been published."
         user_roles_updated: "User roles have been updated."
         user_deleted_gdpr: "User has been deleted in compliance with GDPR."
@@ -1343,6 +1370,12 @@ flash:
         cannot_edit_after_start: "Cannot edit your registration once the tournament has started."
         cannot_unregister_after_start: "Cannot unregister once the tournament has started."
         tournament_not_completed: "Tournament must be completed to publish results."
+        checkin_not_available: "Check-in is not available for this tournament."
+        checkin_not_enabled: "Check-in is not enabled for this tournament."
+        already_checked_in: "You are already marked as present."
+        cannot_checkin_dropped: "Cannot check in a player who has dropped."
+        player_already_checked_in: "This player is already marked as present."
+        player_not_checked_in: "This player is not marked as present."
 
     warning:
         match_not_in_dispute: "This match is not in dispute."
@@ -1356,6 +1389,7 @@ flash:
     info:
         match_already_completed: "This match is already completed."
         results_already_published: "Results are already published."
+        no_absent_players: "All players have checked in."
 
 # ----------------------------------------------------------------------------
 # Validation Messages
@@ -1438,6 +1472,8 @@ form:
         is_tumult_help: "Check if this tournament is a Tumult event"
         is_season_finals_qualifier: "Season Finals Qualifier"
         is_season_finals_qualifier_help: "Check if this tournament qualifies for Season Finals"
+        check_in_enabled: "Enable check-in"
+        check_in_enabled_help: "Allows players to confirm their attendance before the tournament starts"
 
     registration:
         faction: "Faction"

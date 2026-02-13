@@ -156,15 +156,18 @@ final class TournamentController extends AbstractController
     public function show(Tournament $tournament): Response
     {
         $isRegistered = false;
+        $registration = null;
         $user = $this->getUser();
 
         if ($user instanceof User) {
-            $isRegistered = $this->registrationService->isPlayerRegistered($user, $tournament);
+            $registration = $this->registrationService->getRegistrationForPlayer($user, $tournament);
+            $isRegistered = $registration !== null;
         }
 
         return $this->render('tournament/show.html.twig', [
             'tournament' => $tournament,
             'is_registered' => $isRegistered,
+            'registration' => $registration,
         ]);
     }
 
