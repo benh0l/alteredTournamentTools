@@ -38,3 +38,7 @@ services:
     App\Service\AvatarUploadService:
         arguments:
             $avatarsDirectory: '%avatars_directory%'
+
+    App\Service\StandingsService:
+        arguments:
+            $standingsCache: '@standings.cache'

@@ -28,14 +28,14 @@ final class ExpectedPlayersType extends AbstractType
                 'attr' => [
                     'class' => 'form-input w-full',
                     'min' => 4,
-                    'max' => 128,
+                    'max' => 256,
                     'placeholder' => 'Ex: 16',
                 ],
                 'constraints' => [
                     new Assert\NotNull(message: 'Le nombre de joueurs est requis'),
                     new Assert\Range(
                         min: 4,
-                        max: 128,
+                        max: 256,
                         notInRangeMessage: 'Le nombre de joueurs doit etre entre {{ min }} et {{ max }}'
                     ),
                 ],

@@ -26,6 +26,7 @@ class ResultSubmissionService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MatchSubmissionRepository $submissionRepository,
+        private StandingsService $standingsService,
     ) {
     }
 
@@ -172,6 +173,9 @@ class ResultSubmissionService
 
         $this->entityManager->flush();
 
+        // Invalidate standings cache
+        $this->standingsService->invalidateCache($match->getRound()->getTournament());
+
         // Check if round should be completed
         $this->checkAndCompleteRound($match);
     }
@@ -244,6 +248,10 @@ class ResultSubmissionService
         ]);
 
         $this->entityManager->flush();
+
+        // Invalidate standings cache
+        $this->standingsService->invalidateCache($match->getRound()->getTournament());
+
         $this->checkAndCompleteRound($match);
     }
 
@@ -335,6 +343,9 @@ class ResultSubmissionService
 
         $this->entityManager->flush();
 
+        // Invalidate standings cache
+        $this->standingsService->invalidateCache($match->getRound()->getTournament());
+
         // Check if round should be completed
         $this->checkAndCompleteRound($match);
     }
@@ -377,6 +388,9 @@ class ResultSubmissionService
         ]);
 
         $this->entityManager->flush();
+
+        // Invalidate standings cache
+        $this->standingsService->invalidateCache($match->getRound()->getTournament());
 
         // Check if round should be completed
         $this->checkAndCompleteRound($match);

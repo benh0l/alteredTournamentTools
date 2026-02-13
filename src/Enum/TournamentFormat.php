@@ -12,6 +12,7 @@ enum TournamentFormat: string
     case CONSTRUCTED_HERO_OUT_OF_FACTION = 'constructed_hero_oof';
     case CONSTRUCTED_BIFACTION = 'constructed_bifaction';
     case LIMITED = 'limited';
+    case FUN_EXPEDITION_KRAKN = 'fun_expedition_krakn';
 
     public function getLabel(): string
     {
@@ -22,6 +23,7 @@ enum TournamentFormat: string
             self::CONSTRUCTED_HERO_OUT_OF_FACTION => 'enum.tournament_format.constructed_hero_oof',
             self::CONSTRUCTED_BIFACTION => 'enum.tournament_format.constructed_bifaction',
             self::LIMITED => 'enum.tournament_format.limited',
+            self::FUN_EXPEDITION_KRAKN => 'enum.tournament_format.fun_expedition_krakn',
         };
     }
 
@@ -34,13 +36,14 @@ enum TournamentFormat: string
             self::CONSTRUCTED_HERO_OUT_OF_FACTION => 'enum.tournament_format_description.constructed_hero_oof',
             self::CONSTRUCTED_BIFACTION => 'enum.tournament_format_description.constructed_bifaction',
             self::LIMITED => 'enum.tournament_format_description.limited',
+            self::FUN_EXPEDITION_KRAKN => 'enum.tournament_format_description.fun_expedition_krakn',
         };
     }
 
     public function isConstructed(): bool
     {
         return match ($this) {
-            self::CONSTRUCTED_STANDARD, self::CONSTRUCTED_SINGLETON, self::CONSTRUCTED_NUC, self::CONSTRUCTED_HERO_OUT_OF_FACTION, self::CONSTRUCTED_BIFACTION => true,
+            self::CONSTRUCTED_STANDARD, self::CONSTRUCTED_SINGLETON, self::CONSTRUCTED_NUC, self::CONSTRUCTED_HERO_OUT_OF_FACTION, self::CONSTRUCTED_BIFACTION, self::FUN_EXPEDITION_KRAKN => true,
             self::LIMITED => false,
         };
     }
@@ -53,5 +56,15 @@ enum TournamentFormat: string
     public function isBifaction(): bool
     {
         return $this === self::CONSTRUCTED_BIFACTION;
+    }
+
+    public function isExpeditionKrakn(): bool
+    {
+        return $this === self::FUN_EXPEDITION_KRAKN;
+    }
+
+    public function hasRestrictedHeroes(): bool
+    {
+        return $this === self::FUN_EXPEDITION_KRAKN;
     }
 }

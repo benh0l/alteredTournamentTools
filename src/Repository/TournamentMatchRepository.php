@@ -484,4 +484,27 @@ class TournamentMatchRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Find all matches for a tournament in a single query.
+     * Used for batch loading to avoid N+1 queries in standings calculation.
+     *
+     * @return TournamentMatch[]
+     */
+    public function findAllByTournament(Tournament $tournament): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.round', 'r')
+            ->addSelect('r')
+            ->leftJoin('m.player1', 'p1')
+            ->addSelect('p1')
+            ->leftJoin('m.player2', 'p2')
+            ->addSelect('p2')
+            ->where('r.tournament = :tournament')
+            ->setParameter('tournament', $tournament)
+            ->orderBy('r.roundNumber', 'ASC')
+            ->addOrderBy('m.tableNumber', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

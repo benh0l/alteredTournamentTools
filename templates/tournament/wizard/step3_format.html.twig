@@ -29,6 +29,8 @@
                                             bg-pink-500/20 group-hover:bg-pink-500/30 peer-checked:bg-pink-500/30
                                         {% elseif child.vars.value == 'constructed_bifaction' %}
                                             bg-cyan-500/20 group-hover:bg-cyan-500/30 peer-checked:bg-cyan-500/30
+                                        {% elseif child.vars.value == 'fun_expedition_krakn' %}
+                                            bg-orange-500/20 group-hover:bg-orange-500/30 peer-checked:bg-orange-500/30
                                         {% else %}
                                             bg-purple-500/20 group-hover:bg-purple-500/30 peer-checked:bg-purple-500/30
                                         {% endif %}">
@@ -42,6 +44,8 @@
                                     {{ ux_icon('lucide:shuffle', {class: 'w-8 h-8 text-pink-600 dark:text-pink-400'}) }}
                                 {% elseif child.vars.value == 'constructed_bifaction' %}
                                     {{ ux_icon('lucide:git-merge', {class: 'w-8 h-8 text-cyan-600 dark:text-cyan-400'}) }}
+                                {% elseif child.vars.value == 'fun_expedition_krakn' %}
+                                    {{ ux_icon('lucide:anchor', {class: 'w-8 h-8 text-orange-600 dark:text-orange-400'}) }}
                                 {% else %}
                                     {{ ux_icon('lucide:dice-5', {class: 'w-8 h-8 text-purple-600 dark:text-purple-400'}) }}
                                 {% endif %}

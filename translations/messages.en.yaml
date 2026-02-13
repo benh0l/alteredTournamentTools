@@ -107,6 +107,7 @@ enum:
         constructed_hero_oof: "(Fun) Hero Out of Faction"
         constructed_bifaction: "(Fun) Bifaction"
         limited: "Limited"
+        fun_expedition_krakn: "(Fun) Expedition Krak'N Heroes"
 
     tournament_format_description:
         constructed_standard: "39 cards + Hero minimum. 3 Uniques max, 3 Exalted max, 15 Rares max."
@@ -115,6 +116,7 @@ enum:
         constructed_hero_oof: "The hero must belong to a different faction than the deck."
         constructed_bifaction: "Player chooses two factions and a hero from one of these factions."
         limited: "Decks are built on-site from booster packs."
+        fun_expedition_krakn: "Players bring their own deck. The hero must be one of the Expedition Krak'n heroes."
 
     tournament_structure:
         swiss_only: "Swiss Rounds Only"
@@ -711,6 +713,7 @@ tournament:
                 constructed_bifaction: "Players come with their own deck. Two factions chosen. Hero from one of the two."
                 draft: "Decks are built on-site from boosters."
                 limited: "Limited format - Decks are built on-site from boosters or provided cards."
+                fun_expedition_krakn: "Players come with their own deck. Hero must be one of the Expedition Krak'n heroes."
         step4:
             title: "Tournament Structure"
             question: "What tournament structure?"

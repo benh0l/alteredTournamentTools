@@ -66,7 +66,7 @@ final class TournamentRegistrationsController extends AbstractController
             'registrations' => $registrations,
             'sort_field' => $sortField,
             'sort_direction' => $sortDirection,
-            'heroesData' => Faction::getHeroesGroupedByFaction(),
+            'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
             'factionChoices' => Faction::getChoices(),
         ]);
     }

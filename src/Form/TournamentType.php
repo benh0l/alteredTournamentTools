@@ -146,7 +146,7 @@ final class TournamentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'min' => 4,
-                    'max' => 128,
+                    'max' => 256,
                     'placeholder' => 'form.tournament.expected_players_placeholder',
                     'class' => 'form-input',
                     'data-tournament-form-target' => 'expectedPlayers',
@@ -155,7 +155,7 @@ final class TournamentType extends AbstractType
                 'constraints' => [
                     new Range([
                         'min' => 4,
-                        'max' => 128,
+                        'max' => 256,
                         'notInRangeMessage' => 'validation.tournament.players_range',
                     ]),
                 ],

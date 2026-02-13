@@ -27,7 +27,8 @@ final class DropService
         private readonly EntityManagerInterface $entityManager,
         private readonly TournamentMatchRepository $matchRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly StandingsService $standingsService,
     ) {
     }
 
@@ -61,16 +62,23 @@ final class DropService
 
         // Check for active match
         $activeMatch = $this->matchRepository->findActiveMatchForRegistration($registration);
+        $hadActiveMatch = false;
         if ($activeMatch !== null) {
             if (!$forfeitActiveMatch) {
                 throw DropException::activeMatchRequiresForfeit($activeMatch->getId() ?? 0);
             }
             $this->forfeitMatch($activeMatch, $registration);
+            $hadActiveMatch = true;
         }
 
         // Perform the drop
         $registration->drop();
         $this->entityManager->flush();
+
+        // Invalidate standings cache if match was forfeited
+        if ($hadActiveMatch) {
+            $this->standingsService->invalidateCache($tournament);
+        }
 
         // Dispatch event for notifications
         $this->eventDispatcher->dispatch(

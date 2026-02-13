@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Enum\Faction;
+use App\Enum\TournamentFormat;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -16,6 +17,9 @@ final class RegistrationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var TournamentFormat|null $format */
+        $format = $options['tournament_format'];
+
         $builder
             ->add('faction', ChoiceType::class, [
                 'label' => 'form.registration.faction',
@@ -45,7 +49,7 @@ final class RegistrationType extends AbstractType
                 'label' => 'form.registration.hero',
                 'required' => false,
                 'placeholder' => 'form.registration.select_faction_first',
-                'choices' => array_flip(Faction::getAllHeroes()),
+                'choices' => array_flip(Faction::getAllHeroes($format)),
                 'data' => $options['initial_hero'],
                 'attr' => [
                     'class' => 'form-input w-full',
@@ -83,6 +87,9 @@ final class RegistrationType extends AbstractType
             'initial_faction2' => null,
             'initial_hero' => null,
             'initial_decklist_url' => null,
+            'tournament_format' => null,
         ]);
+
+        $resolver->setAllowedTypes('tournament_format', ['null', TournamentFormat::class]);
     }
 }

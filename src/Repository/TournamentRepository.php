@@ -341,53 +341,34 @@ class TournamentRepository extends ServiceEntityRepository
 
     /**
      * Find all active tournaments (PUBLISHED or ONGOING) with details for admin dashboard.
+     * Optimized to use a single query with aggregation instead of N+1 queries.
      *
      * @return array<int, array{tournament: Tournament, playerCount: int, currentRound: int|null}>
      */
     public function findAllActiveWithDetails(): array
     {
+        // Single query with aggregation - avoids N+1
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
+            ->leftJoin('t.registrations', 'reg')
+            ->addSelect('COUNT(DISTINCT reg.id) as playerCount')
+            ->addSelect('MAX(r.roundNumber) as currentRound')
             ->leftJoin('t.rounds', 'r')
-            ->addSelect('r')
             ->where('t.status IN (:statuses)')
             ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->groupBy('t.id, o.id')
             ->orderBy('t.status', 'DESC')
             ->addOrderBy('t.date', 'ASC');
 
-        $tournaments = $qb->getQuery()->getResult();
+        $rawResults = $qb->getQuery()->getResult();
 
-        $em = $this->getEntityManager();
         $results = [];
-
-        foreach ($tournaments as $tournament) {
-            // Count registrations for this tournament
-            $playerCount = (int) $em->createQueryBuilder()
-                ->select('COUNT(reg.id)')
-                ->from('App\Entity\Registration', 'reg')
-                ->where('reg.tournament = :tournament')
-                ->setParameter('tournament', $tournament)
-                ->getQuery()
-                ->getSingleScalarResult();
-
-            // Find current round number
-            $currentRound = null;
-            $rounds = $tournament->getRounds();
-            if (!$rounds->isEmpty()) {
-                $maxRound = 0;
-                foreach ($rounds as $round) {
-                    if ($round->getRoundNumber() > $maxRound) {
-                        $maxRound = $round->getRoundNumber();
-                    }
-                }
-                $currentRound = $maxRound;
-            }
-
+        foreach ($rawResults as $row) {
             $results[] = [
-                'tournament' => $tournament,
-                'playerCount' => $playerCount,
-                'currentRound' => $currentRound,
+                'tournament' => $row[0],
+                'playerCount' => (int) $row['playerCount'],
+                'currentRound' => $row['currentRound'] !== null ? (int) $row['currentRound'] : null,
             ];
         }
 
@@ -397,21 +378,25 @@ class TournamentRepository extends ServiceEntityRepository
     /**
      * Find all tournaments grouped by category for admin dashboard.
      * Categories: active (published/ongoing), drafts, finished (completed/cancelled), all
+     * Optimized to use a single query with aggregation instead of N+1 queries.
      *
      * @return array{active: array, drafts: array, finished: array, all: array}
      */
     public function findAllGroupedByCategory(): array
     {
+        // Single query with aggregation - avoids N+1
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
+            ->leftJoin('t.registrations', 'reg')
+            ->addSelect('COUNT(DISTINCT reg.id) as playerCount')
+            ->addSelect('MAX(r.roundNumber) as currentRound')
             ->leftJoin('t.rounds', 'r')
-            ->addSelect('r')
+            ->groupBy('t.id, o.id')
             ->orderBy('t.date', 'DESC');
 
-        $tournaments = $qb->getQuery()->getResult();
+        $rawResults = $qb->getQuery()->getResult();
 
-        $em = $this->getEntityManager();
         $grouped = [
             'active' => [],
             'drafts' => [],
@@ -419,33 +404,12 @@ class TournamentRepository extends ServiceEntityRepository
             'all' => [],
         ];
 
-        foreach ($tournaments as $tournament) {
-            // Count registrations for this tournament
-            $playerCount = (int) $em->createQueryBuilder()
-                ->select('COUNT(reg.id)')
-                ->from('App\Entity\Registration', 'reg')
-                ->where('reg.tournament = :tournament')
-                ->setParameter('tournament', $tournament)
-                ->getQuery()
-                ->getSingleScalarResult();
-
-            // Find current round number
-            $currentRound = null;
-            $rounds = $tournament->getRounds();
-            if (!$rounds->isEmpty()) {
-                $maxRound = 0;
-                foreach ($rounds as $round) {
-                    if ($round->getRoundNumber() > $maxRound) {
-                        $maxRound = $round->getRoundNumber();
-                    }
-                }
-                $currentRound = $maxRound;
-            }
-
+        foreach ($rawResults as $row) {
+            $tournament = $row[0];
             $data = [
                 'tournament' => $tournament,
-                'playerCount' => $playerCount,
-                'currentRound' => $currentRound,
+                'playerCount' => (int) $row['playerCount'],
+                'currentRound' => $row['currentRound'] !== null ? (int) $row['currentRound'] : null,
             ];
 
             // Add to 'all' category
