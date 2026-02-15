@@ -51,7 +51,7 @@ final class TournamentImportController extends AbstractController
     }
 
     /**
-     * Step 2: Process uploaded file and show column mapping.
+     * Step 2a: Process uploaded file and redirect to mapping page.
      */
     #[Route('/process', name: 'tournament_import_process', methods: ['POST'])]
     public function processUpload(
@@ -83,16 +83,12 @@ final class TournamentImportController extends AbstractController
             $suggestions = $this->csvParser->detectColumns($rows[0]);
             $preview = $this->csvParser->getPreview($rows);
 
-            // Store in session for next step
+            // Store in session for mapping step
             $session->set('import_rows_' . $tournament->getId(), $rows);
+            $session->set('import_suggestions_' . $tournament->getId(), $suggestions);
+            $session->set('import_preview_' . $tournament->getId(), $preview);
 
-            return $this->render('tournament/import/mapping.html.twig', [
-                'tournament' => $tournament,
-                'preview' => $preview,
-                'suggestions' => $suggestions,
-                'totalRows' => count($rows) - 1, // Exclude header
-                'fieldOptions' => $this->getFieldOptions(),
-            ]);
+            return $this->redirectToRoute('tournament_import_mapping', ['id' => $tournament->getId()]);
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
 
@@ -101,7 +97,36 @@ final class TournamentImportController extends AbstractController
     }
 
     /**
-     * Step 3: Execute import with chosen mapping.
+     * Step 2b: Show column mapping page.
+     */
+    #[Route('/mapping', name: 'tournament_import_mapping', methods: ['GET'])]
+    public function showMapping(
+        Tournament $tournament,
+        SessionInterface $session
+    ): Response {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        $rows = $session->get('import_rows_' . $tournament->getId());
+        $suggestions = $session->get('import_suggestions_' . $tournament->getId());
+        $preview = $session->get('import_preview_' . $tournament->getId());
+
+        if (!$rows || !$preview) {
+            $this->addFlash('error', $this->translator->trans('import.error.session_expired'));
+
+            return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
+        }
+
+        return $this->render('tournament/import/mapping.html.twig', [
+            'tournament' => $tournament,
+            'preview' => $preview,
+            'suggestions' => $suggestions,
+            'totalRows' => count($rows) - 1, // Exclude header
+            'fieldOptions' => $this->getFieldOptions(),
+        ]);
+    }
+
+    /**
+     * Step 3a: Execute import with chosen mapping.
      */
     #[Route('/execute', name: 'tournament_import_execute', methods: ['POST'])]
     public function executeImport(
@@ -124,8 +149,10 @@ final class TournamentImportController extends AbstractController
             return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
         }
 
-        // Remove from session
+        // Clean up session
         $session->remove('import_rows_' . $tournament->getId());
+        $session->remove('import_suggestions_' . $tournament->getId());
+        $session->remove('import_preview_' . $tournament->getId());
 
         // Build column mapping from form
         $mappingData = $request->request->all('mapping');
@@ -142,15 +169,62 @@ final class TournamentImportController extends AbstractController
         try {
             $result = $this->importService->import($tournament, $rows, $mapping, $sendEmails);
 
-            return $this->render('tournament/import/results.html.twig', [
-                'tournament' => $tournament,
-                'result' => $result,
+            // Store result in session for display
+            $session->set('import_result_' . $tournament->getId(), [
+                'successCount' => $result->getSuccessCount(),
+                'linkedCount' => $result->getLinkedCount(),
+                'createdCount' => $result->getCreatedCount(),
+                'skippedCount' => $result->getSkippedCount(),
+                'errorCount' => $result->getErrorCount(),
+                'totalProcessed' => $result->getTotalProcessed(),
+                'errors' => $result->getErrors(),
+                'skipped' => $result->getSkipped(),
+                'details' => $result->getDetails(),
             ]);
+
+            return $this->redirectToRoute('tournament_import_results', ['id' => $tournament->getId()]);
         } catch (\Exception $e) {
             $this->addFlash('error', $this->translator->trans('import.error.import_failed', ['%message%' => $e->getMessage()]));
 
             return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
         }
+    }
+
+    /**
+     * Step 3b: Show import results.
+     */
+    #[Route('/results', name: 'tournament_import_results', methods: ['GET'])]
+    public function showResults(
+        Tournament $tournament,
+        SessionInterface $session
+    ): Response {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        $resultData = $session->get('import_result_' . $tournament->getId());
+
+        if (!$resultData) {
+            return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
+        }
+
+        // Clean up session
+        $session->remove('import_result_' . $tournament->getId());
+
+        // Convert array back to object-like structure for template
+        $result = new \stdClass();
+        $result->successCount = $resultData['successCount'];
+        $result->linkedCount = $resultData['linkedCount'];
+        $result->createdCount = $resultData['createdCount'];
+        $result->skippedCount = $resultData['skippedCount'];
+        $result->errorCount = $resultData['errorCount'];
+        $result->totalProcessed = $resultData['totalProcessed'];
+        $result->errors = $resultData['errors'];
+        $result->skipped = $resultData['skipped'];
+        $result->details = $resultData['details'];
+
+        return $this->render('tournament/import/results.html.twig', [
+            'tournament' => $tournament,
+            'result' => $result,
+        ]);
     }
 
     /**
@@ -181,14 +255,14 @@ final class TournamentImportController extends AbstractController
     private function getFieldOptions(): array
     {
         return [
-            '' => '-- Ignorer --',
-            'email' => 'Email (requis)',
-            'pseudo' => 'Pseudo',
-            'name' => 'Nom',
-            'faction' => 'Faction principale',
-            'faction2' => 'Faction secondaire',
-            'hero' => 'Heros',
-            'decklistUrl' => 'URL Decklist',
+            '' => $this->translator->trans('import.mapping.field_ignore'),
+            'email' => $this->translator->trans('import.mapping.field_email'),
+            'pseudo' => $this->translator->trans('import.mapping.field_pseudo'),
+            'name' => $this->translator->trans('import.mapping.field_name'),
+            'faction' => $this->translator->trans('import.mapping.field_faction'),
+            'faction2' => $this->translator->trans('import.mapping.field_faction2'),
+            'hero' => $this->translator->trans('import.mapping.field_hero'),
+            'decklistUrl' => $this->translator->trans('import.mapping.field_decklist_url'),
         ];
     }
 }

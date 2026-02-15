@@ -1313,6 +1313,7 @@ flash:
         password_reset: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter."
         settings_saved: "Paramètres enregistrés."
         account_created: "Votre compte a été créé avec succès ! Bienvenue sur Altered Tournament Tools."
+        account_claimed: "Votre compte a été activé avec succès ! Vos inscriptions aux tournois ont été conservées."
         account_deleted: "Votre compte a été supprimé avec succès."
         alert_acknowledged: "L'alerte a été acquittée."
         alert_check_complete: "Vérification terminée. Aucun problème détecté."
@@ -1874,6 +1875,14 @@ import:
         email_required_warning: "Vous devez mapper une colonne à 'Email' pour continuer"
         back: "Retour"
         execute: "Importer %count% inscriptions"
+        field_ignore: "-- Ignorer --"
+        field_email: "Email (requis)"
+        field_pseudo: "Pseudo"
+        field_name: "Nom"
+        field_faction: "Faction principale"
+        field_faction2: "Faction secondaire"
+        field_hero: "Héros"
+        field_decklist_url: "URL Decklist"
     results:
         title: "Résultats de l'import"
         breadcrumb: "Résultats"
@@ -1899,6 +1908,8 @@ import:
         session_expired: "Session expirée. Veuillez recommencer l'import."
         email_required: "La colonne Email est requise."
         import_failed: "Erreur lors de l'import : %message%"
+    skip:
+        already_registered: "Déjà inscrit : %email%"
 
 # ----------------------------------------------------------------------------
 # Account Claim

@@ -21,7 +21,7 @@
         <p class="mt-2" style="color: var(--text-muted);">{{ 'import.mapping.description'|trans({'%count%': totalRows}) }}</p>
     </div>
 
-    <form action="{{ path('tournament_import_execute', {'id': tournament.id}) }}" method="POST">
+    <form action="{{ path('tournament_import_execute', {'id': tournament.id}) }}" method="POST" data-turbo="false">
         <input type="hidden" name="_token" value="{{ csrf_token('import_' ~ tournament.id) }}">
 
         {# Preview Table #}

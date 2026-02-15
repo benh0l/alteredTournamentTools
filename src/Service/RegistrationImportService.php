@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Service for bulk importing registrations from CSV data.
@@ -34,6 +35,7 @@ final class RegistrationImportService
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly LoggerInterface $logger,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -139,7 +141,7 @@ final class RegistrationImportService
 
         // Check if already registered
         if ($this->registrationService->isPlayerRegistered($user, $tournament)) {
-            $result->addSkipped($lineNumber, 'Deja inscrit');
+            $result->addSkipped($lineNumber, $this->translator->trans('import.skip.already_registered', ['%email%' => $email]));
 
             return;
         }
@@ -167,7 +169,7 @@ final class RegistrationImportService
                 !$sendEmails // skipEmail = inverse of sendEmails
             );
         } catch (AlreadyRegisteredException $e) {
-            $result->addSkipped($lineNumber, 'Deja inscrit');
+            $result->addSkipped($lineNumber, $this->translator->trans('import.skip.already_registered', ['%email%' => $email]));
 
             return;
         }

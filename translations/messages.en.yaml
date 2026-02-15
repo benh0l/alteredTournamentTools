@@ -1312,6 +1312,7 @@ flash:
         password_reset: "Your password has been changed successfully. You can now log in."
         settings_saved: "Settings saved."
         account_created: "Your account has been created successfully! Welcome to Altered Tournament Tools."
+        account_claimed: "Your account has been activated successfully! Your tournament registrations have been preserved."
         account_deleted: "Your account has been deleted successfully."
         alert_acknowledged: "Alert has been acknowledged."
         alert_check_complete: "Verification complete. No issues detected."
@@ -1873,6 +1874,14 @@ import:
         email_required_warning: "You must map a column to 'Email' to continue"
         back: "Back"
         execute: "Import %count% registrations"
+        field_ignore: "-- Ignore --"
+        field_email: "Email (required)"
+        field_pseudo: "Username"
+        field_name: "Name"
+        field_faction: "Main faction"
+        field_faction2: "Secondary faction"
+        field_hero: "Hero"
+        field_decklist_url: "Decklist URL"
     results:
         title: "Import results"
         breadcrumb: "Results"
@@ -1898,6 +1907,8 @@ import:
         session_expired: "Session expired. Please restart the import."
         email_required: "The Email column is required."
         import_failed: "Import error: %message%"
+    skip:
+        already_registered: "Already registered: %email%"
 
 # ----------------------------------------------------------------------------
 # Account Claim

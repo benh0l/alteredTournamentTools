@@ -23,7 +23,7 @@
 
     {# Upload Card #}
     <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--card-bg); border: 1px solid var(--card-border);">
-        <form action="{{ path('tournament_import_process', {'id': tournament.id}) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ path('tournament_import_process', {'id': tournament.id}) }}" method="POST" enctype="multipart/form-data" data-turbo="false">
             {# Drag & Drop Zone #}
             <div id="dropzone"
                  class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer hover:border-blue-400"
@@ -110,68 +110,66 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', initImportUpload);
+document.addEventListener('turbo:load', initImportUpload);
+
+function initImportUpload() {
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('csv_file');
     const selectedFile = document.getElementById('selected-file');
     const submitBtn = document.getElementById('submit-btn');
+    const form = document.querySelector('form[data-turbo="false"]');
+
+    if (!dropzone || !fileInput || !selectedFile || !submitBtn || !form) {
+        return;
+    }
+
+    // Prevent double initialization
+    if (dropzone.dataset.initialized === 'true') {
+        return;
+    }
+    dropzone.dataset.initialized = 'true';
 
     // Drag & drop handlers
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, preventDefaults, false);
+        dropzone.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
     });
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
     ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.addEventListener(eventName, highlight, false);
+        dropzone.addEventListener(eventName, function() {
+            dropzone.classList.add('border-blue-400', 'bg-blue-50');
+        }, false);
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, unhighlight, false);
+        dropzone.addEventListener(eventName, function() {
+            dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+        }, false);
     });
 
-    function highlight() {
-        dropzone.classList.add('border-blue-400', 'bg-blue-50');
-    }
-
-    function unhighlight() {
-        dropzone.classList.remove('border-blue-400', 'bg-blue-50');
-    }
-
-    dropzone.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+    dropzone.addEventListener('drop', function(e) {
+        const files = e.dataTransfer.files;
         if (files.length > 0) {
             fileInput.files = files;
             updateFileName(files[0].name);
         }
-    }
+    }, false);
 
-    // Click to open file dialog
-    dropzone.addEventListener('click', function(e) {
-        if (e.target !== fileInput && !e.target.closest('label')) {
-            fileInput.click();
-        }
-    });
-
-    // File input change handler
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
+    // File input change handler - use onchange attribute as backup
+    fileInput.onchange = function() {
+        if (this.files && this.files.length > 0) {
             updateFileName(this.files[0].name);
         }
-    });
+    };
 
     function updateFileName(name) {
-        selectedFile.textContent = '{{ 'import.upload.file_selected'|trans }}: ' + name;
+        selectedFile.textContent = '{{ "import.upload.file_selected"|trans }}: ' + name;
         selectedFile.classList.remove('hidden');
-        submitBtn.disabled = false;
+        submitBtn.removeAttribute('disabled');
     }
-});
+}
 </script>
 {% endblock %}

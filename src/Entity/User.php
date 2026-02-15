@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\Validator\UniqueEmailOrGuest;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'users')]
 #[ORM\Index(name: 'idx_users_email', columns: ['email'])]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['email'], message: 'Cette adresse email est deja utilisee')]
+#[UniqueEmailOrGuest]
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est deja utilise')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -357,9 +358,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->claimToken;
     }
 
+    public function setClaimToken(?string $claimToken): self
+    {
+        $this->claimToken = $claimToken;
+
+        return $this;
+    }
+
     public function getClaimTokenExpiresAt(): ?\DateTimeImmutable
     {
         return $this->claimTokenExpiresAt;
+    }
+
+    public function setClaimTokenExpiresAt(?\DateTimeImmutable $claimTokenExpiresAt): self
+    {
+        $this->claimTokenExpiresAt = $claimTokenExpiresAt;
+
+        return $this;
     }
 
     /**
