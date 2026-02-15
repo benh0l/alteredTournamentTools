@@ -171,6 +171,11 @@ final class TournamentResultsController extends AbstractController
             return true;
         }
 
+        // Admins can always see results of any tournament
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
         return false;
     }
 
