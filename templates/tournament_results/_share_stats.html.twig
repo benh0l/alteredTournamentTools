@@ -37,13 +37,15 @@
 
     {# Faction Champions (if available) #}
     {% if faction_champions|length > 0 %}
+    {% set champion_count = faction_champions|slice(0, 6)|length %}
+    {% set tile_width = champion_count == 4 ? '200px' : '140px' %}
     <div style="margin-bottom: 24px;">
         <h2 style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center;">
             <span style="margin-right: 8px;">&#128081;</span> {{ 'share.faction_champions'|trans }}
         </h2>
-        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: {{ champion_count == 4 ? '424px' : '456px' }}; margin: 0 auto;">
             {% for key, champion in faction_champions|slice(0, 6) %}
-            <div style="background: linear-gradient(135deg, {{ champion.faction.color }}20, {{ champion.faction.color }}40); border: 2px solid {{ champion.faction.color }}60; border-radius: 12px; padding: 14px; text-align: center; width: 140px;">
+            <div style="background: linear-gradient(135deg, {{ champion.faction.color }}20, {{ champion.faction.color }}40); border: 2px solid {{ champion.faction.color }}60; border-radius: 12px; padding: 14px; text-align: center; width: {{ tile_width }};">
                 <div style="position: relative; display: inline-block;">
                     <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid {{ champion.faction.color }}; margin: 0 auto 10px;">
                         {% if champion.heroImage %}
@@ -54,7 +56,7 @@
                             </div>
                         {% endif %}
                     </div>
-                    <span style="position: absolute; top: -4px; right: -4px; background-color: {{ champion.faction.color }}; color: white; font-size: 11px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">#{{ champion.rank }}</span>
+                    <span style="position: absolute; top: -4px; right: -4px; background-color: {{ champion.faction.color }}; color: white; font-size: 11px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding-bottom: 12px; box-sizing: border-box;">#{{ champion.rank }}</span>
                 </div>
                 <p style="color: #ffffff; font-size: 13px; font-weight: 600; margin: 0 0 4px 0; word-wrap: break-word; margin-top: -12px;">{{ champion.player }}</p>
                 <p style="color: {{ champion.faction.color }}; font-size: 11px; font-weight: 500; margin: 0 0 6px 0;">{{ champion.faction.label|trans }}</p>
@@ -191,16 +193,16 @@
                 {% endif %}
 
                 {# Player name #}
-                <p style="color: #ffffff; font-size: 14px; font-weight: 600; margin: 0 0 4px 0; word-wrap: break-word; margin-top: -12px;">{{ entry.registration.player.displayName }}</p>
+                <p style="color: #ffffff; font-size: 14px; font-weight: 600; margin: 0; word-wrap: break-word; padding-bottom: 6px;">{{ entry.registration.player.displayName }}</p>
 
                 {# Hero label #}
                 {% if entry.registration.heroLabel %}
-                <p style="color: #9ca3af; font-size: 11px; margin: 0 0 8px 0; margin-top: -12px;">{{ entry.registration.heroLabel }}</p>
+                <p style="color: #9ca3af; font-size: 11px; margin: 0; padding-bottom: 10px;">{{ entry.registration.heroLabel }}</p>
                 {% endif %}
 
                 {# Stats #}
-                <p style="color: #ffffff; font-size: 16px; font-weight: bold; margin: 0; margin-top: -8px;">{{ entry.matchPoints }} pts</p>
-                <p style="color: #9ca3af; font-size: 11px; margin: 6px 0 0 0; margin-top: -8px;">
+                <p style="color: #ffffff; font-size: 16px; font-weight: bold; margin: 0; padding-bottom: 8px;">{{ entry.matchPoints }} pts</p>
+                <p style="color: #9ca3af; font-size: 11px; margin: 0;">
                     <span style="color: #22c55e;">{{ entry.wins }}V</span> -
                     <span style="color: #f59e0b;">{{ entry.draws }}N</span> -
                     <span style="color: #ef4444;">{{ entry.losses }}D</span>
