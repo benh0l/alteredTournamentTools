@@ -8,7 +8,9 @@ use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\TournamentStatus;
 use App\Enum\TournamentVisibility;
+use App\Repository\RegistrationRepository;
 use App\Security\Voter\TournamentVoter;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
@@ -19,10 +21,12 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 final class TournamentVoterTest extends TestCase
 {
     private TournamentVoter $voter;
+    private RegistrationRepository&MockObject $registrationRepository;
 
     protected function setUp(): void
     {
-        $this->voter = new TournamentVoter();
+        $this->registrationRepository = $this->createMock(RegistrationRepository::class);
+        $this->voter = new TournamentVoter($this->registrationRepository);
     }
 
     // ====== EDIT Permission Tests ======
@@ -261,6 +265,54 @@ final class TournamentVoterTest extends TestCase
         $this->assertSame(VoterInterface::ACCESS_GRANTED, $result);
     }
 
+    public function testViewGrantedForAdminOnPrivateTournament(): void
+    {
+        $organizer = $this->createUser(1);
+        $admin = $this->createUser(2, ['ROLE_ADMIN']);
+        $tournament = $this->createTournament(
+            $organizer,
+            TournamentStatus::PUBLISHED,
+            TournamentVisibility::PRIVATE
+        );
+        $token = $this->createToken($admin);
+
+        $result = $this->voter->vote($token, $tournament, [TournamentVoter::VIEW]);
+
+        $this->assertSame(VoterInterface::ACCESS_GRANTED, $result);
+    }
+
+    public function testViewDashboardGrantedForAdminOnPrivateTournament(): void
+    {
+        $organizer = $this->createUser(1);
+        $admin = $this->createUser(2, ['ROLE_ADMIN']);
+        $tournament = $this->createTournament(
+            $organizer,
+            TournamentStatus::ONGOING,
+            TournamentVisibility::PRIVATE
+        );
+        $token = $this->createToken($admin);
+
+        $result = $this->voter->vote($token, $tournament, [TournamentVoter::VIEW_DASHBOARD]);
+
+        $this->assertSame(VoterInterface::ACCESS_GRANTED, $result);
+    }
+
+    public function testViewDeniedForNonAdminNonParticipantOnPrivateTournament(): void
+    {
+        $organizer = $this->createUser(1);
+        $regularUser = $this->createUser(2);
+        $tournament = $this->createTournament(
+            $organizer,
+            TournamentStatus::PUBLISHED,
+            TournamentVisibility::PRIVATE
+        );
+        $token = $this->createToken($regularUser);
+
+        $result = $this->voter->vote($token, $tournament, [TournamentVoter::VIEW]);
+
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $result);
+    }
+
     // ====== Abstain Tests ======
 
     public function testAbstainForUnsupportedAttribute(): void
@@ -286,10 +338,11 @@ final class TournamentVoterTest extends TestCase
 
     // ====== Helper Methods ======
 
-    private function createUser(int $id): User
+    private function createUser(int $id, array $roles = ['ROLE_USER']): User
     {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn($id);
+        $user->method('getRoles')->willReturn($roles);
 
         return $user;
     }
@@ -297,12 +350,14 @@ final class TournamentVoterTest extends TestCase
     private function createTournament(
         User $organizer,
         TournamentStatus $status,
-        TournamentVisibility $visibility = TournamentVisibility::PUBLIC
+        TournamentVisibility $visibility = TournamentVisibility::PUBLIC,
+        bool $hasRounds = true
     ): Tournament {
         $tournament = $this->createMock(Tournament::class);
         $tournament->method('getOrganizer')->willReturn($organizer);
         $tournament->method('getStatus')->willReturn($status);
         $tournament->method('getVisibility')->willReturn($visibility);
+        $tournament->method('hasRounds')->willReturn($hasRounds);
 
         return $tournament;
     }
