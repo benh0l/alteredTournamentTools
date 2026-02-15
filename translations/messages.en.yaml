@@ -925,7 +925,7 @@ dashboard:
         full_view: "Full view"
         completed_count: "%completed%/%total% matches completed"
         resolve: "Resolve"
-        submit: "Submit"
+        submit: "Enter score"
         start_next_round: "Start next round"
         start_elimination: "Start elimination phase"
         swiss_complete: "Swiss rounds completed (%current%/%max%)!"

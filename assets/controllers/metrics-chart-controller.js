@@ -31,11 +31,22 @@ export default class extends Controller {
     initChart() {
         const ctx = this.element.getContext('2d');
 
+        // Get theme-aware colors for chart text and grid
+        this.themeColors = this.getThemeColors();
+
         if (this.hasDistributionValue) {
             this.createDistributionChart(ctx);
         } else if (this.hasDataValue) {
             this.createTimeSeriesChart(ctx);
         }
+    }
+
+    getThemeColors() {
+        const computedStyle = getComputedStyle(document.documentElement);
+        return {
+            text: computedStyle.getPropertyValue('--text-secondary').trim() || '#6b7280',
+            grid: computedStyle.getPropertyValue('--border-default').trim() || '#e5e7eb',
+        };
     }
 
     createTimeSeriesChart(ctx) {
@@ -70,10 +81,22 @@ export default class extends Controller {
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
                         }
                     }
                 }
@@ -115,10 +138,22 @@ export default class extends Controller {
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
                         }
                     }
                 }

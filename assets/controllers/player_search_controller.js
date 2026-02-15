@@ -175,7 +175,7 @@ export default class extends Controller {
         const items = this.resultsTarget.querySelectorAll('.player-result');
         items.forEach((item, index) => {
             if (index === this.selectedIndex) {
-                item.style.backgroundColor = 'var(--color-primary-100, #fef3c7)';
+                item.style.backgroundColor = 'var(--color-primary-100)';
             } else {
                 item.style.backgroundColor = '';
             }

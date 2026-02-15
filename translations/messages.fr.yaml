@@ -926,7 +926,7 @@ dashboard:
         full_view: "Vue complète"
         completed_count: "%completed%/%total% matchs terminés"
         resolve: "Résoudre"
-        submit: "Soumettre"
+        submit: "Saisir score"
         start_next_round: "Démarrer la ronde suivante"
         start_elimination: "Démarrer la phase éliminatoire"
         swiss_complete: "Rondes suisses terminées (%current%/%max%) !"
