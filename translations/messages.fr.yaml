@@ -643,6 +643,7 @@ tournament:
         header: "Gestion des inscriptions"
         players_count: "joueurs"
         export_csv: "Exporter CSV"
+        import_csv: "Importer CSV"
         close_registrations: "Fermer les inscriptions"
         close_confirm: "Fermer les inscriptions ?"
         reopen_registrations: "Rouvrir les inscriptions"
@@ -1507,6 +1508,14 @@ form:
         new_password: "Nouveau mot de passe"
         agree_terms: "J'accepte les conditions d'utilisation"
 
+    claim:
+        pseudo: "Pseudo"
+        pseudo_placeholder: "Choisissez un pseudo"
+        password: "Mot de passe"
+        password_placeholder: "Minimum 8 caractères"
+        confirm_password: "Confirmer le mot de passe"
+        confirm_password_placeholder: "Répétez votre mot de passe"
+
 # ----------------------------------------------------------------------------
 # JavaScript / Stimulus Controllers
 # ----------------------------------------------------------------------------
@@ -1830,3 +1839,88 @@ cookie_banner:
     functional:
         title: "Fonctionnels"
         description: "Préférences de thème et langue"
+
+# ----------------------------------------------------------------------------
+# Bulk Import
+# ----------------------------------------------------------------------------
+import:
+    upload:
+        title: "Import CSV"
+        breadcrumb: "Import"
+        header: "Importer des inscriptions"
+        description: "Importez une liste de participants depuis un fichier CSV (HelloAsso, Google Forms, etc.)"
+        drag_drop: "Glissez-déposez votre fichier CSV ici"
+        or_click: "ou cliquez pour parcourir"
+        select_file: "Choisir un fichier"
+        file_selected: "Fichier sélectionné"
+        continue: "Continuer"
+        instructions_title: "Instructions"
+        instruction_format: "Le fichier doit être au format CSV (UTF-8)"
+        instruction_email: "La colonne Email est obligatoire"
+        instruction_columns: "Colonnes supportées : Email, Pseudo, Nom, Faction, Héros, URL Decklist"
+        instruction_limit: "Maximum %maxRows% lignes, %maxSize% Mo"
+        download_template: "Télécharger un modèle CSV"
+        back_to_registrations: "Retour aux inscriptions"
+    mapping:
+        title: "Mapping des colonnes"
+        breadcrumb: "Mapping"
+        header: "Configuration du mapping"
+        description: "%count% lignes à importer"
+        preview_title: "Aperçu des données"
+        rows_remaining: "... et %count% lignes supplémentaires"
+        options_title: "Options"
+        send_emails_label: "Envoyer des emails de confirmation"
+        send_emails_description: "Chaque joueur importé recevra un email de confirmation d'inscription"
+        email_required_warning: "Vous devez mapper une colonne à 'Email' pour continuer"
+        back: "Retour"
+        execute: "Importer %count% inscriptions"
+    results:
+        title: "Résultats de l'import"
+        breadcrumb: "Résultats"
+        header: "Import terminé"
+        success_message: "%count% inscription(s) ajoutée(s) avec succès"
+        success_description: "Les joueurs ont été ajoutés au tournoi"
+        stat_total: "Lignes traitées"
+        stat_linked: "Comptes existants"
+        stat_created: "Nouveaux comptes"
+        stat_skipped: "Ignorées"
+        errors_title: "%count% erreur(s)"
+        skipped_title: "%count% ligne(s) ignorée(s)"
+        details_title: "Détails de l'import"
+        type_linked: "Lié"
+        type_created: "Créé"
+        guest_info_title: "Comptes invités créés"
+        guest_info_description: "%count% compte(s) invité(s) ont été créés. Les joueurs pourront réclamer leur compte via un lien unique."
+        import_more: "Importer d'autres joueurs"
+        view_registrations: "Voir les inscriptions"
+    error:
+        invalid_file: "Veuillez sélectionner un fichier CSV valide."
+        csv_only: "Seuls les fichiers CSV sont acceptés."
+        session_expired: "Session expirée. Veuillez recommencer l'import."
+        email_required: "La colonne Email est requise."
+        import_failed: "Erreur lors de l'import : %message%"
+
+# ----------------------------------------------------------------------------
+# Account Claim
+# ----------------------------------------------------------------------------
+claim:
+    title: "Activer mon compte"
+    header: "Activez votre compte"
+    description: "Vous avez été inscrit à un tournoi. Complétez votre inscription pour accéder à votre compte."
+    email_label: "Email"
+    tournaments_label: "Vos tournois"
+    form_title: "Créer vos identifiants"
+    pseudo_label: "Pseudo"
+    pseudo_placeholder: "Choisissez un pseudo"
+    pseudo_help: "Lettres, chiffres, tirets et underscores uniquement"
+    password_label: "Mot de passe"
+    password_placeholder: "Minimum 8 caractères"
+    confirm_password_label: "Confirmer le mot de passe"
+    confirm_password_placeholder: "Répétez votre mot de passe"
+    submit: "Activer mon compte"
+    already_have_account: "Vous avez déjà un compte ?"
+    login_link: "Se connecter"
+    success: "Votre compte a été activé ! Vous pouvez maintenant vous connecter."
+    error:
+        invalid_or_expired: "Ce lien d'activation est invalide ou expiré."
+        pseudo_taken: "Ce pseudo est déjà utilisé. Veuillez en choisir un autre."

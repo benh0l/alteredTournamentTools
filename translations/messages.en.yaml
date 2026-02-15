@@ -642,6 +642,7 @@ tournament:
         header: "Registration Management"
         players_count: "players"
         export_csv: "Export CSV"
+        import_csv: "Import CSV"
         close_registrations: "Close registrations"
         close_confirm: "Close registrations?"
         reopen_registrations: "Reopen registrations"
@@ -1506,6 +1507,14 @@ form:
         new_password: "New password"
         agree_terms: "I accept the terms of service"
 
+    claim:
+        pseudo: "Username"
+        pseudo_placeholder: "Choose a username"
+        password: "Password"
+        password_placeholder: "Minimum 8 characters"
+        confirm_password: "Confirm password"
+        confirm_password_placeholder: "Re-enter your password"
+
 # ----------------------------------------------------------------------------
 # JavaScript / Stimulus Controllers
 # ----------------------------------------------------------------------------
@@ -1829,3 +1838,88 @@ cookie_banner:
     functional:
         title: "Functional"
         description: "Theme and language preferences"
+
+# ----------------------------------------------------------------------------
+# Bulk Import
+# ----------------------------------------------------------------------------
+import:
+    upload:
+        title: "CSV Import"
+        breadcrumb: "Import"
+        header: "Import registrations"
+        description: "Import a participant list from a CSV file (HelloAsso, Google Forms, etc.)"
+        drag_drop: "Drag and drop your CSV file here"
+        or_click: "or click to browse"
+        select_file: "Choose a file"
+        file_selected: "File selected"
+        continue: "Continue"
+        instructions_title: "Instructions"
+        instruction_format: "The file must be in CSV format (UTF-8)"
+        instruction_email: "The Email column is required"
+        instruction_columns: "Supported columns: Email, Pseudo, Name, Faction, Hero, Decklist URL"
+        instruction_limit: "Maximum %maxRows% rows, %maxSize% MB"
+        download_template: "Download CSV template"
+        back_to_registrations: "Back to registrations"
+    mapping:
+        title: "Column mapping"
+        breadcrumb: "Mapping"
+        header: "Configure mapping"
+        description: "%count% rows to import"
+        preview_title: "Data preview"
+        rows_remaining: "... and %count% more rows"
+        options_title: "Options"
+        send_emails_label: "Send confirmation emails"
+        send_emails_description: "Each imported player will receive a registration confirmation email"
+        email_required_warning: "You must map a column to 'Email' to continue"
+        back: "Back"
+        execute: "Import %count% registrations"
+    results:
+        title: "Import results"
+        breadcrumb: "Results"
+        header: "Import completed"
+        success_message: "%count% registration(s) added successfully"
+        success_description: "Players have been added to the tournament"
+        stat_total: "Rows processed"
+        stat_linked: "Existing accounts"
+        stat_created: "New accounts"
+        stat_skipped: "Skipped"
+        errors_title: "%count% error(s)"
+        skipped_title: "%count% row(s) skipped"
+        details_title: "Import details"
+        type_linked: "Linked"
+        type_created: "Created"
+        guest_info_title: "Guest accounts created"
+        guest_info_description: "%count% guest account(s) were created. Players can claim their account via a unique link."
+        import_more: "Import more players"
+        view_registrations: "View registrations"
+    error:
+        invalid_file: "Please select a valid CSV file."
+        csv_only: "Only CSV files are accepted."
+        session_expired: "Session expired. Please restart the import."
+        email_required: "The Email column is required."
+        import_failed: "Import error: %message%"
+
+# ----------------------------------------------------------------------------
+# Account Claim
+# ----------------------------------------------------------------------------
+claim:
+    title: "Activate my account"
+    header: "Activate your account"
+    description: "You have been registered to a tournament. Complete your registration to access your account."
+    email_label: "Email"
+    tournaments_label: "Your tournaments"
+    form_title: "Create your credentials"
+    pseudo_label: "Username"
+    pseudo_placeholder: "Choose a username"
+    pseudo_help: "Letters, numbers, dashes and underscores only"
+    password_label: "Password"
+    password_placeholder: "Minimum 8 characters"
+    confirm_password_label: "Confirm password"
+    confirm_password_placeholder: "Repeat your password"
+    submit: "Activate my account"
+    already_have_account: "Already have an account?"
+    login_link: "Log in"
+    success: "Your account has been activated! You can now log in."
+    error:
+        invalid_or_expired: "This activation link is invalid or expired."
+        pseudo_taken: "This username is already taken. Please choose another."

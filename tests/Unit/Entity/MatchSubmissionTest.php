@@ -262,7 +262,7 @@ final class MatchSubmissionTest extends TestCase
         $tournament->setName('Test Tournament');
         $tournament->setOrganizer($organizer);
         $tournament->setDate(new \DateTimeImmutable());
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $tournament->setVisibility(TournamentVisibility::PUBLIC);
 

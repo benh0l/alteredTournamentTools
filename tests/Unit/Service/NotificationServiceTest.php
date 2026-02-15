@@ -76,7 +76,7 @@ final class NotificationServiceTest extends TestCase
         $this->tournament->setOrganizer($this->organizer);
         $this->tournament->setDate(new \DateTimeImmutable('tomorrow'));
         $this->tournament->setTime(new \DateTimeImmutable('14:00'));
-        $this->tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $this->tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $this->tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $this->tournament->setVisibility(TournamentVisibility::PUBLIC);
         $this->tournament->setStatus(TournamentStatus::PUBLISHED);

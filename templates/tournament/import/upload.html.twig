@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'import.upload.title'|trans }} - {{ tournament.name }}{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    {# Header #}
+    <div class="mb-8">
+        <nav class="text-sm mb-2" style="color: var(--text-muted);">
+            <a href="{{ path('tournament_show', {'id': tournament.id}) }}" class="hover:opacity-80" style="color: var(--text-secondary);">
+                {{ tournament.name }}
+            </a>
+            <span class="mx-2">/</span>
+            <a href="{{ path('tournament_registrations', {'id': tournament.id}) }}" class="hover:opacity-80" style="color: var(--text-secondary);">
+                {{ 'tournament.registrations.breadcrumb'|trans }}
+            </a>
+            <span class="mx-2">/</span>
+            <span>{{ 'import.upload.breadcrumb'|trans }}</span>
+        </nav>
+        <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'import.upload.header'|trans }}</h1>
+        <p class="mt-2" style="color: var(--text-muted);">{{ 'import.upload.description'|trans }}</p>
+    </div>
+
+    {# Upload Card #}
+    <div class="rounded-xl shadow-lg p-6 mb-6" style="background-color: var(--card-bg); border: 1px solid var(--card-border);">
+        <form action="{{ path('tournament_import_process', {'id': tournament.id}) }}" method="POST" enctype="multipart/form-data">
+            {# Drag & Drop Zone #}
+            <div id="dropzone"
+                 class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer hover:border-blue-400"
+                 style="border-color: var(--border-default);">
+                <div class="mb-4">
+                    {{ ux_icon('lucide:upload-cloud', {class: 'w-16 h-16 mx-auto', style: 'color: var(--text-muted);'}) }}
+                </div>
+                <p class="text-lg font-medium mb-2" style="color: var(--text-primary);">
+                    {{ 'import.upload.drag_drop'|trans }}
+                </p>
+                <p class="text-sm mb-4" style="color: var(--text-muted);">
+                    {{ 'import.upload.or_click'|trans }}
+                </p>
+                <input type="file"
+                       name="csv_file"
+                       id="csv_file"
+                       accept=".csv"
+                       required
+                       class="hidden">
+                <label for="csv_file"
+                       class="inline-flex items-center px-6 py-3 rounded-lg font-medium cursor-pointer transition btn-primary">
+                    {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'import.upload.select_file'|trans }}
+                </label>
+                <p id="selected-file" class="mt-4 text-sm font-medium hidden" style="color: var(--color-primary-600);"></p>
+            </div>
+
+            {# Submit Button #}
+            <div class="mt-6">
+                <button type="submit"
+                        id="submit-btn"
+                        disabled
+                        class="w-full py-3 px-6 rounded-xl font-medium transition disabled:opacity-50 disabled:cursor-not-allowed btn-primary">
+                    {{ ux_icon('lucide:arrow-right', {class: 'w-5 h-5 mr-2 inline'}) }}
+                    {{ 'import.upload.continue'|trans }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# Instructions Card #}
+    <div class="rounded-xl shadow-lg p-6" style="background-color: var(--card-bg); border: 1px solid var(--card-border);">
+        <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
+            {{ ux_icon('lucide:info', {class: 'w-5 h-5 inline mr-2'}) }}
+            {{ 'import.upload.instructions_title'|trans }}
+        </h2>
+
+        <div class="space-y-4" style="color: var(--text-secondary);">
+            <div class="flex items-start space-x-3">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 text-green-500 mt-0.5 flex-shrink-0'}) }}
+                <p>{{ 'import.upload.instruction_format'|trans }}</p>
+            </div>
+            <div class="flex items-start space-x-3">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 text-green-500 mt-0.5 flex-shrink-0'}) }}
+                <p>{{ 'import.upload.instruction_email'|trans }}</p>
+            </div>
+            <div class="flex items-start space-x-3">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 text-green-500 mt-0.5 flex-shrink-0'}) }}
+                <p>{{ 'import.upload.instruction_columns'|trans }}</p>
+            </div>
+            <div class="flex items-start space-x-3">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 text-green-500 mt-0.5 flex-shrink-0'}) }}
+                <p>{{ 'import.upload.instruction_limit'|trans({'%maxRows%': maxRows, '%maxSize%': (maxFileSize / 1024 / 1024)|round(0)}) }}</p>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t" style="border-color: var(--border-default);">
+            <a href="{{ path('tournament_import_template', {'id': tournament.id}) }}"
+               class="inline-flex items-center text-sm font-medium hover:opacity-80" style="color: var(--color-primary-600);">
+                {{ ux_icon('lucide:download', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'import.upload.download_template'|trans }}
+            </a>
+        </div>
+    </div>
+
+    {# Back Link #}
+    <div class="mt-6 text-center">
+        <a href="{{ path('tournament_registrations', {'id': tournament.id}) }}"
+           class="inline-flex items-center text-sm hover:opacity-80" style="color: var(--text-muted);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+            {{ 'import.upload.back_to_registrations'|trans }}
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('csv_file');
+    const selectedFile = document.getElementById('selected-file');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Drag & drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropzone.classList.add('border-blue-400', 'bg-blue-50');
+    }
+
+    function unhighlight() {
+        dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+    }
+
+    dropzone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            updateFileName(files[0].name);
+        }
+    }
+
+    // Click to open file dialog
+    dropzone.addEventListener('click', function(e) {
+        if (e.target !== fileInput && !e.target.closest('label')) {
+            fileInput.click();
+        }
+    });
+
+    // File input change handler
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            updateFileName(this.files[0].name);
+        }
+    });
+
+    function updateFileName(name) {
+        selectedFile.textContent = '{{ 'import.upload.file_selected'|trans }}: ' + name;
+        selectedFile.classList.remove('hidden');
+        submitBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

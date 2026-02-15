@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -111,6 +112,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column(name: 'is_guest', type: 'boolean', options: ['default' => false])]
     private bool $isGuest = false;
+
+    /**
+     * Token for claiming a guest account (bulk import feature).
+     */
+    #[ORM\Column(name: 'claim_token', type: 'string', length: 64, nullable: true, unique: true)]
+    private ?string $claimToken = null;
+
+    /**
+     * Expiration date for the claim token.
+     */
+    #[ORM\Column(name: 'claim_token_expires_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $claimTokenExpiresAt = null;
 
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'player', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -337,6 +350,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isGuest = $isGuest;
 
         return $this;
+    }
+
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function getClaimTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->claimTokenExpiresAt;
+    }
+
+    /**
+     * Generate a new claim token for guest account activation.
+     * Token expires after 6 months.
+     */
+    public function generateClaimToken(): void
+    {
+        $this->claimToken = Uuid::v4()->toRfc4122();
+        $this->claimTokenExpiresAt = new \DateTimeImmutable('+6 months');
+    }
+
+    /**
+     * Check if this account can be claimed (is a guest with valid token).
+     */
+    public function isClaimable(): bool
+    {
+        return $this->isGuest
+            && $this->claimToken !== null
+            && $this->claimTokenExpiresAt !== null
+            && $this->claimTokenExpiresAt > new \DateTimeImmutable();
+    }
+
+    /**
+     * Claim this guest account by setting pseudo and password.
+     * Converts the guest account to a full account.
+     *
+     * @throws \LogicException if account is not claimable
+     */
+    public function claim(string $pseudo, string $hashedPassword): void
+    {
+        if (!$this->isClaimable()) {
+            throw new \LogicException('Account is not claimable');
+        }
+
+        $this->pseudo = $pseudo;
+        $this->password = $hashedPassword;
+        $this->isGuest = false;
+        $this->claimToken = null;
+        $this->claimTokenExpiresAt = null;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     /**

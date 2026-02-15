@@ -27,8 +27,18 @@
             {# Export Button #}
             <a href="{{ path('tournament_registrations_export', {'id': tournament.id}) }}"
                class="bg-gray-500/20 hover:bg-gray-500/30 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition">
+                {{ ux_icon('lucide:download', {class: 'w-4 h-4 inline mr-1'}) }}
                 {{ 'tournament.registrations.export_csv'|trans }}
             </a>
+
+            {# Import Button #}
+            {% if tournament.isPublished or tournament.isOngoing %}
+                <a href="{{ path('tournament_import', {'id': tournament.id}) }}"
+                   class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-lg font-medium transition">
+                    {{ ux_icon('lucide:upload', {class: 'w-4 h-4 inline mr-1'}) }}
+                    {{ 'tournament.registrations.import_csv'|trans }}
+                </a>
+            {% endif %}
 
             {# Close/Reopen Registrations Button #}
             {% if not tournament.registrationsClosed %}
