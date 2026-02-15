@@ -141,7 +141,14 @@ final class PlayerStandings
 
     public function hasPlayedAgainst(Registration $opponent): bool
     {
-        return in_array($opponent, $this->opponents, true);
+        $opponentId = $opponent->getId();
+        foreach ($this->opponents as $existingOpponent) {
+            if ($existingOpponent->getId() === $opponentId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

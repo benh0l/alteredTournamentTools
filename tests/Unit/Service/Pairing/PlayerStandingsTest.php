@@ -8,17 +8,18 @@ use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Entity\User;
 use App\Service\Pairing\PlayerStandings;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class PlayerStandingsTest extends TestCase
 {
-    private Registration $registration;
+    private Registration&MockObject $registration;
+    private int $mockIdCounter = 1;
 
     protected function setUp(): void
     {
-        $tournament = $this->createMock(Tournament::class);
-        $user = $this->createMock(User::class);
-        $this->registration = new Registration($tournament, $user);
+        $this->mockIdCounter = 1;
+        $this->registration = $this->createMockRegistrationWithId($this->mockIdCounter++);
     }
 
     public function testGetRegistration(): void
@@ -117,6 +118,32 @@ final class PlayerStandingsTest extends TestCase
         $this->assertFalse($standings->hasPlayedAgainst($opponent2));
     }
 
+    /**
+     * Test that hasPlayedAgainst works correctly when comparing different object instances
+     * with the same ID (simulates Doctrine returning different instances for same entity).
+     *
+     * This is the key test for the rematch bug fix - ensures comparison is by ID, not by reference.
+     */
+    public function testHasPlayedAgainstComparesById(): void
+    {
+        // Create two different mock objects representing the same player (same ID)
+        $opponentInstance1 = $this->createMockRegistrationWithId(42);
+        $opponentInstance2 = $this->createMockRegistrationWithId(42);
+        $differentOpponent = $this->createMockRegistrationWithId(99);
+
+        $standings = new PlayerStandings($this->registration);
+
+        // Add the first instance as opponent
+        $standings->addOpponent($opponentInstance1);
+
+        // Both instances should be recognized as the same player (same ID)
+        $this->assertTrue($standings->hasPlayedAgainst($opponentInstance1));
+        $this->assertTrue($standings->hasPlayedAgainst($opponentInstance2), 'Different object instance with same ID should be recognized as same opponent');
+
+        // But a truly different player should not be recognized
+        $this->assertFalse($standings->hasPlayedAgainst($differentOpponent));
+    }
+
     public function testMatchesPlayed(): void
     {
         $standings = new PlayerStandings($this->registration);
@@ -193,9 +220,14 @@ final class PlayerStandingsTest extends TestCase
 
     private function createMockRegistration(): Registration
     {
-        $tournament = $this->createMock(Tournament::class);
-        $user = $this->createMock(User::class);
+        return $this->createMockRegistrationWithId($this->mockIdCounter++);
+    }
 
-        return new Registration($tournament, $user);
+    private function createMockRegistrationWithId(int $id): Registration
+    {
+        $registration = $this->createMock(Registration::class);
+        $registration->method('getId')->willReturn($id);
+
+        return $registration;
     }
 }
