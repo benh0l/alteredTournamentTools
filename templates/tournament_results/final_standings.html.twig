@@ -94,6 +94,7 @@
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">Points</th>
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">OMW%</th>
                     <th class="px-4 py-3 text-center text-xs font-medium uppercase" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">GW%</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium uppercase" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">Deck</th>
                 </tr>
             </thead>
             <tbody style="background-color: var(--card-bg);">
@@ -143,10 +144,21 @@
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-center" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
                             {{ (entry.gameWinPercentage * 100)|number_format(1) }}%
                         </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center" style="border-bottom: 1px solid var(--border-default);">
+                            {% if entry.registration.decklistUrl %}
+                                <a href="{{ entry.registration.decklistUrl }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                   title="Voir la decklist">
+                                    {{ ux_icon('lucide:external-link', {class: 'w-4 h-4', style: 'color: var(--color-primary-600);'}) }}
+                                </a>
+                            {% else %}
+                                <span style="color: var(--text-muted);">-</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="9" class="px-4 py-8 text-center" style="color: var(--text-muted);">
+                        <td colspan="10" class="px-4 py-8 text-center" style="color: var(--text-muted);">
                             Aucun classement disponible.
                         </td>
                     </tr>
