@@ -108,7 +108,8 @@ enum:
         constructed_nuc: "Construit NUC"
         constructed_hero_oof: "(Fun) Héros Out of Faction"
         constructed_bifaction: "(Fun) Bifaction"
-        limited: "Limité"
+        limited: "Limité Scellé"
+        limited_draft: "Limité Draft"
         fun_expedition_krakn: "(Fun) Héros Expédition Krak'N"
 
     tournament_format_description:
@@ -118,6 +119,7 @@ enum:
         constructed_hero_oof: "Le héros doit appartenir à une faction différente de celle du deck."
         constructed_bifaction: "Le joueur choisit deux factions et un héros issu de l'une de ces factions."
         limited: "Les decks sont construits sur place à partir de boosters."
+        limited_draft: "Les decks sont construits sur place via un draft de boosters."
         fun_expedition_krakn: "Les joueurs viennent avec leur propre deck. Le héros doit être un des héros Expédition Krak'n."
 
     tournament_structure:
@@ -635,6 +637,7 @@ tournament:
         start_confirm: "Lancer le tournoi ? Cela générera les pairings de la première ronde."
         min_players: "Min. %count% joueurs pour lancer"
         config_locked: "Configuration verrouillée"
+        copy: "Copier le tournoi"
 
     registrations:
         title: "Gestion des inscriptions"
@@ -733,7 +736,8 @@ tournament:
                 constructed_hero_oof: "Les joueurs viennent avec leur propre deck. Le héros doit être d'une faction différente du deck."
                 constructed_bifaction: "Les joueurs viennent avec leur propre deck. Deux factions choisies. Héros issu de l'une des deux."
                 draft: "Les decks sont construits sur place à partir de boosters."
-                limited: "Format limité - Les decks sont construits sur place à partir de boosters ou de cartes fournies."
+                limited: "Format limité scellé - Les decks sont construits sur place à partir de boosters ou de cartes fournies."
+                limited_draft: "Format limité draft - Les decks sont construits sur place via un draft de boosters."
                 fun_expedition_krakn: "Les joueurs viennent avec leur propre deck. Le héros doit être un des héros Expédition Krak'n."
         step4:
             title: "Structure du tournoi"

@@ -152,6 +152,66 @@ final class TournamentController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/copy', name: 'tournament_copy', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_USER')]
+    public function copy(Request $request, Tournament $source): Response
+    {
+        // Only organizer can copy their tournament
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $source);
+
+        $tournament = new Tournament();
+
+        // Copy all relevant fields from source
+        $tournament->setName($source->getName() . ' (copie)');
+        $tournament->setDate($source->getDate());
+        $tournament->setTime($source->getTime());
+        $tournament->setLocation($source->getLocation());
+        $tournament->setLatitude($source->getLatitude());
+        $tournament->setLongitude($source->getLongitude());
+        $tournament->setDescription($source->getDescription());
+        $tournament->setEntryFee($source->getEntryFee());
+        $tournament->setPrizes($source->getPrizes());
+        $tournament->setAlteredGgLink($source->getAlteredGgLink());
+        $tournament->setFormat($source->getFormat());
+        $tournament->setStructure($source->getStructure());
+        $tournament->setVisibility($source->getVisibility());
+        $tournament->setDecklistTransparency($source->getDecklistTransparency());
+        $tournament->setSwissMatchFormat($source->getSwissMatchFormat());
+        $tournament->setEliminationMatchFormat($source->getEliminationMatchFormat());
+        $tournament->setSwissRounds($source->getSwissRounds());
+        $tournament->setExpectedPlayers($source->getExpectedPlayers());
+        $tournament->setMaxPlayers($source->getMaxPlayers());
+        $tournament->setTopCutSize($source->getTopCutSize());
+        $tournament->setGroupCount($source->getGroupCount());
+        $tournament->setPlayersPerGroup($source->getPlayersPerGroup());
+        $tournament->setQualifiersPerGroup($source->getQualifiersPerGroup());
+        $tournament->setGroupFormationMethod($source->getGroupFormationMethod());
+        $tournament->setIsTumult($source->isTumult());
+        $tournament->setIsSeasonFinalsQualifier($source->isSeasonFinalsQualifier());
+        $tournament->setCheckInEnabled($source->isCheckInEnabled());
+
+        $form = $this->createForm(TournamentType::class, $tournament);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User $user */
+            $user = $this->getUser();
+            $this->tournamentService->createTournament($tournament, $user);
+
+            $this->addFlash('success', $this->translator->trans('flash.success.tournament_created'));
+
+            return $this->redirectToRoute('tournament_show', [
+                'id' => $tournament->getId(),
+            ]);
+        }
+
+        return $this->render('tournament/create.html.twig', [
+            'form' => $form,
+            'is_copy' => true,
+            'source_tournament' => $source,
+        ]);
+    }
+
     #[Route('/{id}', name: 'tournament_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Tournament $tournament): Response
     {

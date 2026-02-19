@@ -74,6 +74,12 @@
                         </form>
                     {% endif %}
 
+                    <a href="{{ path('tournament_copy', {id: tournament.id}) }}"
+                       class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all shadow-sm" style="background-color: var(--card-bg); border-color: var(--border-muted); color: var(--text-secondary);">
+                        {{ ux_icon('lucide:copy', {class: 'w-4 h-4 mr-2'}) }}
+                        {{ 'tournament.manage.copy'|trans }}
+                    </a>
+
                     {% if not tournament.draft and is_granted('TOURNAMENT_MANAGE_REGISTRATIONS', tournament) %}
                         <a href="{{ path('tournament_registrations', {id: tournament.id}) }}"
                            class="inline-flex items-center px-4 py-2 border-2 border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl font-medium hover:bg-amber-500/10 hover:border-amber-500/50 transition-all shadow-sm" style="background-color: var(--card-bg);">

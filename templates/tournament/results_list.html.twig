@@ -73,12 +73,12 @@
                             </div>
 
                             {% if tournament.location %}
-                            <div class="flex items-center text-sm">
-                                <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center mr-3">
+                            <div class="flex items-start text-sm">
+                                <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                     {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
                                 </div>
                                 <span style="color: var(--text-secondary);">
-                                    {{ tournament.location|length > 30 ? tournament.location|slice(0, 30) ~ '...' : tournament.location }}
+                                    {{ tournament.location }}
                                 </span>
                             </div>
                             {% endif %}

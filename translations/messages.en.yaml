@@ -106,7 +106,8 @@ enum:
         constructed_nuc: "Constructed NUC"
         constructed_hero_oof: "(Fun) Hero Out of Faction"
         constructed_bifaction: "(Fun) Bifaction"
-        limited: "Limited"
+        limited: "Limited Sealed"
+        limited_draft: "Limited Draft"
         fun_expedition_krakn: "(Fun) Expedition Krak'N Heroes"
 
     tournament_format_description:
@@ -116,6 +117,7 @@ enum:
         constructed_hero_oof: "The hero must belong to a different faction than the deck."
         constructed_bifaction: "Player chooses two factions and a hero from one of these factions."
         limited: "Decks are built on-site from booster packs."
+        limited_draft: "Decks are built on-site via a booster draft."
         fun_expedition_krakn: "Players bring their own deck. The hero must be one of the Expedition Krak'n heroes."
 
     tournament_structure:
@@ -634,6 +636,7 @@ tournament:
         start_confirm: "Start tournament? This will generate pairings for the first round."
         min_players: "Min. %count% players to start"
         config_locked: "Configuration locked"
+        copy: "Copy tournament"
 
     registrations:
         title: "Registration Management"
@@ -732,7 +735,8 @@ tournament:
                 constructed_hero_oof: "Players come with their own deck. Hero must be from a different faction than the deck."
                 constructed_bifaction: "Players come with their own deck. Two factions chosen. Hero from one of the two."
                 draft: "Decks are built on-site from boosters."
-                limited: "Limited format - Decks are built on-site from boosters or provided cards."
+                limited: "Limited sealed format - Decks are built on-site from boosters or provided cards."
+                limited_draft: "Limited draft format - Decks are built on-site via a booster draft."
                 fun_expedition_krakn: "Players come with their own deck. Hero must be one of the Expedition Krak'n heroes."
         step4:
             title: "Tournament Structure"
