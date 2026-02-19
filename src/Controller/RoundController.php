@@ -17,6 +17,7 @@ use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
 use App\Service\PairingService;
 use App\Service\TournamentCompletionService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,6 +42,7 @@ final class RoundController extends AbstractController
         private readonly TournamentCompletionService $completionService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -413,6 +415,49 @@ final class RoundController extends AbstractController
 
             return $this->redirectToTournament($tournament);
         }
+    }
+
+    /**
+     * Start the round timer manually.
+     *
+     * This action allows organizers to start the timer independently
+     * from the round start, giving them control over when time begins.
+     */
+    #[Route('/start-timer', name: 'round_start_timer', methods: ['POST'])]
+    public function startTimer(
+        Request $request,
+        Tournament $tournament
+    ): Response {
+        // Security check - only organizer can start timer
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        // CSRF protection
+        if (!$this->isCsrfTokenValid('start-timer-' . $tournament->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', $this->translator->trans('flash.error.invalid_csrf_token'));
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        $currentRound = $tournament->getCurrentRound();
+
+        if ($currentRound === null) {
+            $this->addFlash('error', 'Aucune ronde en cours.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        if ($currentRound->isTimerStarted()) {
+            $this->addFlash('info', 'Le chronometre est deja lance.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        $currentRound->startTimer();
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Chronometre lance!');
+
+        return $this->redirectToTournament($tournament);
     }
 
     /**

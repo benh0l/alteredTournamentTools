@@ -195,11 +195,11 @@ final class DashboardStreamController extends AbstractController
         ];
 
         if ($displayRound !== null) {
-            // Only show timer for ongoing rounds
+            // Only show timer for ongoing rounds with timer started
             if ($currentRound !== null) {
-                $timer['started_at'] = $currentRound->getStartedAt()?->format(\DateTimeInterface::ATOM);
-                if ($currentRound->getStartedAt() !== null) {
-                    $timer['elapsed_seconds'] = time() - $currentRound->getStartedAt()->getTimestamp();
+                $timer['started_at'] = $currentRound->getTimerStartedAt()?->format(\DateTimeInterface::ATOM);
+                if ($currentRound->getTimerStartedAt() !== null) {
+                    $timer['elapsed_seconds'] = time() - $currentRound->getTimerStartedAt()->getTimestamp();
                 }
             }
 

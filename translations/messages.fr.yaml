@@ -902,6 +902,8 @@ dashboard:
         elapsed: "Temps écoulé (%duration% min recommandé)"
         recommended_bo1: "30 min recommandé"
         recommended_bo3: "75 min recommandé"
+        start_button: "Lancer chronomètre"
+        waiting_for_start: "En attente du lancement du chronomètre"
         color_legend:
             green: "< 35 min"
             orange: "35-50 min"

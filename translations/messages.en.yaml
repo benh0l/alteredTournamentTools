@@ -901,6 +901,8 @@ dashboard:
         elapsed: "Time elapsed (%duration% min recommended)"
         recommended_bo1: "30 min recommended"
         recommended_bo3: "75 min recommended"
+        start_button: "Start timer"
+        waiting_for_start: "Waiting for timer to start"
         color_legend:
             green: "< 35 min"
             orange: "35-50 min"

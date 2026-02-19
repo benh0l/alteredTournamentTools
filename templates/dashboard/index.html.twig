@@ -118,12 +118,12 @@
                             {% endif %}
                         </div>
 
-                        {# Timer display - only show if round is ongoing #}
-                        {% if current_round and current_round.startedAt %}
+                        {# Timer display - only show if timer has been started #}
+                        {% if current_round and current_round.timerStartedAt %}
                             <div class="text-center py-4">
                                 <div id="round-timer"
                                      class="text-6xl font-mono font-bold transition-colors duration-500"
-                                     data-started-at="{{ current_round.startedAt.format('c') }}"
+                                     data-started-at="{{ current_round.timerStartedAt.format('c') }}"
                                      data-round-duration="50">
                                     --:--
                                 </div>
@@ -151,6 +151,37 @@
                                     <span class="w-3 h-3 rounded-full bg-red-500 mr-2 shadow-sm"></span>
                                     {{ 'dashboard.timer.color_legend.red'|trans }}
                                 </span>
+                            </div>
+                        {% elseif current_round and not current_round.timerStartedAt and can_manage %}
+                            {# Show start timer button for organizer #}
+                            <div class="text-center py-4" id="timer-start-container">
+                                <form action="{{ path('round_start_timer', {id: tournament.id}) }}" method="post">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('start-timer-' ~ tournament.id) }}">
+                                    <button type="submit"
+                                            class="px-8 py-6 text-white font-bold text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                                            style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));">
+                                        {{ ux_icon('lucide:play', {class: 'w-8 h-8 inline-block mr-3'}) }}
+                                        {{ 'dashboard.timer.start_button'|trans }}
+                                    </button>
+                                </form>
+                                {% set match_format = tournament.getMatchFormatForRound(current_round) %}
+                                <p class="text-sm mt-4" style="color: var(--text-muted);">
+                                    {% if match_format.value == 'bo1' %}
+                                        {{ 'dashboard.timer.recommended_bo1'|trans }}
+                                    {% else %}
+                                        {{ 'dashboard.timer.recommended_bo3'|trans }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% elseif current_round and not current_round.timerStartedAt %}
+                            {# Timer not started - show waiting message for non-organizers #}
+                            <div class="text-center py-4">
+                                <div class="text-4xl font-mono font-bold" style="color: var(--text-muted);">
+                                    --:--
+                                </div>
+                                <p class="text-sm mt-3" style="color: var(--text-muted);">
+                                    {{ 'dashboard.timer.waiting_for_start'|trans }}
+                                </p>
                             </div>
                         {% elseif display_round.completed %}
                             <div class="text-center py-4">
@@ -694,10 +725,27 @@
                 }
 
                 // Update timer if needed
-                if (data.timer && data.timer.started_at && timerElement) {
+                if (data.timer && data.timer.started_at) {
                     const newStartTime = new Date(data.timer.started_at);
-                    if (!timerStartTime || newStartTime.getTime() !== timerStartTime.getTime()) {
+
+                    // If timer element doesn't exist but we received timer data,
+                    // the timer was just started - reload to show timer UI
+                    if (!timerElement) {
+                        const timerStartContainer = document.getElementById('timer-start-container');
+                        if (timerStartContainer) {
+                            // Timer was started, reload page to show timer
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    if (timerElement && (!timerStartTime || newStartTime.getTime() !== timerStartTime.getTime())) {
                         timerStartTime = newStartTime;
+                        // Start the timer interval if not already running
+                        if (!timerInterval) {
+                            updateTimer();
+                            timerInterval = setInterval(updateTimer, 1000);
+                        }
                     }
                 }
             }
