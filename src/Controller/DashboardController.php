@@ -140,6 +140,23 @@ final class DashboardController extends AbstractController
     }
 
     /**
+     * Fullscreen timer page for projection.
+     * Displays only the round timer in a large format suitable for venue screens.
+     */
+    #[Route('/timer', name: 'tournament_timer_fullscreen', methods: ['GET'])]
+    public function timerFullscreen(Tournament $tournament): Response
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::VIEW_DASHBOARD, $tournament);
+
+        $currentRound = $tournament->getCurrentRound();
+
+        return $this->render('dashboard/timer_fullscreen.html.twig', [
+            'tournament' => $tournament,
+            'current_round' => $currentRound,
+        ]);
+    }
+
+    /**
      * Calculate statistics for the current or latest round.
      *
      * @return array{

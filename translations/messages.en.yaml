@@ -907,6 +907,11 @@ dashboard:
         recommended_bo3: "75 min recommended"
         start_button: "Start timer"
         waiting_for_start: "Waiting for timer to start"
+        fullscreen: "Fullscreen"
+        fullscreen_title: "Timer - %tournament%"
+        fullscreen_round: "Round %number%"
+        fullscreen_waiting: "Waiting for timer to start..."
+        fullscreen_no_round: "No round in progress"
         color_legend:
             green: "< 35 min"
             orange: "35-50 min"

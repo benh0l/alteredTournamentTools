@@ -152,6 +152,17 @@
                                     {{ 'dashboard.timer.color_legend.red'|trans }}
                                 </span>
                             </div>
+
+                            {# Fullscreen timer button #}
+                            <div class="mt-4 pt-4 text-center" style="border-top: 1px solid var(--border-muted);">
+                                <a href="{{ path('tournament_timer_fullscreen', {id: tournament.id}) }}"
+                                   target="_blank"
+                                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all hover:scale-105"
+                                   style="background-color: var(--bg-subtle); color: var(--text-secondary);">
+                                    {{ ux_icon('lucide:maximize-2', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'dashboard.timer.fullscreen'|trans }}
+                                </a>
+                            </div>
                         {% elseif current_round and not current_round.timerStartedAt and can_manage %}
                             {# Show start timer button for organizer #}
                             <div class="text-center py-4" id="timer-start-container">
