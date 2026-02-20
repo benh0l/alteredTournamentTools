@@ -356,9 +356,15 @@ final class RoundController extends AbstractController
                 $latestRound->complete();
             }
 
-            // Get the elimination bracket size (default to TOP_8 or calculated from player count)
-            $playerCount = $tournament->getRegistrations()->count();
-            $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+            // Get the elimination bracket size from tournament configuration
+            $topCutSize = $tournament->getTopCutSize();
+            if ($topCutSize !== null) {
+                $bracketSize = BracketSize::from($topCutSize);
+            } else {
+                // Fallback to recommended size based on player count
+                $playerCount = $tournament->getRegistrations()->count();
+                $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+            }
 
             // Generate first elimination round
             $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);

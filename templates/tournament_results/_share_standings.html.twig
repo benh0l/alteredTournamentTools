@@ -5,7 +5,9 @@
     - Clean layout optimized for sharing
     - Branding footer
 #}
-<div data-share-image-target="content" class="share-content" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 24px; border-radius: 16px; width: 600px; font-family: system-ui, -apple-system, sans-serif;">
+{% set has_bracket = elimination_rounds is defined and elimination_rounds|length > 0 %}
+{% set container_width = has_bracket ? '900px' : '600px' %}
+<div data-share-image-target="content" class="share-content" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 24px; border-radius: 16px; width: {{ container_width }}; font-family: system-ui, -apple-system, sans-serif;">
     {# Header #}
     <div style="text-align: center; margin-bottom: 20px;">
         <h1 style="color: #ffffff; font-size: 24px; font-weight: bold; margin: 0 0 4px 0;">{{ tournament.name }}</h1>
@@ -29,6 +31,103 @@
             <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.format'|trans }}</p>
         </div>
     </div>
+
+    {# Elimination bracket (if applicable) #}
+    {% if has_bracket %}
+    <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <span style="color: #f59e0b; font-size: 16px; margin-right: 8px;">&#127942;</span>
+            <span style="color: #ffffff; font-size: 16px; font-weight: bold;">Phase d'elimination</span>
+        </div>
+        <div style="background-color: #374151; border-radius: 12px; padding: 16px; overflow-x: auto;">
+            <div style="display: flex; gap: 8px; min-width: max-content;">
+                {% for round in elimination_rounds %}
+                    {% set matches = round.matches|filter(m => not m.isByeMatch) %}
+
+                    {# Round column #}
+                    <div style="display: flex; flex-direction: column; flex-shrink: 0; width: 180px;">
+                        {# Round header #}
+                        <div style="text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #f59e0b;">
+                            <span style="color: #f59e0b; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                {% if loop.last and matches|length == 1 %}
+                                    Finale
+                                {% elseif matches|length == 2 %}
+                                    Demi-finales
+                                {% elseif matches|length == 4 %}
+                                    Quarts
+                                {% else %}
+                                    Ronde {{ loop.index }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {# Matches #}
+                        <div style="display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 6px;">
+                            {% for match in matches %}
+                                <div style="background-color: #1f2937; border-radius: 6px; border: 1px solid #4b5563;">
+                                    {# Player 1 #}
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %} border-bottom: 1px solid #4b5563;">
+                                        <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
+                                            {% if match.player1 %}{{ match.player1.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}
+                                                <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
+                                            {% endif %}
+                                        </span>
+                                        <span style="color: #ffffff; font-size: 12px; font-weight: bold; margin-left: 8px; position: relative; top: -7px;">
+                                            {% if match.completed %}{{ match.player1Score ?? 0 }}{% else %}-{% endif %}
+                                        </span>
+                                    </div>
+                                    {# Player 2 #}
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %}">
+                                        <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
+                                            {% if match.player2 %}{{ match.player2.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}
+                                                <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
+                                            {% endif %}
+                                        </span>
+                                        <span style="color: #ffffff; font-size: 12px; font-weight: bold; margin-left: 8px; position: relative; top: -7px;">
+                                            {% if match.completed %}{{ match.player2Score ?? 0 }}{% else %}-{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# Connector between rounds #}
+                    {% if not loop.last %}
+                        <div style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 16px;">
+                            <div style="width: 1px; height: 60%; background-color: #4b5563;"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {# Champion display #}
+                {% set final_round = elimination_rounds|last %}
+                {% set final_match = final_round.matches|first %}
+                {% if final_match and final_match.completed and final_match.winner %}
+                    <div style="display: flex; flex-direction: column; flex-shrink: 0; width: 140px; justify-content: center;">
+                        <div style="text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #fbbf24;">
+                            <span style="color: #fbbf24; font-size: 11px; font-weight: bold; text-transform: uppercase;">Champion</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.2)); border-radius: 8px; border: 2px solid #fbbf24;">
+                            <span style="font-size: 24px; margin-bottom: 4px;">&#128081;</span>
+                            <span style="color: #ffffff; font-size: 12px; font-weight: bold; text-align: center;">
+                                {{ final_match.winner.player.displayName }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Section title for Swiss standings #}
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #60a5fa; font-size: 16px; margin-right: 8px;">&#128202;</span>
+        <span style="color: #ffffff; font-size: 16px; font-weight: bold;">Classement des rondes suisses</span>
+    </div>
+    {% endif %}
 
     {# Standings list #}
     <div style="background-color: #374151; border-radius: 12px; overflow: hidden;">

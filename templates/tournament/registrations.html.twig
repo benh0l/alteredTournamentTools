@@ -26,7 +26,7 @@
 
             {# Export Button #}
             <a href="{{ path('tournament_registrations_export', {'id': tournament.id}) }}"
-               class="bg-gray-500/20 hover:bg-gray-500/30 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition">
+               class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition">
                 {{ ux_icon('lucide:download', {class: 'w-4 h-4 inline mr-1'}) }}
                 {{ 'tournament.registrations.export_csv'|trans }}
             </a>
@@ -34,7 +34,7 @@
             {# Import Button #}
             {% if tournament.isPublished or tournament.isOngoing %}
                 <a href="{{ path('tournament_import', {'id': tournament.id}) }}"
-                   class="bg-purple-500/20 hover:bg-purple-500/30 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-lg font-medium transition">
+                   class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium transition">
                     {{ ux_icon('lucide:upload', {class: 'w-4 h-4 inline mr-1'}) }}
                     {{ 'tournament.registrations.import_csv'|trans }}
                 </a>
@@ -594,20 +594,35 @@
                     </td>
                     {% endif %}
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {% if tournament.status.value == 'published' %}
-                        <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
-                              method="POST"
-                              class="inline">
-                            <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
-                            <button type="submit"
-                                    class="text-red-600 hover:text-red-900"
-                                    onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">
-                                {{ 'tournament.registrations.remove_player'|trans }}
+                        <div class="flex items-center justify-end gap-2">
+                            {# Edit button #}
+                            <button type="button"
+                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    data-edit-registration-id="{{ registration.id }}"
+                                    data-edit-registration-pseudo="{{ registration.player.pseudo }}"
+                                    data-edit-registration-faction="{{ registration.faction ? registration.faction.value : '' }}"
+                                    data-edit-registration-faction2="{{ registration.faction2 ? registration.faction2.value : '' }}"
+                                    data-edit-registration-hero="{{ registration.hero ?? '' }}"
+                                    data-edit-registration-decklist="{{ registration.decklistUrl ?? '' }}"
+                                    data-edit-registration-csrf="{{ csrf_token('edit_registration' ~ registration.id) }}"
+                                    onclick="openEditModal(this)"
+                                    title="{{ 'tournament.registrations.edit_player'|trans }}">
+                                {{ ux_icon('lucide:pencil', {class: 'w-4 h-4'}) }}
                             </button>
-                        </form>
-                        {% else %}
-                        <span style="color: var(--text-muted);">-</span>
-                        {% endif %}
+                            {# Remove button #}
+                            {% if tournament.status.value == 'published' %}
+                            <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
+                                  method="POST"
+                                  class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
+                                <button type="submit"
+                                        class="text-red-600 hover:text-red-900"
+                                        onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">
+                                    {{ ux_icon('lucide:trash-2', {class: 'w-4 h-4'}) }}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -622,6 +637,127 @@
         <p style="color: var(--text-muted);">{{ 'tournament.registrations.no_players_message'|trans }}</p>
     </div>
     {% endif %}
+
+    {# Edit Registration Modal #}
+    <div id="edit-registration-modal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/50" onclick="closeEditModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-md rounded-xl shadow-2xl" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between p-4 border-b" style="border-color: var(--border-default);">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                        {{ 'tournament.registrations.edit_modal_title'|trans }}
+                    </h3>
+                    <button type="button" onclick="closeEditModal()" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        {{ ux_icon('lucide:x', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                    </button>
+                </div>
+
+                <form id="edit-registration-form" method="POST" class="p-4 space-y-4"
+                      data-controller="registration-form"
+                      data-registration-form-heroes-value='{{ heroesData|json_encode|raw }}'
+                      data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                      data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                    <input type="hidden" name="_token" id="edit-csrf-token" value="">
+
+                    {# Player name display #}
+                    <div class="flex items-center p-3 rounded-lg" style="background-color: var(--bg-muted);">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center" style="background-color: var(--bg-subtle);">
+                            <span id="edit-player-initial" class="text-lg font-medium" style="color: var(--text-secondary);">?</span>
+                        </div>
+                        <div class="ml-3">
+                            <div id="edit-player-pseudo" class="text-sm font-medium" style="color: var(--text-primary);">-</div>
+                        </div>
+                    </div>
+
+                    {% if tournament.format.isConstructed %}
+                        {# Faction & Hero Selection #}
+                        <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
+                            <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
+                                {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
+                                {{ 'tournament.registrations.faction_hero_title'|trans }}
+                            </h4>
+
+                            <div class="grid grid-cols-1 gap-3">
+                                {# Faction Select #}
+                                <div>
+                                    <label for="edit-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                                    </label>
+                                    <select name="faction"
+                                            id="edit-faction"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="faction"
+                                            data-action="change->registration-form#factionChanged">
+                                        <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                        {% for label, value in factionChoices %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% if tournament.format.isBifaction %}
+                                    {# Faction 2 Select for Bifaction #}
+                                    <div>
+                                        <label for="edit-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ 'tournament.registrations.second_faction'|trans }}
+                                        </label>
+                                        <select name="faction2"
+                                                id="edit-faction2"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="faction2"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+
+                                {# Hero Select #}
+                                <div>
+                                    <label for="edit-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        {{ 'tournament.registrations.hero_label'|trans }}
+                                    </label>
+                                    <select name="hero"
+                                            id="edit-hero"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="hero">
+                                        <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Decklist URL #}
+                    <div>
+                        <label for="edit-decklist" class="block text-sm font-medium theme-text-secondary mb-2">
+                            {{ 'tournament.registrations.decklist_url_label'|trans }}
+                        </label>
+                        <input type="url"
+                               name="decklist_url"
+                               id="edit-decklist"
+                               class="form-input"
+                               placeholder="https://...">
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button"
+                                onclick="closeEditModal()"
+                                class="flex-1 px-4 py-2 rounded-lg font-medium border transition"
+                                style="border-color: var(--border-default); color: var(--text-secondary);">
+                            {{ 'tournament.registrations.edit_cancel'|trans }}
+                        </button>
+                        <button type="submit"
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                            {{ 'tournament.registrations.edit_save'|trans }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -814,4 +950,76 @@
     })();
     </script>
     {% endif %}
+
+    <script>
+    // Edit Registration Modal Functions
+    const editBaseUrl = '{{ path('tournament_registration_edit', {'id': tournament.id, 'registrationId': 0}) }}';
+
+    function openEditModal(button) {
+        const modal = document.getElementById('edit-registration-modal');
+        const form = document.getElementById('edit-registration-form');
+        const registrationId = button.dataset.editRegistrationId;
+        const pseudo = button.dataset.editRegistrationPseudo;
+        const faction = button.dataset.editRegistrationFaction;
+        const faction2 = button.dataset.editRegistrationFaction2;
+        const hero = button.dataset.editRegistrationHero;
+        const decklist = button.dataset.editRegistrationDecklist;
+        const csrfToken = button.dataset.editRegistrationCsrf;
+
+        // Update form action URL
+        form.action = editBaseUrl.replace('/0/edit', '/' + registrationId + '/edit');
+
+        // Update CSRF token
+        document.getElementById('edit-csrf-token').value = csrfToken;
+
+        // Update player display
+        document.getElementById('edit-player-initial').textContent = pseudo.charAt(0).toUpperCase();
+        document.getElementById('edit-player-pseudo').textContent = pseudo;
+
+        // Set current values
+        const factionSelect = document.getElementById('edit-faction');
+        const faction2Select = document.getElementById('edit-faction2');
+        const heroSelect = document.getElementById('edit-hero');
+        const decklistInput = document.getElementById('edit-decklist');
+
+        if (factionSelect) {
+            factionSelect.value = faction || '';
+            // Trigger change to load heroes
+            factionSelect.dispatchEvent(new Event('change'));
+        }
+
+        if (faction2Select) {
+            faction2Select.value = faction2 || '';
+            faction2Select.dispatchEvent(new Event('change'));
+        }
+
+        if (decklistInput) {
+            decklistInput.value = decklist || '';
+        }
+
+        // Set hero after a short delay to allow the heroes to load
+        setTimeout(() => {
+            if (heroSelect && hero) {
+                heroSelect.value = hero;
+            }
+        }, 100);
+
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('edit-registration-modal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+        }
+    });
+    </script>
 {% endblock %}

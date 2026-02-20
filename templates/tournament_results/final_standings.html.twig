@@ -79,7 +79,19 @@
         </div>
     </div>
 
-    {# Final standings table #}
+    {# Elimination bracket (if applicable) #}
+    {% if elimination_rounds is defined and elimination_rounds|length > 0 %}
+        {{ include('components/_elimination_bracket.html.twig', {elimination_rounds: elimination_rounds}) }}
+    {% endif %}
+
+    {# Standings table #}
+    {% if has_elimination_phase is defined and has_elimination_phase %}
+        <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+            {{ ux_icon('lucide:list-ordered', {class: 'w-6 h-6 mr-2', style: 'color: var(--color-primary-500);'}) }}
+            Classement des rondes suisses
+        </h2>
+    {% endif %}
+
     <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
         <div class="overflow-x-auto">
             <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">

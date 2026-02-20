@@ -331,6 +331,12 @@
                                 <dd class="text-sm font-semibold" style="color: var(--text-primary);">Top {{ tournament.topCutSize }}</dd>
                             </div>
                         {% endif %}
+                        {% if tournament.hasElimination and tournament.eliminationMatchFormat %}
+                            <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
+                                <dt class="text-sm" style="color: var(--text-muted);">{{ 'form.tournament.elimination_match_format'|trans }}</dt>
+                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ ('enum.match_format.' ~ tournament.eliminationMatchFormat.value)|trans }}</dd>
+                            </div>
+                        {% endif %}
                         {% if tournament.hasGroupStage %}
                             <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
                                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step4.group_count'|trans }}</dt>

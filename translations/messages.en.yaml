@@ -687,6 +687,10 @@ tournament:
         not_provided: "Not provided"
         remove_player: "Remove"
         remove_confirm: "Remove %player% from the tournament?"
+        edit_player: "Edit"
+        edit_modal_title: "Edit registration"
+        edit_cancel: "Cancel"
+        edit_save: "Save"
         no_players_title: "No registered players"
         no_players_message: "Players will be able to register once the tournament is published."
         add_player: "Add player"
@@ -1340,6 +1344,7 @@ flash:
         results_published: "Tournament results have been published."
         user_roles_updated: "User roles have been updated."
         user_deleted_gdpr: "User has been deleted in compliance with GDPR."
+        player_registration_updated: "%s's registration has been updated."
 
     error:
         tournament_not_found: "Tournament not found."
@@ -1389,6 +1394,7 @@ flash:
         cannot_checkin_dropped: "Cannot check in a player who has dropped."
         player_already_checked_in: "This player is already marked as present."
         player_not_checked_in: "This player is not marked as present."
+        registration_not_found: "Registration not found."
 
     warning:
         match_not_in_dispute: "This match is not in dispute."

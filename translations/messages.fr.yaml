@@ -688,6 +688,10 @@ tournament:
         not_provided: "Non fournie"
         remove_player: "Retirer"
         remove_confirm: "Retirer %player% du tournoi ?"
+        edit_player: "Modifier"
+        edit_modal_title: "Modifier l'inscription"
+        edit_cancel: "Annuler"
+        edit_save: "Sauvegarder"
         no_players_title: "Aucun joueur inscrit"
         no_players_message: "Les joueurs pourront s'inscrire une fois le tournoi publié."
         add_player: "Ajouter un joueur"
@@ -1341,6 +1345,7 @@ flash:
         results_published: "Les résultats du tournoi ont été publiés."
         user_roles_updated: "Les rôles de l'utilisateur ont été mis à jour."
         user_deleted_gdpr: "L'utilisateur a été supprimé conformément au RGPD."
+        player_registration_updated: "L'inscription de %s a été mise à jour."
 
     error:
         tournament_not_found: "Tournoi introuvable."
@@ -1390,6 +1395,7 @@ flash:
         cannot_checkin_dropped: "Impossible de faire le check-in pour un joueur qui a abandonné."
         player_already_checked_in: "Ce joueur est déjà marqué présent."
         player_not_checked_in: "Ce joueur n'est pas marqué présent."
+        registration_not_found: "Inscription introuvable."
 
     warning:
         match_not_in_dispute: "Ce match n'est pas en litige."

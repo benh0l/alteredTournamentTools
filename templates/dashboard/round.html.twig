@@ -192,7 +192,8 @@
                                         {{ 'dashboard.matches.resolve'|trans }}
                                     </a>
                                 {% elseif not match.completed and not match.isByeMatch %}
-                                    {% set isPlayerInMatch = app.user and (
+                                    {# Check if current user is a player in this match (but not if they're the organizer) #}
+                                    {% set isPlayerInMatch = app.user and not can_manage and (
                                         (match.player1 and match.player1.player.id == app.user.id) or
                                         (match.player2 and match.player2.player.id == app.user.id)
                                     ) %}
@@ -276,8 +277,8 @@
                                                 {{ 'dashboard.matches.resolve'|trans }}
                                             </a>
                                         {% elseif not match.completed and not match.isByeMatch %}
-                                            {# Check if current user is a player in this match #}
-                                            {% set isPlayerInMatch = app.user and (
+                                            {# Check if current user is a player in this match (but not if they're the organizer) #}
+                                            {% set isPlayerInMatch = app.user and not can_manage and (
                                                 (match.player1 and match.player1.player.id == app.user.id) or
                                                 (match.player2 and match.player2.player.id == app.user.id)
                                             ) %}

@@ -358,6 +358,75 @@ final class TournamentRegistrationsController extends AbstractController
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
     }
 
+    #[Route('/{id}/registrations/{registrationId}/edit', name: 'tournament_registration_edit', methods: ['POST'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
+    public function editRegistration(
+        Request $request,
+        Tournament $tournament,
+        int $registrationId
+    ): Response {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if (!$this->isCsrfTokenValid('edit_registration' . $registrationId, $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $registration = $this->registrationRepository->find($registrationId);
+
+        if ($registration === null || $registration->getTournament()->getId() !== $tournament->getId()) {
+            $this->addFlash('error', $this->translator->trans('flash.error.registration_not_found'));
+
+            return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+        }
+
+        $factionValue = $request->request->getString('faction', '');
+        $faction2Value = $request->request->getString('faction2', '');
+        $hero = $request->request->getString('hero', '');
+        $decklistUrl = $request->request->getString('decklist_url', '');
+
+        // Update registration fields
+        $registration->setFaction($factionValue !== '' ? Faction::tryFrom($factionValue) : null);
+        $registration->setFaction2($faction2Value !== '' ? Faction::tryFrom($faction2Value) : null);
+        $registration->setHero($hero !== '' ? $hero : null);
+        $registration->setDecklistUrl($decklistUrl !== '' ? $decklistUrl : null);
+
+        $this->entityManager->flush();
+
+        $this->addFlash('success', sprintf(
+            $this->translator->trans('flash.success.player_registration_updated'),
+            $registration->getPlayer()->getPseudo()
+        ));
+
+        $this->logger->info('Registration updated by organizer', [
+            'registration_id' => $registrationId,
+            'player_pseudo' => $registration->getPlayer()->getPseudo(),
+            'tournament_id' => $tournament->getId(),
+            'organizer_id' => $this->getUser()->getId(),
+        ]);
+
+        return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/registrations/{registrationId}/data', name: 'tournament_registration_data', methods: ['GET'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
+    public function getRegistrationData(Tournament $tournament, int $registrationId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        $registration = $this->registrationRepository->find($registrationId);
+
+        if ($registration === null || $registration->getTournament()->getId() !== $tournament->getId()) {
+            return new JsonResponse(['error' => 'Registration not found'], 404);
+        }
+
+        return new JsonResponse([
+            'id' => $registration->getId(),
+            'playerPseudo' => $registration->getPlayer()->getPseudo(),
+            'faction' => $registration->getFaction()?->value,
+            'faction2' => $registration->getFaction2()?->value,
+            'hero' => $registration->getHero(),
+            'decklistUrl' => $registration->getDecklistUrl(),
+        ]);
+    }
+
     private function escapeCsv(string $value): string
     {
         if (str_contains($value, ',') || str_contains($value, '"') || str_contains($value, "\n")) {

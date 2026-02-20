@@ -42,8 +42,8 @@
         </div>
     </div>
 
-    {# Player Drop Section - Show for registered players in ongoing tournaments #}
-    {% if player_registration and tournament.ongoing %}
+    {# Player Drop Section - Show for registered players in ongoing tournaments (but not for organizers) #}
+    {% if player_registration and tournament.ongoing and not can_manage %}
         <div class="card-gradient p-4 mb-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -364,11 +364,18 @@
                                         </span>
                                     {% endif %}
                                 </h2>
-                                <a href="{{ path('round_show', {id: tournament.id, roundNumber: display_round.roundNumber}) }}"
-                                   class="text-white/90 hover:text-white text-sm flex items-center transition-colors">
-                                    {{ 'dashboard.matches.full_view'|trans }}
-                                    {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4 ml-1'}) }}
-                                </a>
+                                <div class="flex items-center space-x-4">
+                                    <a href="{{ path('tournament_standings', {id: tournament.id}) }}"
+                                       class="text-white/90 hover:text-white text-sm flex items-center transition-colors">
+                                        {{ 'standings.title'|trans }}
+                                        {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4 ml-1'}) }}
+                                    </a>
+                                    <a href="{{ path('round_show', {id: tournament.id, roundNumber: display_round.roundNumber}) }}"
+                                       class="text-white/90 hover:text-white text-sm flex items-center transition-colors">
+                                        {{ 'dashboard.matches.full_view'|trans }}
+                                        {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4 ml-1'}) }}
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -452,8 +459,8 @@
                                                         {{ 'dashboard.matches.resolve'|trans }}
                                                     </a>
                                                 {% elseif not match.completed and not match.isByeMatch %}
-                                                    {# Check if current user is a player in this match #}
-                                                    {% set isPlayerInMatch = app.user and (
+                                                    {# Check if current user is a player in this match (but not if they're the organizer) #}
+                                                    {% set isPlayerInMatch = app.user and not can_manage and (
                                                         (match.player1 and match.player1.player.id == app.user.id) or
                                                         (match.player2 and match.player2.player.id == app.user.id)
                                                     ) %}
