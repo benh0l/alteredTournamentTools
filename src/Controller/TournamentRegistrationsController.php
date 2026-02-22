@@ -358,7 +358,7 @@ final class TournamentRegistrationsController extends AbstractController
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/{id}/registrations/{registrationId}/edit', name: 'tournament_registration_edit', methods: ['POST'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
+    #[Route('/{id}/registrations/{registrationId}/edit', name: 'organizer_registration_edit', methods: ['POST'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
     public function editRegistration(
         Request $request,
         Tournament $tournament,

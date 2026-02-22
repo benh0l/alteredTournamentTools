@@ -953,7 +953,7 @@
 
     <script>
     // Edit Registration Modal Functions
-    const editBaseUrl = '{{ path('tournament_registration_edit', {'id': tournament.id, 'registrationId': 0}) }}';
+    const editBaseUrl = '{{ path('organizer_registration_edit', {'id': tournament.id, 'registrationId': 0}) }}';
 
     function openEditModal(button) {
         const modal = document.getElementById('edit-registration-modal');
