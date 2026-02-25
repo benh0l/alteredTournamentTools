@@ -1,0 +1,33 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Altered Tournament Tools API
+            description: |
+                API publique pour acceder aux donnees de tournois Altered TCG.
+
+                ## Authentification
+                Toutes les requetes doivent inclure une cle API dans le header `X-API-Key`.
+                Pour obtenir une cle API, connectez-vous et faites une demande d'acces.
+
+                ## Rate Limiting
+                - 60 requetes par minute
+                - 1000 requetes par heure
+                - 10000 requetes par jour
+            version: 1.0.0
+            contact:
+                name: Support API
+        servers:
+            - url: /
+              description: Serveur principal
+        components:
+            securitySchemes:
+                api_key:
+                    type: apiKey
+                    in: header
+                    name: X-API-Key
+                    description: Cle API obtenue apres validation de votre demande d'acces
+        security:
+            - api_key: []
+    areas:
+        path_patterns:
+            - ^/api/v1(?!/doc)

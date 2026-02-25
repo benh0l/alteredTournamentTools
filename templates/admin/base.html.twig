@@ -45,6 +45,16 @@
                             </span>
                         {% endif %}
                     </a>
+                    <a href="{{ path('admin_api_access') }}"
+                       class="{% if app.request.attributes.get('_route') starts with 'admin_api' %}text-white font-medium{% else %}text-gray-300 hover:text-white{% endif %} relative">
+                        API
+                        {% set apiCount = admin_pending_api_requests_count() %}
+                        {% if apiCount > 0 %}
+                            <span class="absolute -top-1 -right-3 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-yellow-500 rounded-full">
+                                {{ apiCount }}
+                            </span>
+                        {% endif %}
+                    </a>
                 </div>
             </div>
             <div class="flex items-center space-x-4">

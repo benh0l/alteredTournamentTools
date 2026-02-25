@@ -686,6 +686,10 @@
                             <a href="{{ path('legal_terms') }}" class="text-white/70 hover:text-white transition-colors">
                                 {{ 'legal.terms.title'|trans }}
                             </a>
+                            <a href="{{ path('user_api_access') }}" class="text-white/70 hover:text-white transition-colors flex items-center">
+                                {{ ux_icon('lucide:code', {class: 'w-4 h-4 mr-1'}) }}
+                                API
+                            </a>
                         </div>
                         <div class="text-white/70 text-sm">
                             &copy; {{ 'now'|date('Y') }} {% if app.request.locale == 'fr' %}Tous droits réservés{% else %}All rights reserved{% endif %}

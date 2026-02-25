@@ -1952,3 +1952,111 @@ claim:
     error:
         invalid_or_expired: "Ce lien d'activation est invalide ou expiré."
         pseudo_taken: "Ce pseudo est déjà utilisé. Veuillez en choisir un autre."
+
+# ----------------------------------------------------------------------------
+# API Access
+# ----------------------------------------------------------------------------
+api:
+    page_title: "Accès API"
+    title: "Accès API"
+    subtitle: "Gérez votre clé API pour accéder aux données de tournois"
+    request_page_title: "Demande d'accès API"
+    request_title: "Demande d'accès API"
+    request_subtitle: "Remplissez ce formulaire pour demander une clé API"
+
+    # Status
+    status:
+        pending: "En attente"
+        approved: "Approuvé"
+        rejected: "Rejeté"
+        revoked: "Révoqué"
+        active: "Actif"
+
+    # Form
+    form:
+        project_name: "Nom du projet"
+        project_name_placeholder: "Mon application Altered"
+        project_name_help: "Le nom de votre application ou projet"
+        intended_use: "Usage prévu"
+        intended_use_placeholder: "Décrivez comment vous comptez utiliser l'API..."
+        intended_use_help: "Expliquez brièvement l'usage que vous ferez de l'API (minimum 20 caractères)"
+        website_url: "URL du site (optionnel)"
+        website_url_help: "L'adresse de votre site ou application"
+        discord_username: "Pseudo Discord (optionnel)"
+        discord_username_placeholder: "username#0000"
+        discord_username_help: "Pour vous contacter si nécessaire"
+
+    # Info box
+    info_title: "Informations importantes"
+    info_item_1: "Votre demande sera examinée par un administrateur"
+    info_item_2: "Vous recevrez une notification une fois votre demande traitée"
+    info_item_3: "Les clés API sont personnelles et ne doivent pas être partagées"
+
+    # Active key
+    active_key: "Clé API active"
+    your_api_key: "Votre clé API"
+    copy_key: "Copier la clé"
+    key_warning: "Gardez cette clé secrète. Ne la partagez jamais publiquement."
+    project_name: "Projet"
+    created_at: "Créée le"
+    last_used: "Dernière utilisation"
+    never_used: "Jamais utilisée"
+    status_label: "Statut"
+    rate_limits: "Limites de requêtes"
+    requests_per_minute: "requêtes par minute"
+    requests_per_hour: "requêtes par heure"
+    requests_per_day: "requêtes par jour"
+    view_documentation: "Voir la documentation API"
+
+    # Request history
+    request_history: "Historique des demandes"
+    request_form_title: "Formulaire de demande"
+    request_access: "Demander un accès API"
+    submit_request: "Soumettre la demande"
+    pending_request_message: "Vous avez déjà une demande en attente de validation."
+
+    # Flash messages
+    flash:
+        request_submitted: "Votre demande a été soumise. Vous serez notifié une fois qu'elle sera traitée."
+        already_has_request: "Vous avez déjà une demande en attente ou une clé API active."
+        approved: "Votre demande d'accès API a été approuvée !"
+        rejected: "Votre demande d'accès API a été rejetée."
+
+    # Validation
+    validation:
+        project_name:
+            not_blank: "Le nom du projet est requis"
+            min_length: "Le nom du projet doit contenir au moins 3 caractères"
+            max_length: "Le nom du projet ne peut pas dépasser 100 caractères"
+        intended_use:
+            not_blank: "La description de l'usage est requise"
+            min_length: "La description doit contenir au moins 20 caractères"
+            max_length: "La description ne peut pas dépasser 2000 caractères"
+        website_url:
+            invalid: "L'URL du site n'est pas valide"
+        discord_username:
+            max_length: "Le pseudo Discord ne peut pas dépasser 100 caractères"
+
+    # Admin
+    admin:
+        title: "Gestion des accès API"
+        pending_requests: "Demandes en attente"
+        all_requests: "Toutes les demandes"
+        no_requests: "Aucune demande d'accès API"
+        view_details: "Voir les détails"
+        approve: "Approuver"
+        reject: "Rejeter"
+        revoke: "Révoquer"
+        rejection_reason: "Raison du rejet"
+        rejection_reason_placeholder: "Expliquez pourquoi la demande est rejetée..."
+        confirm_approve: "Êtes-vous sûr de vouloir approuver cette demande ?"
+        confirm_reject: "Êtes-vous sûr de vouloir rejeter cette demande ?"
+        confirm_revoke: "Êtes-vous sûr de vouloir révoquer cette clé API ?"
+        approved_success: "La demande a été approuvée et la clé API a été générée."
+        rejected_success: "La demande a été rejetée."
+        revoked_success: "La clé API a été révoquée."
+        user_info: "Informations utilisateur"
+        request_info: "Informations de la demande"
+        credential_info: "Informations de la clé"
+        reviewed_by: "Examiné par"
+        reviewed_at: "Examiné le"

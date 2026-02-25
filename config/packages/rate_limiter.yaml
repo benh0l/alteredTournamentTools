@@ -1,0 +1,15 @@
+framework:
+    rate_limiter:
+        # API rate limiters - keyed by API credential ID
+        api_minute:
+            policy: sliding_window
+            limit: 60
+            interval: '1 minute'
+        api_hour:
+            policy: sliding_window
+            limit: 1000
+            interval: '1 hour'
+        api_day:
+            policy: sliding_window
+            limit: 10000
+            interval: '1 day'

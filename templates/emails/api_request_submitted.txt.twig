@@ -1,0 +1,27 @@
+Nouvelle demande d'acces API
+============================
+
+Bonjour,
+
+Un utilisateur a soumis une nouvelle demande d'acces a l'API.
+
+Details de la demande
+---------------------
+Utilisateur : {{ request.user.pseudo }} ({{ request.user.email }})
+Projet : {{ request.projectName }}
+Date : {{ request.createdAt|date('d/m/Y H:i') }}
+{% if request.websiteUrl %}
+Site web : {{ request.websiteUrl }}
+{% endif %}
+{% if request.discordUsername %}
+Discord : {{ request.discordUsername }}
+{% endif %}
+
+Usage prevu :
+{{ request.intendedUse }}
+
+Pour examiner cette demande, rendez-vous sur :
+{{ adminUrl }}
+
+---
+Altered Tournament Tools

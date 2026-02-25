@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'api.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:key', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'api.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">{{ 'api.subtitle'|trans }}</p>
+        </div>
+
+        {# Flash Messages #}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-xl {% if type == 'success' %}bg-green-100 text-green-800{% elseif type == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ message|trans }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Active API Key Card #}
+        {% if credential %}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-8" style="background-color: var(--card-bg);">
+                <div class="theme-header-gradient px-6 py-4">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        {{ ux_icon('lucide:check-circle', {class: 'w-6 h-6 mr-2'}) }}
+                        {{ 'api.active_key'|trans }}
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--text-muted);">{{ 'api.your_api_key'|trans }}</label>
+                        <div class="flex items-center gap-3">
+                            <code class="flex-1 bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg font-mono text-sm break-all" style="color: var(--text-primary);">
+                                {{ credential.apiKey }}
+                            </code>
+                            <button onclick="navigator.clipboard.writeText('{{ credential.apiKey }}')"
+                                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    title="{{ 'api.copy_key'|trans }}">
+                                {{ ux_icon('lucide:copy', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            </button>
+                        </div>
+                        <p class="mt-2 text-sm" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:alert-triangle', {class: 'w-4 h-4 inline mr-1'}) }}
+                            {{ 'api.key_warning'|trans }}
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'api.project_name'|trans }}</dt>
+                            <dd class="font-medium" style="color: var(--text-primary);">{{ credential.name }}</dd>
+                        </div>
+                        <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'api.created_at'|trans }}</dt>
+                            <dd class="font-medium" style="color: var(--text-primary);">{{ credential.createdAt|date('d/m/Y H:i') }}</dd>
+                        </div>
+                        <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'api.last_used'|trans }}</dt>
+                            <dd class="font-medium" style="color: var(--text-primary);">
+                                {% if credential.lastUsedAt %}
+                                    {{ credential.lastUsedAt|date('d/m/Y H:i') }}
+                                {% else %}
+                                    {{ 'api.never_used'|trans }}
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                            <dt class="text-sm font-medium mb-1" style="color: var(--text-muted);">{{ 'api.status_label'|trans }}</dt>
+                            <dd>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ 'api.status.active'|trans }}
+                                </span>
+                            </dd>
+                        </div>
+                    </div>
+
+                    {# Rate Limits Info #}
+                    <div class="mt-6 p-4 rounded-xl" style="background-color: var(--bg-subtle);">
+                        <h3 class="font-semibold mb-3 flex items-center" style="color: var(--text-primary);">
+                            {{ ux_icon('lucide:gauge', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                            {{ 'api.rate_limits'|trans }}
+                        </h3>
+                        <ul class="space-y-1 text-sm" style="color: var(--text-secondary);">
+                            <li>{{ ux_icon('lucide:clock', {class: 'w-4 h-4 inline mr-1'}) }} 60 {{ 'api.requests_per_minute'|trans }}</li>
+                            <li>{{ ux_icon('lucide:clock', {class: 'w-4 h-4 inline mr-1'}) }} 1 000 {{ 'api.requests_per_hour'|trans }}</li>
+                            <li>{{ ux_icon('lucide:clock', {class: 'w-4 h-4 inline mr-1'}) }} 10 000 {{ 'api.requests_per_day'|trans }}</li>
+                        </ul>
+                    </div>
+
+                    {# Documentation Link #}
+                    <div class="mt-6">
+                        <a href="{{ path('app.swagger_ui') }}" target="_blank"
+                           class="inline-flex items-center px-4 py-2 rounded-xl font-semibold transition-colors"
+                           style="background-color: var(--bg-subtle); color: var(--text-primary);">
+                            {{ ux_icon('lucide:book-open', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'api.view_documentation'|trans }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {# Request History #}
+        {% if requests|length > 0 %}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-8" style="background-color: var(--card-bg);">
+                <div class="px-6 py-4" style="background-color: var(--bg-subtle); border-bottom: 1px solid var(--border-muted);">
+                    <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:history', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'api.request_history'|trans }}
+                    </h2>
+                </div>
+                <div class="divide-y" style="border-color: var(--border-muted);">
+                    {% for request in requests %}
+                        <div class="p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="font-medium" style="color: var(--text-primary);">{{ request.projectName }}</span>
+                                    <span class="text-sm ml-2" style="color: var(--text-muted);">{{ request.createdAt|date('d/m/Y H:i') }}</span>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ request.status.badgeClasses }}">
+                                    {{ request.status.label|trans }}
+                                </span>
+                            </div>
+                            {% if request.rejectionReason %}
+                                <p class="mt-2 text-sm text-red-600">
+                                    {{ ux_icon('lucide:x-circle', {class: 'w-4 h-4 inline mr-1'}) }}
+                                    {{ request.rejectionReason }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Request Button #}
+        {% if not credential and not hasPendingRequest %}
+            <div class="text-center">
+                <a href="{{ path('user_api_request') }}"
+                   class="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all theme-primary-gradient">
+                    {{ ux_icon('lucide:plus', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'api.request_access'|trans }}
+                </a>
+            </div>
+        {% elseif hasPendingRequest %}
+            <div class="text-center p-6 rounded-2xl" style="background-color: var(--bg-subtle);">
+                <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-100 flex items-center justify-center">
+                    {{ ux_icon('lucide:clock', {class: 'w-6 h-6 text-yellow-600'}) }}
+                </div>
+                <p class="font-medium" style="color: var(--text-primary);">{{ 'api.pending_request_message'|trans }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

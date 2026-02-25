@@ -62,13 +62,19 @@ class TournamentRepository extends ServiceEntityRepository
      */
     public function findPublicTournaments(): array
     {
+        // By default, only show tournaments from 2 days ago onwards
+        $minDate = new \DateTimeImmutable('-2 days');
+        $minDate = $minDate->setTime(0, 0, 0);
+
         return $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
             ->where('t.visibility = :visibility')
             ->andWhere('t.status IN (:statuses)')
+            ->andWhere('t.date >= :minDate')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
             ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('minDate', $minDate)
             ->orderBy('t.date', 'ASC')
             ->getQuery()
             ->getResult();

@@ -501,7 +501,7 @@
 
                                     {% if is_elimination_tournament or is_in_elimination %}
                                         {# Elimination phase logic (for pure elimination or mixed/group in elimination phase) #}
-                                        {% if is_bracket_complete %}
+                                        {% if is_bracket_complete and not tournament.completed %}
                                             {# Bracket complete (final finished) - show complete tournament button #}
                                             <div class="flex items-center space-x-4">
                                                 <span class="text-sm font-medium" style="color: var(--color-primary-600);">
@@ -543,7 +543,7 @@
                                                 </button>
                                             </form>
                                         </div>
-                                    {% elseif tournament.hasReachedSwissRoundLimit %}
+                                    {% elseif tournament.hasReachedSwissRoundLimit and not tournament.completed %}
                                         {# Swiss only tournament: round limit reached - show complete tournament button #}
                                         <div class="flex items-center space-x-4">
                                             <span class="text-sm font-medium" style="color: var(--color-primary-600);">

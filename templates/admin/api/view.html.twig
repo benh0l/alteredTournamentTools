@@ -1,0 +1,227 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Demande API - {{ request.projectName }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4 max-w-4xl">
+        {# Back link #}
+        <a href="{{ path('admin_api_access') }}" class="inline-flex items-center text-sm mb-6 hover:underline" style="color: var(--text-muted);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-1'}) }}
+            Retour a la liste
+        </a>
+
+        {# Header #}
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
+                    {{ request.projectName }}
+                </h1>
+                <p class="text-sm mt-1" style="color: var(--text-muted);">
+                    Demande du {{ request.createdAt|date('d/m/Y a H:i') }}
+                </p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium {{ request.status.badgeClasses }}">
+                {{ request.status.label|trans }}
+            </span>
+        </div>
+
+        {# Flash messages #}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-xl {% if type == 'success' %}bg-green-100 text-green-800{% elseif type == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ message|trans }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {# Main content #}
+            <div class="lg:col-span-2 space-y-6">
+                {# Request details #}
+                <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="px-6 py-4" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                        <h2 class="font-semibold" style="color: var(--text-primary);">{{ 'api.admin.request_info'|trans }}</h2>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="text-sm font-medium" style="color: var(--text-muted);">{{ 'api.form.project_name'|trans }}</label>
+                            <p class="mt-1" style="color: var(--text-primary);">{{ request.projectName }}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium" style="color: var(--text-muted);">{{ 'api.form.intended_use'|trans }}</label>
+                            <p class="mt-1 whitespace-pre-wrap" style="color: var(--text-primary);">{{ request.intendedUse }}</p>
+                        </div>
+                        {% if request.websiteUrl %}
+                            <div>
+                                <label class="text-sm font-medium" style="color: var(--text-muted);">{{ 'api.form.website_url'|trans }}</label>
+                                <p class="mt-1">
+                                    <a href="{{ request.websiteUrl }}" target="_blank" class="text-blue-600 hover:underline">
+                                        {{ request.websiteUrl }}
+                                        {{ ux_icon('lucide:external-link', {class: 'w-4 h-4 inline ml-1'}) }}
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+                        {% if request.discordUsername %}
+                            <div>
+                                <label class="text-sm font-medium" style="color: var(--text-muted);">{{ 'api.form.discord_username'|trans }}</label>
+                                <p class="mt-1" style="color: var(--text-primary);">{{ request.discordUsername }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Rejection reason if rejected #}
+                {% if request.rejectionReason %}
+                    <div class="rounded-2xl shadow overflow-hidden border-l-4 border-red-500" style="background-color: var(--card-bg);">
+                        <div class="p-6">
+                            <h3 class="font-semibold text-red-600 mb-2 flex items-center">
+                                {{ ux_icon('lucide:x-circle', {class: 'w-5 h-5 mr-2'}) }}
+                                Raison du rejet
+                            </h3>
+                            <p style="color: var(--text-primary);">{{ request.rejectionReason }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Credential info if approved #}
+                {% if credential %}
+                    <div class="rounded-2xl shadow overflow-hidden border-l-4 border-green-500" style="background-color: var(--card-bg);">
+                        <div class="px-6 py-4" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                            <h2 class="font-semibold" style="color: var(--text-primary);">{{ 'api.admin.credential_info'|trans }}</h2>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="text-sm font-medium" style="color: var(--text-muted);">Cle API</label>
+                                <code class="block mt-1 p-3 rounded-lg text-sm break-all" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                                    {{ credential.maskedApiKey }}
+                                </code>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium" style="color: var(--text-muted);">Creee le</label>
+                                    <p class="mt-1" style="color: var(--text-primary);">{{ credential.createdAt|date('d/m/Y H:i') }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium" style="color: var(--text-muted);">Derniere utilisation</label>
+                                    <p class="mt-1" style="color: var(--text-primary);">
+                                        {% if credential.lastUsedAt %}
+                                            {{ credential.lastUsedAt|date('d/m/Y H:i') }}
+                                        {% else %}
+                                            Jamais
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% if credential.isActive %}
+                                <form action="{{ path('admin_api_credential_revoke', {id: credential.id}) }}" method="POST" class="pt-4">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('revoke-api-' ~ credential.id) }}">
+                                    <button type="submit"
+                                            onclick="return confirm('{{ 'api.admin.confirm_revoke'|trans }}')"
+                                            class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                                        {{ ux_icon('lucide:ban', {class: 'w-4 h-4 mr-2'}) }}
+                                        {{ 'api.admin.revoke'|trans }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <p class="text-sm text-red-600 flex items-center pt-4">
+                                    {{ ux_icon('lucide:ban', {class: 'w-4 h-4 mr-2'}) }}
+                                    Cle revoquee le {{ credential.revokedAt|date('d/m/Y H:i') }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Review info if reviewed #}
+                {% if request.reviewedAt %}
+                    <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+                        <div class="p-6">
+                            <h3 class="font-semibold mb-3" style="color: var(--text-primary);">Historique de la demande</h3>
+                            <div class="text-sm" style="color: var(--text-secondary);">
+                                <p>
+                                    {{ 'api.admin.reviewed_by'|trans }}:
+                                    <span class="font-medium" style="color: var(--text-primary);">{{ request.reviewedBy.pseudo }}</span>
+                                </p>
+                                <p>
+                                    {{ 'api.admin.reviewed_at'|trans }}:
+                                    <span class="font-medium" style="color: var(--text-primary);">{{ request.reviewedAt|date('d/m/Y H:i') }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Sidebar #}
+            <div class="space-y-6">
+                {# User info #}
+                <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="px-6 py-4" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                        <h2 class="font-semibold" style="color: var(--text-primary);">{{ 'api.admin.user_info'|trans }}</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            {% if request.user.avatar %}
+                                <img src="/uploads/avatars/{{ request.user.avatar }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                            {% else %}
+                                <div class="h-12 w-12 rounded-full flex items-center justify-center text-lg font-medium" style="background-color: var(--bg-secondary); color: var(--text-muted);">
+                                    {{ request.user.pseudo|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="ml-3">
+                                <p class="font-medium" style="color: var(--text-primary);">{{ request.user.pseudo }}</p>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ request.user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="text-sm" style="color: var(--text-secondary);">
+                            <p>Membre depuis {{ request.user.createdAt|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {# Actions #}
+                {% if request.isPending %}
+                    <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+                        <div class="px-6 py-4" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                            <h2 class="font-semibold" style="color: var(--text-primary);">Actions</h2>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            {# Approve #}
+                            <form action="{{ path('admin_api_access_approve', {id: request.id}) }}" method="POST">
+                                <input type="hidden" name="_token" value="{{ csrf_token('approve-api-' ~ request.id) }}">
+                                <button type="submit"
+                                        onclick="return confirm('{{ 'api.admin.confirm_approve'|trans }}')"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all theme-primary-gradient">
+                                    {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'api.admin.approve'|trans }}
+                                </button>
+                            </form>
+
+                            {# Reject #}
+                            <form action="{{ path('admin_api_access_reject', {id: request.id}) }}" method="POST" class="space-y-3">
+                                <input type="hidden" name="_token" value="{{ csrf_token('reject-api-' ~ request.id) }}">
+                                <textarea
+                                    name="reason"
+                                    rows="3"
+                                    class="w-full px-3 py-2 rounded-lg text-sm border"
+                                    style="background-color: var(--input-bg); border-color: var(--border-color); color: var(--text-primary);"
+                                    placeholder="{{ 'api.admin.rejection_reason_placeholder'|trans }}"
+                                    required
+                                ></textarea>
+                                <button type="submit"
+                                        onclick="return confirm('{{ 'api.admin.confirm_reject'|trans }}')"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                                    {{ ux_icon('lucide:x', {class: 'w-5 h-5 mr-2'}) }}
+                                    {{ 'api.admin.reject'|trans }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
