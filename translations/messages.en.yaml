@@ -503,6 +503,7 @@ profile:
 tournament:
     title: "Tournaments"
     organized_by: "Organized by"
+    group: "group"
     list:
         title: "Tournament List"
         no_tournaments: "No tournaments available"
@@ -764,6 +765,7 @@ tournament:
             swiss_matches: "Swiss phase matches"
             elimination_matches: "Elimination matches"
             swiss_rounds: "Swiss Rounds"
+            group_phase: "Group Phase"
             elimination_phase: "Elimination Phase"
             elimination_hint: "Applicable for Top Cut or direct elimination"
             bo1_info: "In BO1, an additional round will be automatically added (official Altered TCG rule)"
@@ -944,6 +946,7 @@ dashboard:
         submit: "Enter score"
         start_next_round: "Start next round"
         start_elimination: "Start elimination phase"
+        group_phase_complete: "Group phase complete!"
         swiss_complete: "Swiss rounds completed (%current%/%max%)!"
         complete_tournament: "Complete tournament"
         bracket_complete: "Final completed!"
@@ -1438,6 +1441,8 @@ validation:
         rounds_range: "Number of rounds must be between {{ min }} and {{ max }}"
         visibility_required: "Visibility is required"
         decklist_transparency_required: "Decklist transparency is required"
+        group_count_range: "Number of groups must be between {{ min }} and {{ max }}"
+        players_per_group_range: "Players per group must be between {{ min }} and {{ max }}"
 
     user:
         email_required: "Please enter your email"
@@ -1493,6 +1498,19 @@ form:
         is_season_finals_qualifier_help: "Check if this tournament qualifies for Season Finals"
         check_in_enabled: "Enable check-in"
         check_in_enabled_help: "Allows players to confirm their attendance before the tournament starts"
+        # Group Stage Configuration
+        group_stage_config: "Group Stage Configuration"
+        group_count: "Number of groups"
+        group_count_placeholder: "E.g., 4"
+        players_per_group: "Players per group"
+        players_per_group_placeholder: "E.g., 4"
+        qualifiers_per_group: "Qualifiers per group"
+        group_formation_method: "Formation method"
+        group_summary: "Summary"
+        total_players: "Total players"
+        rounds_per_group: "Rounds/group"
+        total_qualifiers: "Total qualifiers"
+        bracket_size: "Bracket"
 
     registration:
         faction: "Faction"
@@ -1951,3 +1969,36 @@ claim:
     error:
         invalid_or_expired: "This activation link is invalid or expired."
         pseudo_taken: "This username is already taken. Please choose another."
+
+# ----------------------------------------------------------------------------
+# Group Stage
+# ----------------------------------------------------------------------------
+groups:
+    title: "Groups"
+    header: "Group Stage"
+    badge:
+        groups_count: "%count% groups"
+        players_per_group: "%count% players/group"
+        qualifiers_per_group: "%count% qualifiers/group"
+    matches_played: "Matches played"
+    config_incomplete: "Configuration incomplete"
+    configure_groups: "Configure groups"
+    players_registered: "%registered%/%expected% players registered"
+    form_groups: "Form groups"
+    confirm_form_groups: "Form groups? Players will be randomly distributed."
+    next_round: "Next round"
+    start_elimination: "Start elimination"
+    confirm_start_elimination: "Start elimination phase? Qualifiers will be determined by their standings."
+    not_formed: "Groups not formed"
+    config_incomplete_title: "Group configuration incomplete"
+    config_incomplete_description: "You must configure the number of groups, players per group, and qualifiers per group."
+    configure_tournament: "Configure tournament"
+    not_formed_description: "Groups have not been formed yet. %registered% players registered out of %expected% expected."
+    missing_players: "%count% players missing to fill all groups."
+    group_name: "Group %letter%"
+    standings: "Standings Group %letter%"
+    no_matches_in_group: "No matches played in this group"
+    qualifiers_info: "The top %count% qualify for the elimination phase"
+    round_table: "Round %round% - Table %table%"
+    no_matches_generated: "No matches generated"
+    back_to_tournament: "Back to tournament"

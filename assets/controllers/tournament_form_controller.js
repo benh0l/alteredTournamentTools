@@ -140,17 +140,35 @@ export default class extends Controller {
         const structure = this.structureTarget.value;
 
         // Determine what to show based on structure
-        const hasElimination = structure === 'mixed' || structure === 'single_elimination';
+        const isGroupStage = structure === 'group_stage_elimination';
+        const hasElimination = structure === 'mixed' || structure === 'single_elimination' || isGroupStage;
         const hasSwiss = structure === 'swiss_only' || structure === 'mixed';
 
-        // Top Cut Size: show only for MIXED or SINGLE_ELIMINATION
-        this.toggleContainer(this.topCutSizeContainerTarget, hasElimination);
+        // Group Stage Section: show only for GROUP_STAGE_ELIMINATION
+        const groupSection = this.element.querySelector('[data-tournament-form-target="groupStageSection"]');
+        if (groupSection) {
+            this.toggleContainer(groupSection, isGroupStage);
+        }
+
+        // Standard Players Section: hide for GROUP_STAGE_ELIMINATION
+        const standardSection = this.element.querySelector('[data-tournament-form-target="standardPlayersSection"]');
+        if (standardSection) {
+            this.toggleContainer(standardSection, !isGroupStage);
+        }
+
+        // Top Cut Size: show only for MIXED or SINGLE_ELIMINATION (not group stage)
+        this.toggleContainer(this.topCutSizeContainerTarget, hasElimination && !isGroupStage);
 
         // Elimination Match Format: show only if elimination phase exists
         this.toggleContainer(this.eliminationFormatContainerTarget, hasElimination);
 
-        // Swiss Rounds: hide only for SINGLE_ELIMINATION
+        // Swiss Rounds: hide for SINGLE_ELIMINATION and GROUP_STAGE_ELIMINATION
         this.toggleContainer(this.swissRoundsContainerTarget, hasSwiss);
+
+        // Initialize group summary when switching to group stage
+        if (isGroupStage) {
+            this.updateGroupSummary();
+        }
     }
 
     toggleContainer(container, show) {

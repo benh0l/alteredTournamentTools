@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\MatchStatus;
 use App\Enum\TournamentStructure;
 use App\Repository\RegistrationRepository;
+use App\Repository\TournamentGroupRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
@@ -39,6 +40,7 @@ final class DashboardController extends AbstractController
         private readonly BracketService $bracketService,
         private readonly RegistrationRepository $registrationRepository,
         private readonly DropService $dropService,
+        private readonly TournamentGroupRepository $groupRepository,
     ) {
     }
 
@@ -88,6 +90,21 @@ final class DashboardController extends AbstractController
             }
         }
 
+        // Check if group phase is complete (for group stage tournaments)
+        $groupPhaseComplete = false;
+        $isGroupStageTournament = $tournament->hasGroupStage() && !$tournament->isInEliminationPhase();
+        if ($isGroupStageTournament && $tournament->hasGroups()) {
+            $groups = $this->groupRepository->findByTournamentWithPlayers($tournament);
+            if (count($groups) > 0) {
+                // Check if all group rounds are completed
+                $groupRoundsPlayed = $tournament->getRounds()->filter(
+                    fn ($r) => !$r->isEliminationRound() && $r->isCompleted()
+                )->count();
+                $requiredRounds = $groups[0]->getRequiredRounds();
+                $groupPhaseComplete = $groupRoundsPlayed >= $requiredRounds;
+            }
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'tournament' => $tournament,
             'current_round' => $currentRound,
@@ -100,6 +117,8 @@ final class DashboardController extends AbstractController
             'can_advance_bracket' => $canAdvanceBracket,
             'player_registration' => $playerRegistration,
             'has_active_match' => $hasActiveMatch,
+            'group_phase_complete' => $groupPhaseComplete,
+            'is_group_stage_tournament' => $isGroupStageTournament,
         ]);
     }
 

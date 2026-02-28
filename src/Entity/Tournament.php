@@ -135,10 +135,10 @@ class Tournament
     private ?int $qualifiersPerGroup = null;
 
     /**
-     * Method used to form groups (RANDOM or SERPENTINE).
+     * Method used to form groups (always RANDOM for now).
      */
     #[ORM\Column(name: 'group_formation_method', type: 'string', length: 20, nullable: true, enumType: GroupFormationMethod::class)]
-    private ?GroupFormationMethod $groupFormationMethod = null;
+    private ?GroupFormationMethod $groupFormationMethod = GroupFormationMethod::RANDOM;
 
     #[ORM\Column(name: 'registrations_closed', type: 'boolean')]
     private bool $registrationsClosed = false;

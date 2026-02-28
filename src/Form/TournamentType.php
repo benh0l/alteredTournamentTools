@@ -193,6 +193,62 @@ final class TournamentType extends AbstractType
                 ],
             ])
 
+            // Group Stage Configuration (for GROUP_STAGE_ELIMINATION)
+            ->add('groupCount', IntegerType::class, [
+                'label' => 'form.tournament.group_count',
+                'required' => false,
+                'attr' => [
+                    'min' => 2,
+                    'max' => 16,
+                    'placeholder' => 'form.tournament.group_count_placeholder',
+                    'class' => 'form-input',
+                    'data-tournament-form-target' => 'groupCount',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
+                ],
+                'constraints' => [
+                    new Range([
+                        'min' => 2,
+                        'max' => 16,
+                        'notInRangeMessage' => 'validation.tournament.group_count_range',
+                    ]),
+                ],
+            ])
+            ->add('playersPerGroup', IntegerType::class, [
+                'label' => 'form.tournament.players_per_group',
+                'required' => false,
+                'attr' => [
+                    'min' => 3,
+                    'max' => 16,
+                    'placeholder' => 'form.tournament.players_per_group_placeholder',
+                    'class' => 'form-input',
+                    'data-tournament-form-target' => 'playersPerGroup',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
+                ],
+                'constraints' => [
+                    new Range([
+                        'min' => 3,
+                        'max' => 16,
+                        'notInRangeMessage' => 'validation.tournament.players_per_group_range',
+                    ]),
+                ],
+            ])
+            ->add('qualifiersPerGroup', ChoiceType::class, [
+                'label' => 'form.tournament.qualifiers_per_group',
+                'required' => false,
+                'placeholder' => 'form.common.select',
+                'choices' => [
+                    '1' => 1,
+                    '2' => 2,
+                    '3' => 3,
+                    '4' => 4,
+                ],
+                'attr' => [
+                    'class' => 'form-select',
+                    'data-tournament-form-target' => 'qualifiersPerGroup',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
+                ],
+            ])
+
             // Visibility & Transparency
             ->add('visibility', EnumType::class, [
                 'class' => TournamentVisibility::class,

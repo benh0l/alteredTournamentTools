@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form\Wizard;
 
-use App\Enum\GroupFormationMethod;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -113,13 +111,6 @@ final class ExpectedPlayersType extends AbstractType
                 'attr' => [
                     'class' => 'form-select w-full',
                 ],
-            ])
-            ->add('groupFormationMethod', EnumType::class, [
-                'class' => GroupFormationMethod::class,
-                'label' => 'Methode de formation des poules',
-                'required' => false,
-                'expanded' => true,
-                'choice_label' => fn (GroupFormationMethod $method) => $method->getLabel(),
             ]);
     }
 

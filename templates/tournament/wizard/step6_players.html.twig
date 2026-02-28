@@ -124,32 +124,16 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="{{ form.qualifiersPerGroup.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
-                            {{ 'tournament.wizard.step6.qualifiers_per_group'|trans }}
-                        </label>
-                        {{ form_widget(form.qualifiersPerGroup, {attr: {
-                            'class': 'form-input w-full rounded-xl',
-                            'data-tournament-form-target': 'qualifiersPerGroup',
-                            'data-action': 'change->tournament-form#updateGroupSummary'
-                        }}) }}
-                        {{ form_errors(form.qualifiersPerGroup) }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
-                            {{ 'tournament.wizard.step6.formation_method'|trans }}
-                        </label>
-                        <div class="space-y-3">
-                            {% for child in form.groupFormationMethod %}
-                                <label class="flex items-center p-3 rounded-xl cursor-pointer transition-colors" style="background-color: var(--card-bg); border: 1px solid var(--border-default);" onmouseover="this.style.borderColor='var(--color-green-300)';" onmouseout="this.style.borderColor='var(--border-default)';">
-                                    {{ form_widget(child, {attr: {class: 'form-radio', style: 'accent-color: var(--color-green-600);'}}) }}
-                                    <span class="ml-3 text-sm" style="color: var(--text-secondary);">{{ child.vars.label|trans }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                        {{ form_errors(form.groupFormationMethod) }}
-                    </div>
+                <div class="mb-6">
+                    <label for="{{ form.qualifiersPerGroup.vars.id }}" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                        {{ 'tournament.wizard.step6.qualifiers_per_group'|trans }}
+                    </label>
+                    {{ form_widget(form.qualifiersPerGroup, {attr: {
+                        'class': 'form-input w-full rounded-xl',
+                        'data-tournament-form-target': 'qualifiersPerGroup',
+                        'data-action': 'change->tournament-form#updateGroupSummary'
+                    }}) }}
+                    {{ form_errors(form.qualifiersPerGroup) }}
                 </div>
 
                 {# Summary #}

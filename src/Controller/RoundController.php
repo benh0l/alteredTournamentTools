@@ -15,6 +15,7 @@ use App\Exception\PairingException;
 use App\Exception\RoundNotCompleteException;
 use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
+use App\Service\GroupStageService;
 use App\Service\PairingService;
 use App\Service\TournamentCompletionService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,7 @@ final class RoundController extends AbstractController
     public function __construct(
         private readonly PairingService $pairingService,
         private readonly BracketService $bracketService,
+        private readonly GroupStageService $groupStageService,
         private readonly TournamentCompletionService $completionService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
@@ -137,6 +139,31 @@ final class RoundController extends AbstractController
         }
 
         try {
+            // Check if this is a group stage tournament still in group phase
+            $isGroupStagePhase = $tournament->getStructure() === TournamentStructure::GROUP_STAGE_ELIMINATION
+                && $tournament->hasGroups()
+                && !$tournament->isInEliminationPhase();
+
+            if ($isGroupStagePhase) {
+                // Use group stage service for round-robin pairings within groups
+                $existingGroupRounds = $tournament->getRounds()->filter(
+                    fn ($r) => !$r->isEliminationRound()
+                )->count();
+                $nextRoundNumber = $existingGroupRounds + 1;
+
+                $round = $this->groupStageService->generateGroupRound($tournament, $nextRoundNumber);
+
+                $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+
+                $this->addFlash('success', sprintf(
+                    'Ronde %d des groupes démarrée ! %d match(s) généré(s).',
+                    $round->getRoundNumber(),
+                    $round->getMatches()->count()
+                ));
+
+                return $this->redirectToRoute('tournament_dashboard', ['id' => $tournament->getId()]);
+            }
+
             // Check if we're in elimination phase (for any tournament structure with elimination)
             $isEliminationPhase = $tournament->getStructure() === TournamentStructure::SINGLE_ELIMINATION
                 || $tournament->isInEliminationPhase();
@@ -282,6 +309,11 @@ final class RoundController extends AbstractController
     #[Route('/standings', name: 'round_standings', methods: ['GET'])]
     public function standings(Tournament $tournament): Response
     {
+        // For group stage tournaments, redirect to the groups page which shows group standings
+        if ($tournament->hasGroupStage() && !$tournament->isInEliminationPhase()) {
+            return $this->redirectToRoute('tournament_groups', ['id' => $tournament->getId()]);
+        }
+
         $standings = $this->pairingService->calculateStandings($tournament);
 
         // Sort by match points (desc), then OMWP (desc)

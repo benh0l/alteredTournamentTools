@@ -34,11 +34,20 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ path('tournament_show', {id: tournament.id}) }}"
-               class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all">
-                {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5 mr-2'}) }}
-                {{ 'dashboard.back_to_tournament'|trans }}
-            </a>
+            <div class="flex items-center space-x-3">
+                {% if tournament.hasGroupStage %}
+                    <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                       class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all">
+                        {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'groups.title'|trans }}
+                    </a>
+                {% endif %}
+                <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                   class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl transition-all">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ 'dashboard.back_to_tournament'|trans }}
+                </a>
+            </div>
         </div>
     </div>
 
@@ -88,12 +97,33 @@
             </div>
             <p class="text-lg mb-4" style="color: var(--text-secondary);">{{ 'dashboard.no_rounds'|trans }}</p>
             {% if can_manage %}
-                <a href="{{ path('tournament_show', {id: tournament.id}) }}"
-                   class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
-                   style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
-                    {{ ux_icon('lucide:play-circle', {class: 'w-5 h-5 mr-2'}) }}
-                    {{ 'dashboard.start_tournament'|trans }}
-                </a>
+                {% if tournament.hasGroupStage %}
+                    {# Group stage tournament: go to groups page #}
+                    <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                       class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'tournament.manage.manage_groups'|trans }}
+                    </a>
+                {% elseif tournament.registrations|length >= 2 %}
+                    {# Other tournaments: start first round directly #}
+                    <form action="{{ path('round_start_first', {id: tournament.id}) }}" method="POST" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('start-first-round-' ~ tournament.id) }}">
+                        <input type="hidden" name="pairing_mode" value="random">
+                        <button type="submit"
+                                class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));"
+                                onclick="return confirm('{{ 'tournament.manage.start_confirm'|trans }}')">
+                            {{ ux_icon('lucide:play-circle', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'dashboard.start_tournament'|trans }}
+                        </button>
+                    </form>
+                {% else %}
+                    <p class="text-amber-600 dark:text-amber-400">
+                        {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 inline mr-2'}) }}
+                        {{ 'tournament.manage.min_players'|trans({'%count%': 2}) }}
+                    </p>
+                {% endif %}
             {% endif %}
         </div>
     {% else %}
@@ -365,7 +395,7 @@
                                     {% endif %}
                                 </h2>
                                 <div class="flex items-center space-x-4">
-                                    <a href="{{ path('tournament_standings', {id: tournament.id}) }}"
+                                    <a href="{{ tournament.hasGroupStage and not tournament.inEliminationPhase ? path('tournament_groups', {id: tournament.id}) : path('tournament_standings', {id: tournament.id}) }}"
                                        class="text-white/90 hover:text-white text-sm flex items-center transition-colors">
                                         {{ 'standings.title'|trans }}
                                         {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4 ml-1'}) }}
@@ -558,8 +588,24 @@
                                                 </button>
                                             </form>
                                         </div>
+                                    {% elseif is_group_stage_tournament is defined and is_group_stage_tournament and group_phase_complete is defined and group_phase_complete %}
+                                        {# Group stage tournament: group phase complete, start elimination #}
+                                        <div class="flex items-center space-x-4">
+                                            <span class="text-sm font-medium" style="color: var(--color-primary-600);">
+                                                {{ 'dashboard.matches.group_phase_complete'|trans|default('Phase de groupes terminée !') }}
+                                            </span>
+                                            <form action="{{ path('tournament_start_elimination', {id: tournament.id}) }}" method="POST" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('start-elimination-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center bg-gradient-to-r from-orange-500 to-amber-500 text-white px-5 py-2 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-amber-600 transition-all"
+                                                        onclick="return confirm('{{ 'groups.confirm_start_elimination'|trans }}')">
+                                                    {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'groups.start_elimination'|trans }}
+                                                </button>
+                                            </form>
+                                        </div>
                                     {% else %}
-                                        {# Swiss phase - start next round #}
+                                        {# Swiss phase or group phase not complete - start next round #}
                                         <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
                                             <button type="submit"

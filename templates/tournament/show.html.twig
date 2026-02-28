@@ -118,13 +118,21 @@
                         {% endif %}
                     {% endif %}
 
-                    {# Dashboard link for ongoing tournaments #}
+                    {# Dashboard and Groups links for ongoing tournaments #}
                     {% if tournament.status.value == 'ongoing' %}
                         <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}"
                            class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all shadow-md">
                             {{ ux_icon('lucide:bar-chart-3', {class: 'w-5 h-5 mr-2'}) }}
                             {{ 'dashboard.title'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all shadow-sm"
+                               style="background-color: var(--card-bg); border-color: var(--color-primary-200); color: var(--color-primary-600);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     {% endif %}
 
                     {% if tournament.hasRounds %}
@@ -175,6 +183,13 @@
                             {{ ux_icon('lucide:layout-dashboard', {class: 'w-4 h-4 mr-2'}) }}
                             {{ 'dashboard.title'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all" style="background-color: var(--card-bg); border-color: var(--border-default); color: var(--text-secondary);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-4 h-4 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -201,6 +216,13 @@
                             {{ ux_icon('lucide:layout-dashboard', {class: 'w-5 h-5 mr-2'}) }}
                             {{ 'tournament.ongoing.view_dashboard'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 border-blue-300 rounded-xl font-medium transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20" style="background-color: var(--card-bg); color: var(--text-secondary);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -344,7 +366,7 @@
                             </div>
                             <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
                                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step4.qualifiers_per_group'|trans }}</dt>
-                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ tournament.qualifiersPerGroup }}/{{ 'tournament.group'|trans|default('poule') }} ({{ tournament.totalQualifiers }} total)</dd>
+                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ tournament.qualifiersPerGroup }}/{{ 'tournament.group'|trans }} ({{ tournament.totalQualifiers }} total)</dd>
                             </div>
                         {% endif %}
                         <div class="flex justify-between items-center py-2">
