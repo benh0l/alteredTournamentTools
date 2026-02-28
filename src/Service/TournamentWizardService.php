@@ -255,6 +255,12 @@ final class TournamentWizardService
             $summary['swissRoundsAutoSuggested'] = true;
         }
 
+        // Calculate rounds for round-robin (championship) format
+        $hasRoundRobin = $structure instanceof TournamentStructure && $structure->hasRoundRobin();
+        if ($hasRoundRobin && $summary['expectedPlayers'] !== null) {
+            $summary['roundRobinRounds'] = (int) $summary['expectedPlayers'] - 1;
+        }
+
         // Step 7: Visibility
         $visibility = $wizardData[7]['visibility'] ?? null;
         $summary['visibility'] = $visibility instanceof TournamentVisibility ? $visibility->getLabel() : '';

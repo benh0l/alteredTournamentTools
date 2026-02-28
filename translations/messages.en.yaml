@@ -125,12 +125,14 @@ enum:
         single_elimination: "Single Elimination"
         mixed: "Swiss + Top Cut"
         group_stage_elimination: "Group Stage + Elimination"
+        round_robin: "Championship (Round-Robin)"
 
     tournament_structure_description:
         swiss_only: "Multiple rounds, everyone plays all matches"
         single_elimination: "Direct elimination from the first match"
         mixed: "Swiss rounds then Top Cut elimination"
         group_stage_elimination: "Group stage (round-robin) then elimination of qualifiers"
+        round_robin: "Each player faces every other player once (n-1 rounds)"
 
     decklist_transparency:
         open: "Open Decklists"
@@ -758,6 +760,7 @@ tournament:
                 single_elimination: "Direct elimination from the first match. Fast and intense."
                 mixed: "Swiss rounds then Top Cut elimination. The best of both worlds."
                 group_stage_elimination: "Group stage (round-robin) then elimination of qualifiers."
+                round_robin: "Championship format. Each player faces every other player once."
         step5:
             title: "Match Format"
             question: "What match format?"
@@ -766,6 +769,7 @@ tournament:
             elimination_matches: "Elimination matches"
             swiss_rounds: "Swiss Rounds"
             group_phase: "Group Phase"
+            championship_rounds: "All Rounds"
             elimination_phase: "Elimination Phase"
             elimination_hint: "Applicable for Top Cut or direct elimination"
             bo1_info: "In BO1, an additional round will be automatically added (official Altered TCG rule)"
@@ -781,6 +785,8 @@ tournament:
             expected_players: "Expected players"
             swiss_rounds: "Swiss rounds"
             swiss_rounds_hint: "Leave empty for automatic suggestion"
+            round_robin_info: "Championship format: each player faces every other player once."
+            round_robin_rounds: "%count% rounds will be played"
             top_cut_size: "Top Cut size"
             top_cut_hint: "Number of players advancing to elimination phase"
             group_structure: "Group Structure"
@@ -857,6 +863,7 @@ tournament:
             players_rounds: "Players and rounds"
             expected_players: "Expected players"
             swiss_rounds: "Swiss rounds"
+            championship_rounds: "Rounds"
             top_cut: "Top Cut"
             group_config: "Group configuration"
             group_count: "Number of groups"
@@ -948,6 +955,7 @@ dashboard:
         start_elimination: "Start elimination phase"
         group_phase_complete: "Group phase complete!"
         swiss_complete: "Swiss rounds completed (%current%/%max%)!"
+        championship_complete: "Championship complete!"
         complete_tournament: "Complete tournament"
         bracket_complete: "Final completed!"
         round_limit_reached: "Round limit reached (%current%/%max%)"

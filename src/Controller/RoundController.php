@@ -90,6 +90,9 @@ final class RoundController extends AbstractController
 
                 $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);
                 $round->setIsEliminationRound(true);
+            } elseif ($tournament->getStructure() === TournamentStructure::ROUND_ROBIN) {
+                // Use round-robin pairing for championship format
+                $round = $this->pairingService->generateRoundRobinPairings($tournament, 1);
             } else {
                 // Use Swiss pairing for other tournament structures
                 $round = $this->pairingService->generateRound1Pairings($tournament, $mode);
@@ -196,6 +199,10 @@ final class RoundController extends AbstractController
 
                 $round = $this->bracketService->generateNextBracketRound($tournament, $previousRound);
                 $round->setIsEliminationRound(true);
+            } elseif ($tournament->getStructure() === TournamentStructure::ROUND_ROBIN) {
+                // Round-robin (championship) format
+                $nextRoundNumber = $tournament->getRoundsCount() + 1;
+                $round = $this->pairingService->generateRoundRobinPairings($tournament, $nextRoundNumber);
             } else {
                 // Swiss phase - check if round limit has been reached
                 if ($tournament->hasReachedSwissRoundLimit()) {

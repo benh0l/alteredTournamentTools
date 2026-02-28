@@ -1133,6 +1133,25 @@ class Tournament
     }
 
     /**
+     * Check if the tournament has reached its round-robin limit.
+     * For round-robin, max rounds = active players - 1.
+     */
+    public function hasReachedRoundRobinLimit(): bool
+    {
+        if ($this->structure !== TournamentStructure::ROUND_ROBIN) {
+            return false;
+        }
+
+        $activePlayerCount = $this->registrations
+            ->filter(fn (Registration $r): bool => !$r->isDropped())
+            ->count();
+
+        $maxRounds = $activePlayerCount - 1;
+
+        return $this->getRoundsCount() >= $maxRounds;
+    }
+
+    /**
      * Check if another round can be started.
      * Returns true if the tournament is ongoing and hasn't reached the round limit.
      */
@@ -1140,6 +1159,10 @@ class Tournament
     {
         if (!$this->isOngoing()) {
             return false;
+        }
+
+        if ($this->structure === TournamentStructure::ROUND_ROBIN) {
+            return !$this->hasReachedRoundRobinLimit();
         }
 
         return !$this->hasReachedSwissRoundLimit();

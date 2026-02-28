@@ -4,6 +4,7 @@
     {% set structure = (wizard_data is defined and wizard_data[4] is defined and wizard_data[4].structure is defined) ? wizard_data[4].structure : null %}
     {% set hasGroupStage = structure is not null and structure.value == 'group_stage_elimination' %}
     {% set hasSwiss = structure is not null and structure.hasSwiss() %}
+    {% set hasRoundRobin = structure is not null and structure.hasRoundRobin() %}
     {% set hasElimination = structure is not null and structure.hasElimination() %}
 
     <div class="text-center mb-8">
@@ -35,6 +36,7 @@
         'data-tournament-form-structure-value': structure ? structure.value : '',
         'data-tournament-form-has-group-stage-value': hasGroupStage ? 'true' : 'false',
         'data-tournament-form-has-swiss-value': hasSwiss ? 'true' : 'false',
+        'data-tournament-form-has-round-robin-value': hasRoundRobin ? 'true' : 'false',
         'data-tournament-form-has-elimination-value': hasElimination ? 'true' : 'false',
         'data-tournament-form-match-format-value': matchFormat
     }}) }}
@@ -73,6 +75,23 @@
                     {{ form_errors(form.swissRounds) }}
                     <p class="text-sm mt-2" style="color: var(--color-primary-600);" data-tournament-form-target="roundsSuggestion"></p>
                     <p class="text-xs mt-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step6.swiss_rounds_hint'|trans }}</p>
+                </div>
+
+                {# Round-robin info - automatic rounds calculation #}
+                <div class="{{ hasRoundRobin ? '' : 'hidden' }}" data-tournament-form-target="roundRobinInfo">
+                    <div class="p-4 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30">
+                        <div class="flex items-start">
+                            {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5'}) }}
+                            <div>
+                                <p class="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                    {{ 'tournament.wizard.step6.round_robin_info'|trans|default('Championship format: Number of rounds = players - 1') }}
+                                </p>
+                                <p class="text-sm mt-1 text-blue-700 dark:text-blue-400" data-tournament-form-target="roundRobinRoundsDisplay">
+                                    {# Will be updated dynamically by JS #}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

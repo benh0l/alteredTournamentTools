@@ -43,19 +43,24 @@ export default class extends Controller {
         'totalQualifiersDisplay',
         'bracketSizeDisplay',
         'swissRoundsWrapper',
-        'topCutWrapper'
+        'topCutWrapper',
+        // Round-robin targets
+        'roundRobinInfo',
+        'roundRobinRoundsDisplay'
     ];
 
     static values = {
         structure: String,
         hasGroupStage: String,
         hasSwiss: String,
+        hasRoundRobin: String,
         hasElimination: String,
         matchFormat: { type: String, default: 'bo3' },
         errorCalculation: { type: String, default: 'Calculation error' },
         bracketLabel: { type: String, default: 'Bracket of %players% players' },
         bracketByesLabel: { type: String, default: 'Bracket of %bracket% (%byes% BYEs needed)' },
-        roundsRecommended: { type: String, default: '%rounds% rounds recommended for %players% players' }
+        roundsRecommended: { type: String, default: '%rounds% rounds recommended for %players% players' },
+        roundRobinRounds: { type: String, default: '%count% rounds will be played' }
     };
 
     connect() {
@@ -64,6 +69,10 @@ export default class extends Controller {
         if (this.hasGroupStageValue === 'true') {
             this.updateGroupSummary();
         }
+        // Initialize round-robin display
+        if (this.hasRoundRobinValue === 'true') {
+            this.updateRoundRobinRounds();
+        }
     }
 
     structureChanged() {
@@ -71,6 +80,11 @@ export default class extends Controller {
     }
 
     async suggestRounds() {
+        // Update round-robin display if applicable
+        if (this.hasRoundRobinValue === 'true') {
+            this.updateRoundRobinRounds();
+        }
+
         if (!this.hasExpectedPlayersTarget || !this.hasSwissRoundsTarget) {
             return;
         }
@@ -141,6 +155,7 @@ export default class extends Controller {
 
         // Determine what to show based on structure
         const isGroupStage = structure === 'group_stage_elimination';
+        const isRoundRobin = structure === 'round_robin';
         const hasElimination = structure === 'mixed' || structure === 'single_elimination' || isGroupStage;
         const hasSwiss = structure === 'swiss_only' || structure === 'mixed';
 
@@ -156,19 +171,55 @@ export default class extends Controller {
             this.toggleContainer(standardSection, !isGroupStage);
         }
 
-        // Top Cut Size: show only for MIXED or SINGLE_ELIMINATION (not group stage)
+        // Top Cut Size: show only for MIXED or SINGLE_ELIMINATION (not group stage, not round-robin)
         this.toggleContainer(this.topCutSizeContainerTarget, hasElimination && !isGroupStage);
 
         // Elimination Match Format: show only if elimination phase exists
         this.toggleContainer(this.eliminationFormatContainerTarget, hasElimination);
 
-        // Swiss Rounds: hide for SINGLE_ELIMINATION and GROUP_STAGE_ELIMINATION
+        // Swiss Rounds: hide for SINGLE_ELIMINATION, GROUP_STAGE_ELIMINATION, and ROUND_ROBIN
         this.toggleContainer(this.swissRoundsContainerTarget, hasSwiss);
+
+        // Round-robin info: show only for ROUND_ROBIN
+        const roundRobinInfo = this.element.querySelector('[data-tournament-form-target="roundRobinInfo"]');
+        if (roundRobinInfo) {
+            this.toggleContainer(roundRobinInfo, isRoundRobin);
+        }
+
+        // Swiss rounds wrapper in wizard: hide for ROUND_ROBIN
+        const swissRoundsWrapper = this.element.querySelector('[data-tournament-form-target="swissRoundsWrapper"]');
+        if (swissRoundsWrapper) {
+            this.toggleContainer(swissRoundsWrapper, hasSwiss && !isRoundRobin);
+        }
 
         // Initialize group summary when switching to group stage
         if (isGroupStage) {
             this.updateGroupSummary();
         }
+
+        // Update round-robin display
+        if (isRoundRobin) {
+            this.updateRoundRobinRounds();
+        }
+    }
+
+    /**
+     * Update the round-robin rounds display based on expected players.
+     */
+    updateRoundRobinRounds() {
+        if (!this.hasExpectedPlayersTarget || !this.hasRoundRobinRoundsDisplayTarget) {
+            return;
+        }
+
+        const expectedPlayers = parseInt(this.expectedPlayersTarget.value, 10);
+        if (isNaN(expectedPlayers) || expectedPlayers < 2) {
+            this.roundRobinRoundsDisplayTarget.textContent = '';
+            return;
+        }
+
+        const rounds = expectedPlayers - 1;
+        const text = this.roundRobinRoundsValue.replace('%count%', rounds);
+        this.roundRobinRoundsDisplayTarget.textContent = text;
     }
 
     toggleContainer(container, show) {

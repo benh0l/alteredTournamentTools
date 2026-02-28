@@ -627,4 +627,188 @@ class PairingService
 
         return $match;
     }
+
+    /**
+     * Generate pairings for a round-robin tournament round.
+     *
+     * Uses the circle method (Berger tables) to ensure each player
+     * plays every other player exactly once across all rounds.
+     *
+     * @param Tournament $tournament The tournament
+     * @param int $roundNumber The round number to generate (1-based)
+     *
+     * @return Round The created round with all matches
+     */
+    public function generateRoundRobinPairings(Tournament $tournament, int $roundNumber = 1): Round
+    {
+        if ($roundNumber === 1) {
+            $this->validateTournamentCanStart($tournament);
+        } else {
+            $this->validateTournamentCanContinueRoundRobin($tournament);
+            $previousRound = $tournament->getLatestRound();
+            if ($previousRound !== null) {
+                $this->validateRoundComplete($previousRound);
+                if (!$previousRound->isCompleted()) {
+                    $previousRound->complete();
+                }
+            }
+        }
+
+        // Get active registrations (not dropped)
+        $registrations = $tournament->getRegistrations()
+            ->filter(fn (Registration $r): bool => !$r->isDropped())
+            ->toArray();
+
+        $playerCount = count($registrations);
+
+        if ($playerCount < self::MINIMUM_PLAYERS) {
+            throw new InsufficientPlayersException($playerCount, self::MINIMUM_PLAYERS);
+        }
+
+        // For round 1, shuffle players randomly
+        if ($roundNumber === 1) {
+            $registrations = $this->shuffleRegistrations($registrations);
+        }
+
+        // Re-index array
+        $registrations = array_values($registrations);
+
+        // Add dummy player for BYE if odd number
+        $hasBye = false;
+        if ($playerCount % 2 !== 0) {
+            $registrations[] = null; // null represents BYE
+            $hasBye = true;
+        }
+
+        $n = count($registrations);
+
+        // Create round
+        $round = new Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber($roundNumber);
+        $tournament->addRound($round);
+
+        // Generate pairings using circle method
+        // Round k (1-indexed): rotate all players except the first one
+        $pairings = $this->generateCircleMethodPairings($registrations, $roundNumber);
+
+        // Create matches
+        $tableNumber = 1;
+        foreach ($pairings as $pairing) {
+            if ($pairing['player1'] === null || $pairing['player2'] === null) {
+                // BYE match
+                $actualPlayer = $pairing['player1'] ?? $pairing['player2'];
+                if ($actualPlayer !== null) {
+                    $byeMatch = $this->createByeMatch($round, $actualPlayer, $tableNumber);
+                    $round->addMatch($byeMatch);
+                    $tableNumber++;
+                }
+            } else {
+                $match = $this->createMatch($round, $pairing['player1'], $pairing['player2'], $tableNumber);
+                $round->addMatch($match);
+                $tableNumber++;
+            }
+        }
+
+        // Update tournament status for round 1
+        if ($roundNumber === 1) {
+            $tournament->setStatus(TournamentStatus::ONGOING);
+            $tournament->setStartedAt(new \DateTimeImmutable());
+        }
+
+        // Start the round
+        $round->start();
+
+        $this->entityManager->persist($round);
+        $this->entityManager->flush();
+
+        return $round;
+    }
+
+    /**
+     * Generate pairings using the circle method (Berger tables).
+     *
+     * The circle method works as follows:
+     * - Fix one player (the first one)
+     * - Rotate all other players around a "circle"
+     * - For round k, rotate (k-1) times
+     * - Pair player 0 with player n-1, player 1 with player n-2, etc.
+     *
+     * @param array<int, Registration|null> $players Array of players (null = BYE)
+     * @param int $roundNumber The round number (1-indexed)
+     *
+     * @return array<int, array{player1: Registration|null, player2: Registration|null}>
+     */
+    private function generateCircleMethodPairings(array $players, int $roundNumber): array
+    {
+        $n = count($players);
+
+        // Rotate players (except first) for this round
+        // For round 1, no rotation
+        // For round k, rotate (k-1) times
+        $rotations = $roundNumber - 1;
+
+        // Split: first player is fixed, rest rotate
+        $fixed = $players[0];
+        $rotating = array_slice($players, 1);
+
+        // Rotate the array
+        for ($i = 0; $i < $rotations; $i++) {
+            $last = array_pop($rotating);
+            array_unshift($rotating, $last);
+        }
+
+        // Rebuild the array with fixed player at position 0
+        $arranged = array_merge([$fixed], $rotating);
+
+        // Create pairings: player i plays player (n-1-i)
+        $pairings = [];
+        $half = $n / 2;
+
+        for ($i = 0; $i < $half; $i++) {
+            $pairings[] = [
+                'player1' => $arranged[$i],
+                'player2' => $arranged[$n - 1 - $i],
+            ];
+        }
+
+        return $pairings;
+    }
+
+    /**
+     * Validate that a round-robin tournament can continue.
+     *
+     * @throws InvalidTournamentStateException If tournament is not ONGOING
+     * @throws PairingException If all rounds have been played
+     */
+    private function validateTournamentCanContinueRoundRobin(Tournament $tournament): void
+    {
+        if (!$tournament->isOngoing()) {
+            throw new InvalidTournamentStateException(
+                $tournament->getStatus(),
+                [TournamentStatus::ONGOING],
+                'generer la prochaine ronde'
+            );
+        }
+
+        // For round-robin, max rounds = players - 1 (or players if odd for BYE rounds)
+        $playerCount = $tournament->getRegistrations()
+            ->filter(fn (Registration $r): bool => !$r->isDropped())
+            ->count();
+
+        $maxRounds = $playerCount - 1;
+        if ($playerCount % 2 !== 0) {
+            $maxRounds = $playerCount; // Need extra round for BYE rotation
+        }
+
+        $currentRounds = $tournament->getRoundsCount();
+
+        if ($currentRounds >= $maxRounds) {
+            throw new PairingException(sprintf(
+                'Toutes les rondes du championnat ont été jouées (%d/%d).',
+                $currentRounds,
+                $maxRounds
+            ));
+        }
+    }
 }
