@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
@@ -36,6 +37,7 @@ final class TournamentRegistrationsController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
+        private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly ?MessageBusInterface $messageBus = null,
     ) {
     }
@@ -321,7 +323,8 @@ final class TournamentRegistrationsController extends AbstractController
         $guestUser->setEmail($guestEmail);
         $guestUser->setPseudo($guestPseudo);
         $guestUser->setName($guestName);
-        $guestUser->setPassword(''); // No password for guest users
+        // Set unusable password (random UUID hashed) - prevents login while maintaining security
+        $guestUser->setPassword($this->passwordHasher->hashPassword($guestUser, Uuid::v4()->toRfc4122()));
         $guestUser->setIsGuest(true);
         $guestUser->setIsVerified(false);
 

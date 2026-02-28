@@ -10,6 +10,21 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class AvatarUploadService
 {
+    /**
+     * Allowed MIME types for avatar uploads.
+     */
+    private const ALLOWED_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
+
+    /**
+     * Maximum file size in bytes (2 MB).
+     */
+    private const MAX_FILE_SIZE = 2 * 1024 * 1024;
+
     public function __construct(
         private readonly string $avatarsDirectory,
         private readonly SluggerInterface $slugger,
@@ -18,9 +33,27 @@ class AvatarUploadService
 
     /**
      * Upload an avatar file and return the filename.
+     *
+     * @throws \InvalidArgumentException If the file type or size is invalid
+     * @throws \RuntimeException If the file cannot be moved
      */
     public function upload(UploadedFile $file): string
     {
+        // Defensive validation: ensure MIME type is allowed
+        $mimeType = $file->getMimeType();
+        if (!$mimeType || !\in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
+            throw new \InvalidArgumentException(
+                'Type de fichier non autorise. Formats acceptes: JPG, PNG, GIF, WebP.'
+            );
+        }
+
+        // Defensive validation: check file size
+        if ($file->getSize() > self::MAX_FILE_SIZE) {
+            throw new \InvalidArgumentException(
+                'Le fichier depasse la taille maximale autorisee de 2 Mo.'
+            );
+        }
+
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
         $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();

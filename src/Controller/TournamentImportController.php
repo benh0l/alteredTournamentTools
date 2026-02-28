@@ -78,6 +78,20 @@ final class TournamentImportController extends AbstractController
             return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
         }
 
+        // Validate MIME type (security: prevent malicious file uploads disguised as CSV)
+        $allowedMimeTypes = [
+            'text/csv',
+            'text/plain',
+            'application/csv',
+            'application/vnd.ms-excel', // Some Excel exports use this for CSV
+        ];
+        $mimeType = $file->getMimeType();
+        if (!$mimeType || !\in_array($mimeType, $allowedMimeTypes, true)) {
+            $this->addFlash('error', $this->translator->trans('import.error.csv_only'));
+
+            return $this->redirectToRoute('tournament_import', ['id' => $tournament->getId()]);
+        }
+
         try {
             $rows = $this->csvParser->parse($file);
             $suggestions = $this->csvParser->detectColumns($rows[0]);

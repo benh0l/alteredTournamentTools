@@ -19,6 +19,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route('/reset-password')]
 final class ResetPasswordController extends AbstractController
 {
+    /**
+     * Session key for storing reset token securely.
+     */
+    private const RESET_TOKEN_SESSION_KEY = 'reset_password_token';
+
     public function __construct(
         private readonly ResetPasswordService $resetPasswordService,
         private readonly UserPasswordHasherInterface $passwordHasher,
@@ -67,10 +72,13 @@ final class ResetPasswordController extends AbstractController
     }
 
     /**
-     * Validate token and allow password reset.
+     * Validate token from email link and redirect to secure reset form.
+     *
+     * Security: Token is immediately stored in session and user is redirected
+     * to a clean URL, preventing token exposure in logs, history, and Referer headers.
      */
-    #[Route('/reset/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
-    public function reset(Request $request, string $token): Response
+    #[Route('/reset/{token}', name: 'app_reset_password_token', methods: ['GET'])]
+    public function validateToken(Request $request, string $token): Response
     {
         // Redirect if already logged in
         if ($this->getUser()) {
@@ -86,11 +94,53 @@ final class ResetPasswordController extends AbstractController
             return $this->redirectToRoute('app_forgot_password_request');
         }
 
+        // Store token in session and redirect to clean URL
+        $request->getSession()->set(self::RESET_TOKEN_SESSION_KEY, $token);
+
+        return $this->redirectToRoute('app_reset_password');
+    }
+
+    /**
+     * Display and process the password reset form.
+     *
+     * Security: Token is retrieved from session, not from URL.
+     */
+    #[Route('/reset', name: 'app_reset_password', methods: ['GET', 'POST'])]
+    public function reset(Request $request): Response
+    {
+        // Redirect if already logged in
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        // Get token from session
+        $token = $request->getSession()->get(self::RESET_TOKEN_SESSION_KEY);
+
+        if (!$token) {
+            $this->addFlash('error', $this->translator->trans('flash.error.reset_link_invalid'));
+
+            return $this->redirectToRoute('app_forgot_password_request');
+        }
+
+        // Validate the token
+        $resetRequest = $this->resetPasswordService->validateToken($token);
+
+        if (null === $resetRequest) {
+            // Clear invalid token from session
+            $request->getSession()->remove(self::RESET_TOKEN_SESSION_KEY);
+            $this->addFlash('error', $this->translator->trans('flash.error.reset_link_invalid'));
+
+            return $this->redirectToRoute('app_forgot_password_request');
+        }
+
         $user = $resetRequest->getUser();
         $form = $this->createForm(ChangePasswordFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Clear token from session
+            $request->getSession()->remove(self::RESET_TOKEN_SESSION_KEY);
+
             // Remove the reset request
             $this->resetPasswordService->removeResetRequest($resetRequest);
 
