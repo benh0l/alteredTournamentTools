@@ -898,6 +898,8 @@ dashboard:
         completed: "Completed"
         ongoing: "Ongoing"
         pending: "Pending"
+        ready: "Ready"
+        pending_info: "Pairings are ready. You can modify pairings before starting."
         completed_at: "Completed on %date%"
         all_matches_completed: "All matches are completed"
         page_title: "Round %number% - Dashboard - %tournament%"
@@ -959,6 +961,8 @@ dashboard:
         complete_tournament: "Complete tournament"
         bracket_complete: "Final completed!"
         round_limit_reached: "Round limit reached (%current%/%max%)"
+        end_early: "End now"
+        early_end_confirm: "End tournament after %current% round(s) out of %total% planned?"
         player1: "Player 1"
         player2: "Player 2"
         draw: "Draw"
@@ -1063,6 +1067,11 @@ round:
     correct: "Correct"
     dispute: "Dispute"
     validate: "Validate"
+    start: "Start round"
+    edit_pairings: "Edit pairings"
+    bye_zone: "Drop here to assign a BYE"
+    rematch_warning_title: "Warning: Rematch detected"
+    confirm_rematch: "Continue anyway"
 
 # ----------------------------------------------------------------------------
 # Dispute

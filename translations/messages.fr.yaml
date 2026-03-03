@@ -48,6 +48,8 @@ action:
 common:
     back: "Retour"
     you: "vous"
+    save: "Enregistrer"
+    cancel: "Annuler"
     yes: "Oui"
     no: "Non"
     or: "ou"
@@ -899,6 +901,8 @@ dashboard:
         completed: "Terminée"
         ongoing: "En cours"
         pending: "En attente"
+        ready: "Prêt"
+        pending_info: "Les pairings sont prêts. Vous pouvez modifier les pairings avant de démarrer."
         completed_at: "Terminée le %date%"
         all_matches_completed: "Tous les matchs sont terminés"
         page_title: "Ronde %number% - Dashboard - %tournament%"
@@ -960,6 +964,8 @@ dashboard:
         complete_tournament: "Terminer le tournoi"
         bracket_complete: "Finale terminée !"
         round_limit_reached: "Limite de rondes atteinte (%current%/%max%)"
+        end_early: "Terminer maintenant"
+        early_end_confirm: "Terminer le tournoi après %current% ronde(s) sur %total% prévue(s) ?"
         player1: "Joueur 1"
         player2: "Joueur 2"
         draw: "Égalité"
@@ -1064,6 +1070,11 @@ round:
     correct: "Corriger"
     dispute: "Litige"
     validate: "Valider"
+    start: "Démarrer la ronde"
+    edit_pairings: "Modifier pairings"
+    bye_zone: "Déposer ici pour attribuer un BYE"
+    rematch_warning_title: "Attention : Rematch détecté"
+    confirm_rematch: "Continuer quand même"
 
 # ----------------------------------------------------------------------------
 # Dispute

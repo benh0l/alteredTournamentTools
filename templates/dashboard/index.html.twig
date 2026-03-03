@@ -145,8 +145,38 @@
                                 <span class="px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200">
                                     {{ 'dashboard.round.completed'|trans }}
                                 </span>
+                            {% elseif display_round.pending %}
+                                <span class="px-3 py-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+                                    {{ 'dashboard.round.pending'|trans }}
+                                </span>
                             {% endif %}
                         </div>
+
+                        {# Start Round Button - shown when round is PENDING and user can manage #}
+                        {% if display_round.pending and can_manage %}
+                            <div class="text-center py-6 mb-4 rounded-xl" style="background: linear-gradient(135deg, var(--color-emerald-50), var(--color-teal-50));">
+                                <p class="text-sm mb-3" style="color: var(--text-secondary);">
+                                    {{ 'dashboard.round.pending_info'|trans|default('Les pairings sont prêts. Vous pouvez modifier les pairings avant de démarrer.') }}
+                                </p>
+                                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                    <a href="{{ path('round_show', {id: tournament.id, roundNumber: display_round.roundNumber}) }}"
+                                       class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl border-2 transition-all hover:shadow-md"
+                                       style="background-color: var(--card-bg); color: var(--color-amber-600); border-color: var(--color-amber-300);">
+                                        {{ ux_icon('lucide:edit-3', {class: 'w-4 h-4 mr-2'}) }}
+                                        {{ 'round.edit_pairings'|trans|default('Modifier pairings') }}
+                                    </a>
+                                    <form action="{{ path('round_start', {id: tournament.id, roundNumber: display_round.roundNumber}) }}" method="post" class="inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('start-round-' ~ tournament.id) }}">
+                                        <button type="submit"
+                                                class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                                                style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                                            {{ ux_icon('lucide:play', {class: 'w-5 h-5 mr-2'}) }}
+                                            {{ 'round.start'|trans|default('Démarrer la ronde') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endif %}
 
                         {# Timer display - only show if timer has been started #}
                         {% if current_round and current_round.timerStartedAt %}
@@ -365,6 +395,10 @@
                                     {% elseif round.ongoing %}
                                         <span class="px-2 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-700 text-xs font-semibold rounded-full">
                                             {{ 'dashboard.round.ongoing'|trans }}
+                                        </span>
+                                    {% elseif round.pending %}
+                                        <span class="px-2 py-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-700 text-xs font-semibold rounded-full animate-pulse">
+                                            {{ 'dashboard.round.ready'|trans|default('Prêt') }}
                                         </span>
                                     {% else %}
                                         <span class="px-2 py-1 rounded-full text-xs font-semibold" style="background-color: var(--bg-subtle); color: var(--text-secondary);">
@@ -621,15 +655,29 @@
                                         </div>
                                     {% else %}
                                         {# Swiss phase or group phase not complete - start next round #}
-                                        <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
-                                            <button type="submit"
-                                                    class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
-                                                    style="background: linear-gradient(135deg, #10b981, #14b8a6);">
-                                                {{ ux_icon('lucide:arrow-right', {class: 'w-5 h-5 mr-2'}) }}
-                                                {{ 'dashboard.matches.start_next_round'|trans }}
-                                            </button>
-                                        </form>
+                                        <div class="flex items-center space-x-3">
+                                            <form action="{{ path('round_start_next', {id: tournament.id}) }}" method="POST" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('start-next-round-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                                                        style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                                                    {{ ux_icon('lucide:arrow-right', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'dashboard.matches.start_next_round'|trans }}
+                                                </button>
+                                            </form>
+                                            {% if tournament.structure.value == 'swiss_only' and tournament.roundsCount >= 1 %}
+                                                {# Allow early termination for Swiss tournaments #}
+                                                <form action="{{ path('round_complete_tournament', {id: tournament.id}) }}" method="POST" class="inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('complete-tournament-' ~ tournament.id) }}">
+                                                    <button type="submit"
+                                                            class="inline-flex items-center px-4 py-3 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all bg-gray-500 hover:bg-gray-600"
+                                                            onclick="return confirm('{{ 'dashboard.matches.early_end_confirm'|trans({'%current%': tournament.roundsCount, '%total%': tournament.swissRounds})|e('js') }}')">
+                                                        {{ ux_icon('lucide:flag', {class: 'w-4 h-4 mr-2'}) }}
+                                                        {{ 'dashboard.matches.end_early'|trans }}
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 {% endif %}
                             </div>

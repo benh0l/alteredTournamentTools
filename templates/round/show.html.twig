@@ -3,7 +3,15 @@
 {% block title %}Ronde {{ round.roundNumber }} - {{ tournament.name }}{% endblock %}
 
 {% block body %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6">
+{# Check if pairing modification is available #}
+{% set canEditPairings = is_organizer and round.pending and tournament.structure.hasSwiss and not round.eliminationRound %}
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6"
+     {% if canEditPairings %}
+     data-controller="pairing-editor"
+     data-pairing-editor-tournament-id-value="{{ tournament.id }}"
+     data-pairing-editor-round-number-value="{{ round.roundNumber }}"
+     {% endif %}>
     <div class="mb-4 sm:mb-6">
         <a href="{{ path('round_list', {id: tournament.id}) }}"
            class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
@@ -15,9 +23,42 @@
 
     <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6">
         <h1 class="text-2xl sm:text-3xl font-bold truncate" style="color: var(--text-primary);">{{ 'dashboard.round.title'|trans({'%number%': round.roundNumber}) }}</h1>
-        <span class="{{ round.status.badgeClasses }} px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-shrink-0">
-            {{ round.status.label|trans }}
-        </span>
+        <div class="flex items-center gap-2">
+            {% if canEditPairings %}
+                <button data-pairing-editor-target="editButton"
+                        data-action="click->pairing-editor#enableEditMode"
+                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/30 transition">
+                    {{ ux_icon('lucide:edit-3', {class: 'w-4 h-4 mr-1'}) }}
+                    {{ 'round.edit_pairings'|trans|default('Modifier pairings') }}
+                </button>
+                <button data-pairing-editor-target="saveButton"
+                        data-action="click->pairing-editor#saveChanges"
+                        class="hidden inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-600 transition">
+                    {{ ux_icon('lucide:check', {class: 'w-4 h-4 mr-1'}) }}
+                    {{ 'common.save'|trans|default('Enregistrer') }}
+                </button>
+                <button data-pairing-editor-target="cancelButton"
+                        data-action="click->pairing-editor#cancelChanges"
+                        class="hidden inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-500/20 text-gray-600 dark:text-gray-400 hover:bg-gray-500/30 transition">
+                    {{ ux_icon('lucide:x', {class: 'w-4 h-4 mr-1'}) }}
+                    {{ 'common.cancel'|trans|default('Annuler') }}
+                </button>
+            {% endif %}
+            {% if is_organizer and round.pending %}
+                <form action="{{ path('round_start', {id: tournament.id, roundNumber: round.roundNumber}) }}" method="post" class="inline"
+                      {% if canEditPairings %}data-pairing-editor-target="startRoundForm"{% endif %}>
+                    <input type="hidden" name="_token" value="{{ csrf_token('start-round-' ~ tournament.id) }}">
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 shadow-md hover:shadow-lg transition-all">
+                        {{ ux_icon('lucide:play', {class: 'w-4 h-4 mr-1.5'}) }}
+                        {{ 'round.start'|trans|default('Démarrer la ronde') }}
+                    </button>
+                </form>
+            {% endif %}
+            <span class="{{ round.status.badgeClasses }} px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex-shrink-0">
+                {{ round.status.label|trans }}
+            </span>
+        </div>
     </div>
 
     {% if round.startedAt %}
@@ -29,7 +70,16 @@
         </p>
     {% endif %}
 
-    <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+    {# BYE Zone for drag & drop (hidden by default) #}
+    {% if canEditPairings %}
+    <div data-pairing-editor-target="byeZone"
+         class="hidden mb-4 p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50/50 dark:bg-amber-900/20 text-center transition-all">
+        {{ ux_icon('lucide:user-minus', {class: 'w-8 h-8 mx-auto mb-2 text-amber-500'}) }}
+        <p class="text-sm font-medium text-amber-600 dark:text-amber-400">{{ 'round.bye_zone'|trans|default('Deposer ici pour attribuer un BYE') }}</p>
+    </div>
+    {% endif %}
+
+    <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);" {% if canEditPairings %}data-pairing-editor-target="matchesContainer"{% endif %}>
         {# Mobile view: Cards #}
         <div class="lg:hidden p-3 sm:p-4 space-y-3">
             {% for match in matches %}
@@ -49,7 +99,11 @@
                     {# Players and Score #}
                     <div class="flex items-center justify-between gap-2">
                         {# Player 1 #}
-                        <div class="flex-1 text-center">
+                        <div class="flex-1 text-center p-2 rounded-lg transition-all"
+                             {% if canEditPairings and not match.isByeMatch %}
+                             data-pairing-editor-target="playerCard"
+                             data-player-id="{{ match.player1.id }}"
+                             {% endif %}>
                             <div class="text-sm font-medium truncate {% if match.winner and match.winner == match.player1 %}text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
                                 {{ match.player1.player.displayName }}
                                 {% if user_registration_id and match.player1.id == user_registration_id %}
@@ -77,7 +131,11 @@
                         </div>
 
                         {# Player 2 #}
-                        <div class="flex-1 text-center">
+                        <div class="flex-1 text-center p-2 rounded-lg transition-all"
+                             {% if canEditPairings and match.player2 %}
+                             data-pairing-editor-target="playerCard"
+                             data-player-id="{{ match.player2.id }}"
+                             {% endif %}>
                             {% if match.player2 %}
                                 <div class="text-sm font-medium truncate {% if match.winner and match.player2 and match.winner == match.player2 %}text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
                                     {{ match.player2.player.displayName }}
@@ -177,10 +235,16 @@
                                 {{ match.tableNumber }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
-                                {{ match.player1.player.displayName }}
-                                {% if user_registration_id and match.player1.id == user_registration_id %}
-                                    <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
-                                {% endif %}
+                                <span class="inline-block p-1 rounded transition-all"
+                                      {% if canEditPairings and not match.isByeMatch %}
+                                      data-pairing-editor-target="playerCard"
+                                      data-player-id="{{ match.player1.id }}"
+                                      {% endif %}>
+                                    {{ match.player1.player.displayName }}
+                                    {% if user_registration_id and match.player1.id == user_registration_id %}
+                                        <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                    {% endif %}
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-primary);">
                                 {% if match.completed %}
@@ -197,10 +261,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-right {% if match.winner and match.player2 and match.winner == match.player2 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
                                 {% if match.player2 %}
-                                    {{ match.player2.player.displayName }}
-                                    {% if user_registration_id and match.player2.id == user_registration_id %}
-                                        <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
-                                    {% endif %}
+                                    <span class="inline-block p-1 rounded transition-all"
+                                          {% if canEditPairings %}
+                                          data-pairing-editor-target="playerCard"
+                                          data-player-id="{{ match.player2.id }}"
+                                          {% endif %}>
+                                        {{ match.player2.player.displayName }}
+                                        {% if user_registration_id and match.player2.id == user_registration_id %}
+                                            <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
+                                        {% endif %}
+                                    </span>
                                 {% else %}
                                     <span class="italic" style="color: var(--text-muted);">{{ 'home.bye'|trans }}</span>
                                 {% endif %}
@@ -268,5 +338,38 @@
             {{ ux_icon('lucide:arrow-right', {class: 'w-4 h-4 ml-2'}) }}
         </a>
     </div>
+
+    {# Rematch Warning Modal #}
+    {% if canEditPairings %}
+    <div data-pairing-editor-target="rematchModal"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div class="rounded-xl shadow-2xl max-w-md w-full p-6" style="background-color: var(--card-bg);">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 text-amber-600'}) }}
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--text-primary);">
+                        {{ 'round.rematch_warning_title'|trans|default('Attention : Rematch detecte') }}
+                    </h3>
+                    <p data-pairing-editor-target="rematchMessage" class="text-sm mb-4" style="color: var(--text-secondary);">
+                        {# Message will be set dynamically #}
+                    </p>
+                    <div class="flex gap-3 justify-end">
+                        <button data-action="click->pairing-editor#cancelRematch"
+                                class="px-4 py-2 text-sm font-medium rounded-lg transition"
+                                style="background-color: var(--bg-subtle); color: var(--text-primary);">
+                            {{ 'common.cancel'|trans|default('Annuler') }}
+                        </button>
+                        <button data-action="click->pairing-editor#confirmRematch"
+                                class="px-4 py-2 text-sm font-medium rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition">
+                            {{ 'round.confirm_rematch'|trans|default('Continuer quand meme') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

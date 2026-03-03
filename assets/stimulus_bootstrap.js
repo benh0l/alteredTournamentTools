@@ -2,6 +2,7 @@ import { startStimulusApp } from '@symfony/stimulus-bundle';
 import ContactModalController from './controllers/contact_modal_controller.js';
 import ShareImageController from './controllers/share_image_controller.js';
 import PlayerSearchController from './controllers/player_search_controller.js';
+import PairingEditorController from './controllers/pairing_editor_controller.js';
 
 // Start Stimulus application with auto-discovery
 const app = startStimulusApp();
@@ -17,3 +18,4 @@ window.Stimulus = app;
 app.register('contact-modal', ContactModalController);
 app.register('share-image', ShareImageController);
 app.register('player-search', PlayerSearchController);
+app.register('pairing-editor', PairingEditorController);

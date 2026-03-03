@@ -112,8 +112,8 @@ class PairingService
         $tournament->setStatus(TournamentStatus::ONGOING);
         $tournament->setStartedAt(new \DateTimeImmutable());
 
-        // Start the round
-        $round->start();
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
@@ -193,8 +193,8 @@ class PairingService
             $tableNumber++;
         }
 
-        // Start the round
-        $round->start();
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
@@ -716,8 +716,8 @@ class PairingService
             $tournament->setStartedAt(new \DateTimeImmutable());
         }
 
-        // Start the round
-        $round->start();
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
