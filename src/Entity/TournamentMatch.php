@@ -371,6 +371,48 @@ class TournamentMatch
     }
 
     /**
+     * Prepare a BYE match without completing it.
+     *
+     * Used when the round is still PENDING. The BYE will be
+     * completed when the round starts.
+     */
+    public function prepareBye(): self
+    {
+        $this->isBye = true;
+        $this->player2 = null;
+        // Keep status as PENDING - will be completed when round starts
+
+        return $this;
+    }
+
+    /**
+     * Complete a prepared BYE match.
+     *
+     * Called when the round starts to finalize BYE results.
+     */
+    public function completeBye(): self
+    {
+        if (!$this->isBye) {
+            return $this;
+        }
+
+        $this->status = MatchStatus::COMPLETED;
+        $this->completedAt = new \DateTimeImmutable();
+
+        $format = $this->round->getTournament()->getMatchFormatForRound($this->round);
+        $byeScore = $format === MatchFormat::BO1 ? 1 : 2;
+
+        $this->result = [
+            'winnerId' => $this->player1->getId(),
+            'player1Score' => $byeScore,
+            'player2Score' => 0,
+            'isBye' => true,
+        ];
+
+        return $this;
+    }
+
+    /**
      * Get the winner registration based on result.
      */
     public function getWinner(): ?Registration

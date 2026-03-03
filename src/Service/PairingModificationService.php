@@ -68,6 +68,14 @@ final class PairingModificationService
             throw PairingModificationException::playersInSameMatch();
         }
 
+        // Special case: both players have BYE - merge them into one match
+        if ($match1->isByeMatch() && $match2->isByeMatch()) {
+            $this->mergeTwoByeMatches($player1, $player2, $match1, $match2, $round);
+            $this->entityManager->flush();
+
+            return SwapResult::success();
+        }
+
         // Check for potential rematch after swap
         $rematchInfo = $this->checkForRematches($round->getTournament(), $player1, $player2, $match1, $match2);
 
@@ -137,7 +145,7 @@ final class PairingModificationService
             if ($orphanedOpponent !== null) {
                 // Convert the current match to a BYE for the orphaned opponent
                 $currentMatch->setPlayer1($orphanedOpponent);
-                $currentMatch->assignBye();
+                $currentMatch->prepareBye(); // Use prepareBye - will be completed when round starts
                 $previousByePlayerId = null;
             }
         }
@@ -147,14 +155,14 @@ final class PairingModificationService
             // We need to convert current match to BYE for the player
             $currentMatch->setPlayer1($player);
             $currentMatch->setPlayer2(null);
-            $currentMatch->assignBye();
+            $currentMatch->prepareBye(); // Use prepareBye - will be completed when round starts
         } else {
             // The orphaned opponent took the BYE, create new BYE match for player
             $byeMatch = new TournamentMatch();
             $byeMatch->setRound($round);
             $byeMatch->setPlayer1($player);
             $byeMatch->setTableNumber($round->getMatches()->count() + 1);
-            $byeMatch->assignBye();
+            $byeMatch->prepareBye(); // Use prepareBye - will be completed when round starts
             $round->addMatch($byeMatch);
             $this->entityManager->persist($byeMatch);
         }
@@ -162,6 +170,78 @@ final class PairingModificationService
         $this->entityManager->flush();
 
         return $previousByePlayerId;
+    }
+
+    /**
+     * Fill a BYE slot with a player from another match.
+     *
+     * Takes a player from their current match and adds them to a BYE match,
+     * converting it to a normal match. The player's original opponent gets a BYE.
+     *
+     * @throws PairingModificationException If validation fails
+     */
+    public function fillByeSlot(Round $round, int $playerId, int $matchId): void
+    {
+        $this->validateRoundCanBeModified($round);
+
+        $player = $this->findRegistration($round->getTournament(), $playerId);
+
+        if ($player->isDropped()) {
+            throw PairingModificationException::playerDropped($player->getPlayer()->getPseudo());
+        }
+
+        // Find the target BYE match
+        $byeMatch = null;
+        foreach ($round->getMatches() as $match) {
+            if ($match->getId() === $matchId) {
+                $byeMatch = $match;
+                break;
+            }
+        }
+
+        if ($byeMatch === null) {
+            throw PairingModificationException::playerNotInRound();
+        }
+
+        if (!$byeMatch->isByeMatch()) {
+            throw new PairingModificationException('Ce match n\'est pas un BYE.', 'not_bye_match');
+        }
+
+        // Find the player's current match
+        $currentMatch = $this->findMatchForPlayer($round, $player);
+
+        if ($currentMatch === null) {
+            throw PairingModificationException::playerNotInRound();
+        }
+
+        // Can't fill into own match
+        if ($currentMatch === $byeMatch) {
+            throw PairingModificationException::playersInSameMatch();
+        }
+
+        // Get the player's current opponent
+        $currentOpponent = $currentMatch->getOpponent($player);
+
+        // Add player to the BYE match as player2
+        $byeMatch->setPlayer2($player);
+        $byeMatch->setIsBye(false);
+        $byeMatch->setStatus(MatchStatus::PENDING);
+        $byeMatch->setResult(null);
+        $byeMatch->setCompletedAt(null);
+
+        // Handle the player's original match
+        if ($currentMatch->isByeMatch()) {
+            // Player was alone with BYE - remove the match
+            $round->removeMatch($currentMatch);
+            $this->entityManager->remove($currentMatch);
+        } elseif ($currentOpponent !== null) {
+            // Convert original match to BYE for the opponent
+            $currentMatch->setPlayer1($currentOpponent);
+            $currentMatch->setPlayer2(null);
+            $currentMatch->prepareBye();
+        }
+
+        $this->entityManager->flush();
     }
 
     /**
@@ -334,7 +414,34 @@ final class PairingModificationService
     }
 
     /**
+     * Merge two BYE matches into one normal match.
+     *
+     * When both players have BYEs, combine them into a single match.
+     */
+    private function mergeTwoByeMatches(
+        Registration $player1,
+        Registration $player2,
+        TournamentMatch $match1,
+        TournamentMatch $match2,
+        Round $round
+    ): void {
+        // Use match1 for the new match, remove match2
+        $match1->setPlayer1($player1);
+        $match1->setPlayer2($player2);
+        $match1->setIsBye(false);
+        $match1->setStatus(MatchStatus::PENDING);
+        $match1->setResult(null);
+        $match1->setCompletedAt(null);
+
+        // Remove match2 from the round
+        $round->removeMatch($match2);
+        $this->entityManager->remove($match2);
+    }
+
+    /**
      * Perform the actual swap of players between matches.
+     *
+     * Handles BYE matches correctly by transferring the BYE flag.
      */
     private function performSwap(
         Registration $player1,
@@ -342,22 +449,58 @@ final class PairingModificationService
         TournamentMatch $match1,
         TournamentMatch $match2
     ): void {
-        // Determine positions
-        $player1IsPlayer1InMatch = $match1->getPlayer1() === $player1;
-        $player2IsPlayer1InMatch = $match2->getPlayer1() === $player2;
+        $match1IsBye = $match1->isByeMatch();
+        $match2IsBye = $match2->isByeMatch();
 
-        // Swap: put player2 in player1's position
-        if ($player1IsPlayer1InMatch) {
+        // Get opponents before swap
+        $player1Opponent = $match1->getOpponent($player1);
+        $player2Opponent = $match2->getOpponent($player2);
+
+        if ($match1IsBye && !$match2IsBye) {
+            // Player1 has BYE, Player2 is in normal match
+            // After swap: Player2 gets BYE, Player1 joins normal match
+
+            // Match1 becomes normal match: Player2 vs Player1's old opponent (null for BYE)
+            // But since Match1 was BYE, we need to convert it
             $match1->setPlayer1($player2);
-        } else {
-            $match1->setPlayer2($player2);
-        }
+            $match1->setPlayer2($player2Opponent);
+            $match1->setIsBye(false);
 
-        // Swap: put player1 in player2's position
-        if ($player2IsPlayer1InMatch) {
+            // Match2: Player1 takes Player2's spot
             $match2->setPlayer1($player1);
+            $match2->setPlayer2($player1Opponent);
+
+        } elseif (!$match1IsBye && $match2IsBye) {
+            // Player1 is in normal match, Player2 has BYE
+            // After swap: Player1 gets BYE, Player2 joins normal match
+
+            // Match1: Player2 takes Player1's spot
+            if ($match1->getPlayer1() === $player1) {
+                $match1->setPlayer1($player2);
+            } else {
+                $match1->setPlayer2($player2);
+            }
+
+            // Match2 stays BYE with Player1
+            $match2->setPlayer1($player1);
+            // player2 stays null, isBye stays true
+
         } else {
-            $match2->setPlayer2($player1);
+            // Both normal matches or both BYE (rare) - standard swap
+            $player1IsPlayer1InMatch = $match1->getPlayer1() === $player1;
+            $player2IsPlayer1InMatch = $match2->getPlayer1() === $player2;
+
+            if ($player1IsPlayer1InMatch) {
+                $match1->setPlayer1($player2);
+            } else {
+                $match1->setPlayer2($player2);
+            }
+
+            if ($player2IsPlayer1InMatch) {
+                $match2->setPlayer1($player1);
+            } else {
+                $match2->setPlayer2($player1);
+            }
         }
     }
 }

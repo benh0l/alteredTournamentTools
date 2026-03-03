@@ -100,7 +100,7 @@
                     <div class="flex items-center justify-between gap-2">
                         {# Player 1 #}
                         <div class="flex-1 text-center p-2 rounded-lg transition-all"
-                             {% if canEditPairings and not match.isByeMatch %}
+                             {% if canEditPairings %}
                              data-pairing-editor-target="playerCard"
                              data-player-id="{{ match.player1.id }}"
                              {% endif %}>
@@ -135,6 +135,10 @@
                              {% if canEditPairings and match.player2 %}
                              data-pairing-editor-target="playerCard"
                              data-player-id="{{ match.player2.id }}"
+                             {% elseif canEditPairings and match.isByeMatch %}
+                             data-pairing-editor-target="byeSlot"
+                             data-match-id="{{ match.id }}"
+                             data-player1-id="{{ match.player1.id }}"
                              {% endif %}>
                             {% if match.player2 %}
                                 <div class="text-sm font-medium truncate {% if match.winner and match.player2 and match.winner == match.player2 %}text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
@@ -236,7 +240,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
                                 <span class="inline-block p-1 rounded transition-all"
-                                      {% if canEditPairings and not match.isByeMatch %}
+                                      {% if canEditPairings %}
                                       data-pairing-editor-target="playerCard"
                                       data-player-id="{{ match.player1.id }}"
                                       {% endif %}>
@@ -272,7 +276,13 @@
                                         {% endif %}
                                     </span>
                                 {% else %}
-                                    <span class="italic" style="color: var(--text-muted);">{{ 'home.bye'|trans }}</span>
+                                    <span class="inline-block p-2 rounded transition-all italic"
+                                          style="color: var(--text-muted);"
+                                          {% if canEditPairings and match.isByeMatch %}
+                                          data-pairing-editor-target="byeSlot"
+                                          data-match-id="{{ match.id }}"
+                                          data-player1-id="{{ match.player1.id }}"
+                                          {% endif %}>{{ 'home.bye'|trans }}</span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">

@@ -7,21 +7,10 @@ import { Controller } from '@hotwired/stimulus';
  * - Swap players between tables by dragging
  * - Assign manual BYEs by dropping on BYE zone
  *
- * Usage:
- * <div data-controller="pairing-editor"
- *      data-pairing-editor-tournament-id-value="123"
- *      data-pairing-editor-round-number-value="1">
- *     <div data-pairing-editor-target="matchesContainer">
- *         <!-- Match cards with draggable players -->
- *     </div>
- *     <div data-pairing-editor-target="byeZone">BYE Zone</div>
- *     <button data-pairing-editor-target="editButton" data-action="click->pairing-editor#enableEditMode">Edit</button>
- *     <button data-pairing-editor-target="saveButton" data-action="click->pairing-editor#saveChanges" class="hidden">Save</button>
- *     <button data-pairing-editor-target="cancelButton" data-action="click->pairing-editor#cancelChanges" class="hidden">Cancel</button>
- * </div>
+ * All changes are stored locally and only saved when clicking "Save".
  */
 export default class extends Controller {
-    static targets = ['matchesContainer', 'byeZone', 'editButton', 'saveButton', 'cancelButton', 'playerCard', 'rematchModal', 'rematchMessage', 'startRoundForm'];
+    static targets = ['matchesContainer', 'byeZone', 'editButton', 'saveButton', 'cancelButton', 'playerCard', 'rematchModal', 'rematchMessage', 'startRoundForm', 'byeSlot'];
 
     static values = {
         tournamentId: Number,
@@ -31,6 +20,8 @@ export default class extends Controller {
     // State
     editMode = false;
     pendingSwaps = [];
+    pendingByes = [];
+    pendingFillByes = []; // { playerId, matchId, player1Id }
     originalState = null;
     draggedPlayer = null;
     pendingRematchSwap = null;
@@ -49,6 +40,8 @@ export default class extends Controller {
     enableEditMode() {
         this.editMode = true;
         this.pendingSwaps = [];
+        this.pendingByes = [];
+        this.pendingFillByes = [];
 
         // Show/hide buttons
         if (this.hasEditButtonTarget) {
@@ -90,15 +83,28 @@ export default class extends Controller {
             this.byeZoneTarget.addEventListener('dragleave', this.handleByeZoneDragLeave.bind(this));
             this.byeZoneTarget.addEventListener('drop', this.handleByeZoneDrop.bind(this));
         }
+
+        // BYE slot drop events (existing BYE matches that can receive a player)
+        this.byeSlotTargets.forEach(slot => {
+            slot.addEventListener('dragover', this.handleByeSlotDragOver.bind(this));
+            slot.addEventListener('dragleave', this.handleByeSlotDragLeave.bind(this));
+            slot.addEventListener('drop', this.handleByeSlotDrop.bind(this));
+        });
     }
 
     disableEditMode() {
         this.editMode = false;
 
         // Show/hide buttons
-        this.editButtonTarget.classList.remove('hidden');
-        this.saveButtonTarget.classList.add('hidden');
-        this.cancelButtonTarget.classList.add('hidden');
+        if (this.hasEditButtonTarget) {
+            this.editButtonTarget.classList.remove('hidden');
+        }
+        if (this.hasSaveButtonTarget) {
+            this.saveButtonTarget.classList.add('hidden');
+        }
+        if (this.hasCancelButtonTarget) {
+            this.cancelButtonTarget.classList.add('hidden');
+        }
 
         // Hide BYE zone
         if (this.hasByeZoneTarget) {
@@ -119,8 +125,12 @@ export default class extends Controller {
 
     cancelChanges() {
         // Restore original state
-        this.matchesContainerTarget.innerHTML = this.originalState;
+        if (this.hasMatchesContainerTarget) {
+            this.matchesContainerTarget.innerHTML = this.originalState;
+        }
         this.pendingSwaps = [];
+        this.pendingByes = [];
+        this.pendingFillByes = [];
         this.disableEditMode();
 
         // Re-connect targets after restoring HTML
@@ -174,8 +184,38 @@ export default class extends Controller {
         const player1Id = parseInt(this.draggedPlayer.dataset.playerId);
         const player2Id = parseInt(target.dataset.playerId);
 
-        // Perform swap via API
-        await this.performSwap(player1Id, player2Id, false);
+        // Check for rematch before adding to pending (still need server-side check)
+        const rematchInfo = await this.checkRematch(player1Id, player2Id);
+
+        if (rematchInfo) {
+            // Show rematch warning
+            this.pendingRematchSwap = { player1Id, player2Id };
+            this.showRematchWarning(rematchInfo);
+            return;
+        }
+
+        // Add to pending swaps and update UI
+        this.addPendingSwap(player1Id, player2Id);
+    }
+
+    addPendingSwap(player1Id, player2Id) {
+        // Check if this swap already exists or reverses an existing swap
+        const existingIndex = this.pendingSwaps.findIndex(
+            s => (s.player1Id === player1Id && s.player2Id === player2Id) ||
+                 (s.player1Id === player2Id && s.player2Id === player1Id)
+        );
+
+        if (existingIndex !== -1) {
+            // Remove existing swap (they cancel out)
+            this.pendingSwaps.splice(existingIndex, 1);
+        } else {
+            // Add new swap
+            this.pendingSwaps.push({ player1Id, player2Id });
+        }
+
+        // Update UI
+        this.swapPlayerCardsInUI(player1Id, player2Id);
+        this.showSuccess('Échange préparé (non enregistré)');
     }
 
     handleByeZoneDragOver(event) {
@@ -188,77 +228,153 @@ export default class extends Controller {
         this.byeZoneTarget.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-100/20');
     }
 
-    async handleByeZoneDrop(event) {
+    handleByeZoneDrop(event) {
         event.preventDefault();
         this.byeZoneTarget.classList.remove('ring-2', 'ring-amber-400', 'bg-amber-100/20');
 
         const playerId = parseInt(this.draggedPlayer.dataset.playerId);
-        await this.assignBye(playerId);
+
+        // Add to pending BYEs (don't send to server yet)
+        this.addPendingBye(playerId);
     }
 
-    async performSwap(player1Id, player2Id, forceSwap = false) {
-        try {
-            const response = await fetch(`/tournaments/${this.tournamentIdValue}/rounds/${this.roundNumberValue}/swap`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    player1Id,
-                    player2Id,
-                    forceSwap,
-                }),
-            });
+    handleByeSlotDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        event.currentTarget.style.backgroundColor = 'rgba(34, 197, 94, 0.3)';
+        event.currentTarget.style.border = '2px dashed #22c55e';
+    }
 
-            const data = await response.json();
+    handleByeSlotDragLeave(event) {
+        event.currentTarget.style.backgroundColor = '';
+        event.currentTarget.style.border = '';
+    }
 
-            if (!response.ok) {
-                this.showError(data.message || 'Erreur lors de l\'echange');
-                return;
-            }
+    handleByeSlotDrop(event) {
+        event.preventDefault();
+        const slot = event.currentTarget;
+        slot.style.backgroundColor = '';
+        slot.style.border = '';
 
-            if (data.rematchDetected && !forceSwap) {
-                // Show rematch warning modal
-                this.pendingRematchSwap = { player1Id, player2Id };
-                this.showRematchWarning(data.rematchDetails);
-                return;
-            }
+        const playerId = parseInt(this.draggedPlayer.dataset.playerId);
+        const matchId = parseInt(slot.dataset.matchId);
+        const player1Id = parseInt(slot.dataset.player1Id);
 
-            if (data.success) {
-                // Swap succeeded - update UI
-                this.swapPlayerCardsInUI(player1Id, player2Id);
-                this.showSuccess('Joueurs echanges avec succes');
-            }
-        } catch (error) {
-            console.error('Swap error:', error);
-            this.showError('Erreur de connexion');
+        // Don't allow dropping on own match
+        if (playerId === player1Id) {
+            this.showError('Le joueur est déjà dans ce match');
+            return;
         }
+
+        this.addPendingFillBye(playerId, matchId, player1Id);
     }
 
-    async assignBye(playerId) {
+    addPendingFillBye(playerId, matchId, player1Id) {
+        // Check if already pending
+        const existing = this.pendingFillByes.find(f => f.matchId === matchId);
+        if (existing) {
+            this.showError('Ce match BYE a déjà un joueur en attente');
+            return;
+        }
+
+        this.pendingFillByes.push({ playerId, matchId, player1Id });
+
+        // Visual feedback - update the BYE slot to show the player name
+        const slots = document.querySelectorAll(`[data-pairing-editor-target="byeSlot"][data-match-id="${matchId}"]`);
+        const playerCards = document.querySelectorAll(`[data-pairing-editor-target="playerCard"][data-player-id="${playerId}"]`);
+
+        // Get player name from the dragged card
+        const playerName = this.draggedPlayer.textContent.trim().split('\n')[0].trim();
+
+        slots.forEach(slot => {
+            slot.style.backgroundColor = 'rgba(34, 197, 94, 0.3)';
+            slot.style.border = '2px solid #22c55e';
+            slot.innerHTML = `<span class="font-medium">${playerName}</span> <span class="text-xs bg-green-500 text-white px-1 rounded ml-1">NEW</span>`;
+        });
+
+        // Mark original player as "moving"
+        playerCards.forEach(card => {
+            card.style.opacity = '0.5';
+            card.style.textDecoration = 'line-through';
+        });
+
+        this.showSuccess('Joueur ajouté au match (non enregistré)');
+    }
+
+    addPendingBye(playerId) {
+        // Check if already pending - allow removing by dropping again
+        const existingIndex = this.pendingByes.indexOf(playerId);
+        if (existingIndex !== -1) {
+            // Remove from pending BYEs
+            this.pendingByes.splice(existingIndex, 1);
+            this.removePendingByeVisual(playerId);
+            this.showSuccess('BYE annulé');
+            return;
+        }
+
+        this.pendingByes.push(playerId);
+
+        // Visual feedback on the player card - find all cards with this player ID
+        const allCards = document.querySelectorAll(`[data-pairing-editor-target="playerCard"][data-player-id="${playerId}"]`);
+
+        allCards.forEach(card => {
+            // Add highlight styles
+            card.style.backgroundColor = 'rgba(245, 158, 11, 0.3)';
+            card.style.border = '2px solid #f59e0b';
+            card.style.borderRadius = '8px';
+
+            // Add BYE badge
+            if (!card.querySelector('.bye-indicator')) {
+                const indicator = document.createElement('span');
+                indicator.className = 'bye-indicator';
+                indicator.style.cssText = 'margin-left: 8px; font-size: 10px; background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;';
+                indicator.textContent = 'BYE';
+                card.appendChild(indicator);
+            }
+
+            // Ensure card stays draggable
+            card.setAttribute('draggable', 'true');
+        });
+
+        this.showSuccess('BYE préparé (non enregistré)');
+    }
+
+    removePendingByeVisual(playerId) {
+        const allCards = document.querySelectorAll(`[data-pairing-editor-target="playerCard"][data-player-id="${playerId}"]`);
+
+        allCards.forEach(card => {
+            // Remove highlight styles
+            card.style.backgroundColor = '';
+            card.style.border = '';
+            card.style.borderRadius = '';
+
+            // Remove BYE badge
+            const indicator = card.querySelector('.bye-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        });
+    }
+
+    async checkRematch(player1Id, player2Id) {
         try {
-            const response = await fetch(`/tournaments/${this.tournamentIdValue}/rounds/${this.roundNumberValue}/assign-bye`, {
+            const response = await fetch(`/tournaments/${this.tournamentIdValue}/rounds/${this.roundNumberValue}/check-rematch`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ playerId }),
+                body: JSON.stringify({ player1Id, player2Id }),
             });
 
-            const data = await response.json();
-
             if (!response.ok) {
-                this.showError(data.message || 'Erreur lors de l\'attribution du BYE');
-                return;
+                return null;
             }
 
-            if (data.success) {
-                // Reload page to show updated pairings
-                window.location.reload();
-            }
+            const data = await response.json();
+            return data.rematchDetected ? data.rematchDetails : null;
         } catch (error) {
-            console.error('Assign BYE error:', error);
-            this.showError('Erreur de connexion');
+            console.error('Check rematch error:', error);
+            return null;
         }
     }
 
@@ -297,14 +413,14 @@ export default class extends Controller {
 
     showRematchWarning(details) {
         if (this.hasRematchModalTarget) {
-            const message = `Attention: cet echange cree un rematch entre ${details.player1} et ${details.player2} (deja joue en ronde ${details.previousRound}). Continuer quand meme?`;
+            const message = `Attention: cet échange crée un rematch entre ${details.player1} et ${details.player2} (déjà joué en ronde ${details.previousRound}). Continuer quand même?`;
             this.rematchMessageTarget.textContent = message;
             this.rematchModalTarget.classList.remove('hidden');
         } else {
             // Fallback to confirm dialog
-            const confirmed = confirm(`Attention: cet echange cree un rematch entre ${details.player1} et ${details.player2} (deja joue en ronde ${details.previousRound}). Continuer quand meme?`);
+            const confirmed = confirm(`Attention: cet échange crée un rematch entre ${details.player1} et ${details.player2} (déjà joué en ronde ${details.previousRound}). Continuer quand même?`);
             if (confirmed && this.pendingRematchSwap) {
-                this.performSwap(this.pendingRematchSwap.player1Id, this.pendingRematchSwap.player2Id, true);
+                this.addPendingSwap(this.pendingRematchSwap.player1Id, this.pendingRematchSwap.player2Id);
             }
             this.pendingRematchSwap = null;
         }
@@ -312,7 +428,7 @@ export default class extends Controller {
 
     confirmRematch() {
         if (this.pendingRematchSwap) {
-            this.performSwap(this.pendingRematchSwap.player1Id, this.pendingRematchSwap.player2Id, true);
+            this.addPendingSwap(this.pendingRematchSwap.player1Id, this.pendingRematchSwap.player2Id);
         }
         this.closeRematchModal();
     }
@@ -330,11 +446,47 @@ export default class extends Controller {
     }
 
     async saveChanges() {
-        // All changes are already saved via API calls
-        // Just exit edit mode
-        this.originalState = this.matchesContainerTarget.innerHTML;
-        this.disableEditMode();
-        this.showSuccess('Modifications enregistrees');
+        // Check if there are any pending changes
+        if (this.pendingSwaps.length === 0 && this.pendingByes.length === 0 && this.pendingFillByes.length === 0) {
+            this.showSuccess('Aucune modification à enregistrer');
+            this.disableEditMode();
+            return;
+        }
+
+        try {
+            // Send all pending changes to the server
+            const response = await fetch(`/tournaments/${this.tournamentIdValue}/rounds/${this.roundNumberValue}/apply-changes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    swaps: this.pendingSwaps,
+                    byes: this.pendingByes,
+                    fillByes: this.pendingFillByes,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                this.showError(data.message || 'Erreur lors de l\'enregistrement');
+                return;
+            }
+
+            // Success - update original state and exit edit mode
+            this.originalState = this.matchesContainerTarget.innerHTML;
+            this.pendingSwaps = [];
+            this.pendingByes = [];
+            this.disableEditMode();
+            this.showSuccess('Modifications enregistrées');
+
+            // Reload page to get fresh data
+            window.location.reload();
+        } catch (error) {
+            console.error('Save error:', error);
+            this.showError('Erreur de connexion');
+        }
     }
 
     showSuccess(message) {

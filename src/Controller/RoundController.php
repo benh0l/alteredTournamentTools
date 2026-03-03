@@ -549,6 +549,13 @@ final class RoundController extends AbstractController
             return $this->redirectToTournament($tournament);
         }
 
+        // Complete any pending BYE matches before starting
+        foreach ($round->getMatches() as $match) {
+            if ($match->isByeMatch() && $match->isPending()) {
+                $match->completeBye();
+            }
+        }
+
         // Start the round
         $round->start();
         $this->entityManager->flush();
@@ -664,6 +671,124 @@ final class RoundController extends AbstractController
             return $this->json([
                 'success' => true,
                 'previousByePlayer' => $previousByePlayerId,
+            ]);
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Check if swapping two players would create a rematch.
+     *
+     * API endpoint for checking rematches without modifying data.
+     */
+    #[Route('/{roundNumber}/check-rematch', name: 'round_check_rematch', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function checkRematch(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can check pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $player1Id = $data['player1Id'] ?? null;
+            $player2Id = $data['player2Id'] ?? null;
+
+            if ($player1Id === null || $player2Id === null) {
+                return $this->json([
+                    'error' => 'missing_params',
+                    'message' => 'player1Id et player2Id requis.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $rematchInfo = $this->pairingModificationService->checkRematch($tournament, $player1Id, $player2Id);
+
+            return $this->json([
+                'rematchDetected' => $rematchInfo !== null,
+                'rematchDetails' => $rematchInfo,
+            ]);
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Apply multiple pairing changes at once.
+     *
+     * API endpoint for batch pairing modifications.
+     * Applies all swaps and BYE assignments in a single transaction.
+     */
+    #[Route('/{roundNumber}/apply-changes', name: 'round_apply_changes', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function applyChanges(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can modify pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $swaps = $data['swaps'] ?? [];
+            $byes = $data['byes'] ?? [];
+
+            // Apply all swaps
+            foreach ($swaps as $swap) {
+                $swapRequest = PairingSwapRequest::fromArray([
+                    'player1Id' => $swap['player1Id'],
+                    'player2Id' => $swap['player2Id'],
+                    'forceSwap' => true, // Force because user already confirmed rematches
+                ]);
+                $this->pairingModificationService->swapPlayers($round, $swapRequest);
+            }
+
+            // Apply all BYEs
+            foreach ($byes as $playerId) {
+                $byeRequest = AssignByeRequest::fromArray(['playerId' => $playerId]);
+                $this->pairingModificationService->assignManualBye($round, $byeRequest);
+            }
+
+            // Apply all fill BYEs (add player to existing BYE match)
+            $fillByes = $data['fillByes'] ?? [];
+            foreach ($fillByes as $fillBye) {
+                $this->pairingModificationService->fillByeSlot(
+                    $round,
+                    (int) $fillBye['playerId'],
+                    (int) $fillBye['matchId']
+                );
+            }
+
+            return $this->json([
+                'success' => true,
+                'swapsApplied' => count($swaps),
+                'byesApplied' => count($byes),
+                'fillByesApplied' => count($fillByes),
             ]);
         } catch (PairingModificationException $e) {
             return $this->json([
