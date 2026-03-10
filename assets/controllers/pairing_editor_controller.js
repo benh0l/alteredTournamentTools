@@ -25,8 +25,18 @@ export default class extends Controller {
     originalState = null;
     draggedPlayer = null;
     pendingRematchSwap = null;
+    selectedPlayer = null;      // Mobile: joueur sélectionné pour échange
+    isTouchDevice = false;      // Détection appareil tactile
 
     connect() {
+        // Détection appareil tactile
+        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Bind handlers une seule fois pour éviter les problèmes de référence
+        this._boundHandleTapSelect = this.handleTapSelect.bind(this);
+        this._boundHandleByeZoneTap = this.handleByeZoneTap.bind(this);
+        this._boundHandleByeSlotTap = this.handleByeSlotTap.bind(this);
+
         // Store original HTML for cancel
         if (this.hasMatchesContainerTarget) {
             this.originalState = this.matchesContainerTarget.innerHTML;
@@ -64,31 +74,44 @@ export default class extends Controller {
             this.startRoundFormTarget.classList.add('hidden');
         }
 
-        // Make player cards draggable
+        // Make player cards interactive
         this.playerCardTargets.forEach(card => {
-            card.setAttribute('draggable', 'true');
-            card.classList.add('cursor-move', 'hover:ring-2', 'hover:ring-blue-400');
-
-            // Add drag event listeners
-            card.addEventListener('dragstart', this.handleDragStart.bind(this));
-            card.addEventListener('dragend', this.handleDragEnd.bind(this));
-            card.addEventListener('dragover', this.handleDragOver.bind(this));
-            card.addEventListener('dragleave', this.handleDragLeave.bind(this));
-            card.addEventListener('drop', this.handleDrop.bind(this));
+            if (this.isTouchDevice) {
+                // Mode mobile: tap-to-select
+                card.classList.add('cursor-pointer', 'hover:ring-2', 'hover:ring-blue-400', 'select-none');
+                card.addEventListener('click', this._boundHandleTapSelect);
+            } else {
+                // Mode desktop: drag & drop
+                card.setAttribute('draggable', 'true');
+                card.classList.add('cursor-move', 'hover:ring-2', 'hover:ring-blue-400');
+                card.addEventListener('dragstart', this.handleDragStart.bind(this));
+                card.addEventListener('dragend', this.handleDragEnd.bind(this));
+                card.addEventListener('dragover', this.handleDragOver.bind(this));
+                card.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                card.addEventListener('drop', this.handleDrop.bind(this));
+            }
         });
 
-        // BYE zone drop events
+        // BYE zone events
         if (this.hasByeZoneTarget) {
-            this.byeZoneTarget.addEventListener('dragover', this.handleByeZoneDragOver.bind(this));
-            this.byeZoneTarget.addEventListener('dragleave', this.handleByeZoneDragLeave.bind(this));
-            this.byeZoneTarget.addEventListener('drop', this.handleByeZoneDrop.bind(this));
+            if (this.isTouchDevice) {
+                this.byeZoneTarget.addEventListener('click', this._boundHandleByeZoneTap);
+            } else {
+                this.byeZoneTarget.addEventListener('dragover', this.handleByeZoneDragOver.bind(this));
+                this.byeZoneTarget.addEventListener('dragleave', this.handleByeZoneDragLeave.bind(this));
+                this.byeZoneTarget.addEventListener('drop', this.handleByeZoneDrop.bind(this));
+            }
         }
 
-        // BYE slot drop events (existing BYE matches that can receive a player)
+        // BYE slot events (existing BYE matches that can receive a player)
         this.byeSlotTargets.forEach(slot => {
-            slot.addEventListener('dragover', this.handleByeSlotDragOver.bind(this));
-            slot.addEventListener('dragleave', this.handleByeSlotDragLeave.bind(this));
-            slot.addEventListener('drop', this.handleByeSlotDrop.bind(this));
+            if (this.isTouchDevice) {
+                slot.addEventListener('click', this._boundHandleByeSlotTap);
+            } else {
+                slot.addEventListener('dragover', this.handleByeSlotDragOver.bind(this));
+                slot.addEventListener('dragleave', this.handleByeSlotDragLeave.bind(this));
+                slot.addEventListener('drop', this.handleByeSlotDrop.bind(this));
+            }
         });
     }
 
@@ -116,11 +139,26 @@ export default class extends Controller {
             this.startRoundFormTarget.classList.remove('hidden');
         }
 
-        // Remove draggable from cards
+        // Remove interactive state from cards
         this.playerCardTargets.forEach(card => {
             card.removeAttribute('draggable');
-            card.classList.remove('cursor-move', 'hover:ring-2', 'hover:ring-blue-400');
+            card.classList.remove('cursor-move', 'cursor-pointer', 'hover:ring-2', 'hover:ring-blue-400', 'select-none');
+            // Remove mobile tap listener
+            card.removeEventListener('click', this._boundHandleTapSelect);
         });
+
+        // Remove BYE zone mobile listener
+        if (this.hasByeZoneTarget) {
+            this.byeZoneTarget.removeEventListener('click', this._boundHandleByeZoneTap);
+        }
+
+        // Remove BYE slot mobile listeners
+        this.byeSlotTargets.forEach(slot => {
+            slot.removeEventListener('click', this._boundHandleByeSlotTap);
+        });
+
+        // Clear mobile selection
+        this.clearSelection();
     }
 
     cancelChanges() {
@@ -131,6 +169,7 @@ export default class extends Controller {
         this.pendingSwaps = [];
         this.pendingByes = [];
         this.pendingFillByes = [];
+        this.clearSelection();
         this.disableEditMode();
 
         // Re-connect targets after restoring HTML
@@ -508,5 +547,125 @@ export default class extends Controller {
             toast.classList.add('opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // ============================================
+    // MOBILE TAP-TO-SELECT HANDLERS
+    // ============================================
+
+    handleTapSelect(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const card = event.target.closest('[data-pairing-editor-target="playerCard"]');
+        if (!card) return;
+
+        const playerId = parseInt(card.dataset.playerId);
+
+        // Si aucun joueur sélectionné → sélectionner celui-ci
+        if (!this.selectedPlayer) {
+            this.selectPlayer(card, playerId);
+            return;
+        }
+
+        // Si on tape sur le même joueur → désélectionner
+        if (this.selectedPlayer.id === playerId) {
+            this.clearSelection();
+            this.showToast('Sélection annulée', 'info');
+            return;
+        }
+
+        // Sinon → effectuer l'échange
+        this.performTapSwap(playerId);
+    }
+
+    selectPlayer(card, playerId) {
+        this.selectedPlayer = { id: playerId, card: card };
+
+        // Highlight visuel sur toutes les cartes du joueur
+        this.playerCardTargets.forEach(c => {
+            if (parseInt(c.dataset.playerId) === playerId) {
+                c.classList.add('ring-4', 'ring-blue-500', 'bg-blue-100/30', 'scale-105');
+                c.style.transition = 'transform 0.15s ease';
+            }
+        });
+
+        this.showToast('Tapez un autre joueur pour échanger', 'info');
+    }
+
+    clearSelection() {
+        if (this.selectedPlayer) {
+            // Retirer le highlight de toutes les cartes du joueur sélectionné
+            this.playerCardTargets.forEach(c => {
+                if (parseInt(c.dataset.playerId) === this.selectedPlayer.id) {
+                    c.classList.remove('ring-4', 'ring-blue-500', 'bg-blue-100/30', 'scale-105');
+                    c.style.transition = '';
+                }
+            });
+        }
+        this.selectedPlayer = null;
+    }
+
+    async performTapSwap(targetPlayerId) {
+        const player1Id = this.selectedPlayer.id;
+        const player2Id = targetPlayerId;
+
+        // Clear selection first
+        this.clearSelection();
+
+        // Check for rematch
+        const rematchInfo = await this.checkRematch(player1Id, player2Id);
+
+        if (rematchInfo) {
+            this.pendingRematchSwap = { player1Id, player2Id };
+            this.showRematchWarning(rematchInfo);
+            return;
+        }
+
+        this.addPendingSwap(player1Id, player2Id);
+    }
+
+    handleByeZoneTap(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!this.selectedPlayer) {
+            this.showToast('Sélectionnez d\'abord un joueur', 'info');
+            return;
+        }
+
+        const playerId = this.selectedPlayer.id;
+        this.clearSelection();
+        this.addPendingBye(playerId);
+    }
+
+    handleByeSlotTap(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!this.selectedPlayer) {
+            this.showToast('Sélectionnez d\'abord un joueur', 'info');
+            return;
+        }
+
+        const slot = event.currentTarget;
+        const playerId = this.selectedPlayer.id;
+        const matchId = parseInt(slot.dataset.matchId);
+        const player1Id = parseInt(slot.dataset.player1Id);
+
+        if (playerId === player1Id) {
+            this.showError('Le joueur est déjà dans ce match');
+            this.clearSelection();
+            return;
+        }
+
+        // Pour le fill BYE, on a besoin de stocker le nom du joueur
+        const playerCard = this.playerCardTargets.find(c => parseInt(c.dataset.playerId) === playerId);
+        this.draggedPlayer = playerCard; // Temporaire pour addPendingFillBye
+
+        this.clearSelection();
+        this.addPendingFillBye(playerId, matchId, player1Id);
+
+        this.draggedPlayer = null;
     }
 }
