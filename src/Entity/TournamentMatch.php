@@ -29,11 +29,11 @@ class TournamentMatch
     private Round $round;
 
     #[ORM\ManyToOne(targetEntity: Registration::class)]
-    #[ORM\JoinColumn(name: 'player1_id', nullable: false)]
-    private Registration $player1;
+    #[ORM\JoinColumn(name: 'player1_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Registration $player1 = null;
 
     #[ORM\ManyToOne(targetEntity: Registration::class)]
-    #[ORM\JoinColumn(name: 'player2_id', nullable: true)]
+    #[ORM\JoinColumn(name: 'player2_id', nullable: true, onDelete: 'SET NULL')]
     private ?Registration $player2 = null;
 
     #[ORM\Column(name: 'table_number', type: 'integer')]
@@ -121,12 +121,12 @@ class TournamentMatch
         return $this->group !== null;
     }
 
-    public function getPlayer1(): Registration
+    public function getPlayer1(): ?Registration
     {
         return $this->player1;
     }
 
-    public function setPlayer1(Registration $player1): self
+    public function setPlayer1(?Registration $player1): self
     {
         $this->player1 = $player1;
 
