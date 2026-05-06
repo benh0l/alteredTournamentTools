@@ -8,9 +8,11 @@ use App\Entity\User;
 use App\Form\ChangePasswordProfileFormType;
 use App\Form\DeleteAccountFormType;
 use App\Form\ProfileEditFormType;
+use App\Form\SetPasswordFormType;
 use App\Repository\UserRepository;
 use App\Service\AccountDeletionService;
 use App\Service\AvatarUploadService;
+use App\Service\OAuth\OAuthFeatureService;
 use App\Service\PlayerStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +34,7 @@ final class ProfileController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly AvatarUploadService $avatarUploadService,
         private readonly TranslatorInterface $translator,
+        private readonly OAuthFeatureService $oauthFeatureService,
     ) {
     }
 
@@ -40,6 +43,7 @@ final class ProfileController extends AbstractController
     {
         return $this->render('profile/show.html.twig', [
             'user' => $this->getUser(),
+            'oauth_altered_reunion_enabled' => $this->oauthFeatureService->isAlteredReunionEnabled(),
         ]);
     }
 
@@ -99,6 +103,42 @@ final class ProfileController extends AbstractController
         return $this->render('profile/edit.html.twig', [
             'form' => $form,
             'originalEmail' => $originalEmail,
+        ]);
+    }
+
+    #[Route('/set-password', name: 'app_profile_set_password', methods: ['GET', 'POST'])]
+    public function setPassword(Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        // Only allow if user was created via OAuth and has no local password
+        if (!$user->isCreatedViaOauth() || $user->hasLocalPassword()) {
+            $this->addFlash('info', 'Vous avez deja un mot de passe. Utilisez "Modifier le mot de passe" pour le changer.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $form = $this->createForm(SetPasswordFormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $hashedPassword = $this->passwordHasher->hashPassword(
+                $user,
+                $form->get('newPassword')->getData(),
+            );
+            $user->setPassword($hashedPassword);
+            $user->setUpdatedAt(new \DateTimeImmutable());
+
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre mot de passe a ete defini avec succes. Vous pouvez maintenant vous connecter avec votre email et mot de passe.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->render('profile/set_password.html.twig', [
+            'form' => $form,
         ]);
     }
 

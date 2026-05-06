@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\User;
+use App\Entity\UserOAuthLink;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -189,5 +190,124 @@ final class UserTest extends TestCase
         $user->eraseCredentials();
 
         $this->assertTrue(true);
+    }
+
+    public function testIsCreatedViaOauthIsFalseByDefault(): void
+    {
+        $user = new User();
+
+        $this->assertFalse($user->isCreatedViaOauth());
+    }
+
+    public function testCreatedViaOauthCanBeSet(): void
+    {
+        $user = new User();
+        $user->setCreatedViaOauth(true);
+
+        $this->assertTrue($user->isCreatedViaOauth());
+    }
+
+    public function testHasLocalPasswordReturnsTrueWhenNotCreatedViaOauth(): void
+    {
+        $user = new User();
+        $user->setPassword('some_hashed_password');
+        $user->setCreatedViaOauth(false);
+
+        $this->assertTrue($user->hasLocalPassword());
+    }
+
+    public function testHasLocalPasswordReturnsFalseWhenCreatedViaOauthAndNoPassword(): void
+    {
+        $user = new User();
+        $user->setPassword('OAUTH_NO_PASSWORD');
+        $user->setCreatedViaOauth(true);
+
+        $this->assertFalse($user->hasLocalPassword());
+    }
+
+    public function testHasLocalPasswordReturnsTrueWhenCreatedViaOauthButPasswordSet(): void
+    {
+        $user = new User();
+        $user->setPassword('hashed_real_password');
+        $user->setCreatedViaOauth(true);
+
+        $this->assertTrue($user->hasLocalPassword());
+    }
+
+    public function testOauthLinksCollectionIsEmptyByDefault(): void
+    {
+        $user = new User();
+
+        $this->assertCount(0, $user->getOauthLinks());
+    }
+
+    public function testAddOauthLink(): void
+    {
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPseudo('TestUser');
+
+        $link = new UserOAuthLink();
+        $link->setProvider('altered_reunion');
+        $link->setProviderUserId('user-123');
+
+        $user->addOauthLink($link);
+
+        $this->assertCount(1, $user->getOauthLinks());
+        $this->assertSame($user, $link->getUser());
+    }
+
+    public function testRemoveOauthLink(): void
+    {
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPseudo('TestUser');
+
+        $link = new UserOAuthLink();
+        $link->setProvider('altered_reunion');
+        $link->setProviderUserId('user-123');
+
+        $user->addOauthLink($link);
+        $user->removeOauthLink($link);
+
+        $this->assertCount(0, $user->getOauthLinks());
+    }
+
+    public function testGetOAuthLinkReturnsLinkForProvider(): void
+    {
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPseudo('TestUser');
+
+        $link = new UserOAuthLink();
+        $link->setProvider('altered_reunion');
+        $link->setProviderUserId('user-123');
+
+        $user->addOauthLink($link);
+
+        $this->assertSame($link, $user->getOAuthLink('altered_reunion'));
+    }
+
+    public function testGetOAuthLinkReturnsNullWhenNoLink(): void
+    {
+        $user = new User();
+
+        $this->assertNull($user->getOAuthLink('altered_reunion'));
+    }
+
+    public function testHasOAuthLink(): void
+    {
+        $user = new User();
+        $user->setEmail('test@example.com');
+        $user->setPseudo('TestUser');
+
+        $this->assertFalse($user->hasOAuthLink('altered_reunion'));
+
+        $link = new UserOAuthLink();
+        $link->setProvider('altered_reunion');
+        $link->setProviderUserId('user-123');
+        $user->addOauthLink($link);
+
+        $this->assertTrue($user->hasOAuthLink('altered_reunion'));
     }
 }

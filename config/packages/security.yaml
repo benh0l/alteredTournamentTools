@@ -65,6 +65,9 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/altered-reunion/connect, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/altered-reunion/callback, roles: PUBLIC_ACCESS }
+        - { path: ^/oauth/altered-reunion/choose-pseudo, roles: PUBLIC_ACCESS }
         - { path: ^/tournaments$, roles: PUBLIC_ACCESS, methods: [GET] }
 
         # Admin routes (most restrictive first)

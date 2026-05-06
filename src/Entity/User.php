@@ -126,6 +126,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'claim_token_expires_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $claimTokenExpiresAt = null;
 
+    /**
+     * Whether this user was created via OAuth (no local password initially).
+     */
+    #[ORM\Column(name: 'created_via_oauth', type: 'boolean', options: ['default' => false])]
+    private bool $createdViaOauth = false;
+
+    /** @var Collection<int, UserOAuthLink> */
+    #[ORM\OneToMany(targetEntity: UserOAuthLink::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $oauthLinks;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'player', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -135,6 +145,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_USER'];
         $this->registrations = new ArrayCollection();
+        $this->oauthLinks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -587,6 +598,92 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($themeMode === null || in_array($themeMode, $validModes, true)) {
             $this->themeMode = $themeMode;
         }
+
+        return $this;
+    }
+
+    /**
+     * Check if this user was created via OAuth.
+     */
+    public function isCreatedViaOauth(): bool
+    {
+        return $this->createdViaOauth;
+    }
+
+    /**
+     * Set whether this user was created via OAuth.
+     */
+    public function setCreatedViaOauth(bool $createdViaOauth): self
+    {
+        $this->createdViaOauth = $createdViaOauth;
+
+        return $this;
+    }
+
+    /**
+     * Check if user has a local password set.
+     * Users created via OAuth initially have no password (empty or placeholder hash).
+     */
+    public function hasLocalPassword(): bool
+    {
+        // If not created via OAuth, they have a password
+        if (!$this->createdViaOauth) {
+            return true;
+        }
+
+        // Check if password is set and not empty/placeholder
+        return $this->password !== '' && $this->password !== 'OAUTH_NO_PASSWORD';
+    }
+
+    /**
+     * @return Collection<int, UserOAuthLink>
+     */
+    public function getOauthLinks(): Collection
+    {
+        return $this->oauthLinks;
+    }
+
+    /**
+     * Get OAuth link for a specific provider.
+     */
+    public function getOAuthLink(string $provider): ?UserOAuthLink
+    {
+        foreach ($this->oauthLinks as $link) {
+            if ($link->getProvider() === $provider) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if user has an OAuth link for a specific provider.
+     */
+    public function hasOAuthLink(string $provider): bool
+    {
+        return $this->getOAuthLink($provider) !== null;
+    }
+
+    /**
+     * Add an OAuth link.
+     */
+    public function addOauthLink(UserOAuthLink $oauthLink): self
+    {
+        if (!$this->oauthLinks->contains($oauthLink)) {
+            $this->oauthLinks->add($oauthLink);
+            $oauthLink->setUser($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove an OAuth link.
+     */
+    public function removeOauthLink(UserOAuthLink $oauthLink): self
+    {
+        $this->oauthLinks->removeElement($oauthLink);
 
         return $this;
     }
