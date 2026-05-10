@@ -69,6 +69,46 @@ class TournamentApiController extends AbstractController
         ]);
     }
 
+    #[Route('/upcoming', name: 'api_v1_tournaments_upcoming', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Tournois publics a venir',
+        description: 'Retourne la liste des tournois publics a venir (date >= aujourd\'hui)',
+    )]
+    #[OA\Parameter(name: 'limit', description: 'Nombre maximum de resultats (max 100)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50))]
+    #[OA\Parameter(name: 'offset', description: 'Decalage pour la pagination', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 0))]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des tournois a venir',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'tournaments', type: 'array', items: new OA\Items(type: 'object')),
+                new OA\Property(property: 'total', type: 'integer'),
+                new OA\Property(property: 'limit', type: 'integer'),
+                new OA\Property(property: 'offset', type: 'integer'),
+            ]
+        )
+    )]
+    public function upcoming(Request $request): JsonResponse
+    {
+        $limit = min((int) $request->query->get('limit', 50), 100);
+        $offset = (int) $request->query->get('offset', 0);
+
+        $tournaments = $this->tournamentRepository->findUpcomingPublicTournaments();
+
+        $total = count($tournaments);
+        $tournaments = array_slice($tournaments, $offset, $limit);
+
+        $data = array_map(fn (Tournament $t) => $this->serializeTournament($t), $tournaments);
+
+        return $this->json([
+            'tournaments' => $data,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+        ]);
+    }
+
     #[Route('/{id}', name: 'api_v1_tournaments_show', methods: ['GET'])]
     #[OA\Get(
         summary: 'Details d\'un tournoi',
@@ -264,6 +304,8 @@ class TournamentApiController extends AbstractController
             'status' => $tournament->getStatus()->value,
             'playerCount' => $tournament->getRegistrations()->count(),
             'maxPlayers' => $tournament->getMaxPlayers(),
+            'isTumult' => $tournament->isTumult(),
+            'isSeasonFinalsQualifier' => $tournament->isSeasonFinalsQualifier(),
             'organizer' => [
                 'id' => $tournament->getOrganizer()->getId(),
                 'pseudo' => $tournament->getOrganizer()->getPseudo(),
