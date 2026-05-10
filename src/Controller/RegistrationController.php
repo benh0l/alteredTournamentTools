@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
 use App\Service\AvatarUploadService;
+use App\Service\OAuth\OAuthFeatureService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -26,6 +27,7 @@ final class RegistrationController extends AbstractController
         private readonly AvatarUploadService $avatarUploadService,
         private readonly TranslatorInterface $translator,
         private readonly UserRepository $userRepository,
+        private readonly OAuthFeatureService $oauthFeatureService,
     ) {
     }
 
@@ -110,6 +112,7 @@ final class RegistrationController extends AbstractController
 
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,
+            'oauth_altered_reunion_enabled' => $this->oauthFeatureService->isAlteredReunionEnabled(),
         ]);
     }
 }

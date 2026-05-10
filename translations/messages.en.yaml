@@ -326,6 +326,8 @@ auth:
         submit: "Create my account"
         already_account: "Already have an account?"
         login_link: "Sign in"
+        oauth_reunion: "Create account with Altered Re:Union"
+        oauth_reunion_hint: "Quick sign up with your existing Re:Union account"
 
     reset_password:
         request:
