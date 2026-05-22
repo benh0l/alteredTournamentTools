@@ -73,6 +73,10 @@ export default class extends Controller {
                 console.error('Admin dashboard SSE error:', error);
                 // Reconnect after 5 seconds if not disconnected
                 if (!this.isDisconnected) {
+                    // Clear any existing reconnect timeout first
+                    if (this.reconnectTimeout) {
+                        clearTimeout(this.reconnectTimeout);
+                    }
                     this.reconnectTimeout = setTimeout(() => this.connectToMercure(), 5000);
                 }
             };

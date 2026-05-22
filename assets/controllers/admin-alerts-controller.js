@@ -6,6 +6,22 @@ import { Controller } from '@hotwired/stimulus';
  * Handles dismissing alerts via AJAX.
  */
 export default class extends Controller {
+    removeTimeout = null;
+    abortController = null;
+
+    disconnect() {
+        // Clear pending timeout
+        if (this.removeTimeout) {
+            clearTimeout(this.removeTimeout);
+            this.removeTimeout = null;
+        }
+        // Abort pending fetch requests
+        if (this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
+        }
+    }
+
     async acknowledge(event) {
         event.preventDefault();
 
@@ -32,7 +48,8 @@ export default class extends Controller {
                     alertBanner.style.padding = '0';
                     alertBanner.style.margin = '0';
 
-                    setTimeout(() => {
+                    this.removeTimeout = setTimeout(() => {
+                        this.removeTimeout = null;
                         alertBanner.remove();
 
                         // Update alert badge count
@@ -48,10 +65,17 @@ export default class extends Controller {
     }
 
     updateAlertBadge() {
+        // Cancel any previous fetch
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+        this.abortController = new AbortController();
+
         // Fetch current alert count and update badge
-        fetch('/admin/alerts/active')
+        fetch('/admin/alerts/active', { signal: this.abortController.signal })
             .then(response => response.json())
             .then(data => {
+                this.abortController = null;
                 const badge = document.querySelector('[href*="admin_alerts"] .bg-red-600');
                 const alertCount = data.alerts?.length || 0;
 
@@ -63,6 +87,10 @@ export default class extends Controller {
                     }
                 }
             })
-            .catch(error => console.error('Error updating badge:', error));
+            .catch(error => {
+                if (error.name !== 'AbortError') {
+                    console.error('Error updating badge:', error);
+                }
+            });
     }
 }

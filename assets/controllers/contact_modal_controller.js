@@ -17,6 +17,8 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ['modal', 'form', 'success', 'error', 'pageUrl', 'submitButton'];
 
+    autoCloseTimeout = null;
+
     connect() {
         // Close modal on escape key
         this.escapeHandler = this.handleEscape.bind(this);
@@ -25,6 +27,11 @@ export default class extends Controller {
 
     disconnect() {
         document.removeEventListener('keydown', this.escapeHandler);
+        // Clear auto-close timeout if pending
+        if (this.autoCloseTimeout) {
+            clearTimeout(this.autoCloseTimeout);
+            this.autoCloseTimeout = null;
+        }
     }
 
     open(event) {
@@ -100,7 +107,8 @@ export default class extends Controller {
                 }
 
                 // Auto close after 3 seconds
-                setTimeout(() => {
+                this.autoCloseTimeout = setTimeout(() => {
+                    this.autoCloseTimeout = null;
                     this.close();
                     this.resetForm();
                 }, 3000);
