@@ -117,8 +117,8 @@ final class RegistrationService
         ?Faction $faction2 = null,
         bool $skipEmail = false
     ): Registration {
-        // Check tournament status allows registration (PUBLISHED or ONGOING for late additions)
-        if (!in_array($tournament->getStatus(), [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING], true)) {
+        // Check tournament status allows registration (PUBLISHED, ONGOING or ABANDONED for late additions)
+        if (!in_array($tournament->getStatus(), [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED], true)) {
             throw new TournamentNotOpenException();
         }
 

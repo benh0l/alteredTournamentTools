@@ -91,6 +91,7 @@ enum:
         draft: "Draft"
         published: "Published"
         ongoing: "Ongoing"
+        abandoned: "Abandoned"
         completed: "Completed"
         cancelled: "Cancelled"
 

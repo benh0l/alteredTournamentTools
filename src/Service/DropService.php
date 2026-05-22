@@ -50,8 +50,8 @@ final class DropService
     ): void {
         $tournament = $registration->getTournament();
 
-        // Validate tournament is ongoing
-        if ($tournament->getStatus() !== TournamentStatus::ONGOING) {
+        // Validate tournament is in progress (ongoing or abandoned)
+        if (!$tournament->getStatus()->isInProgress()) {
             throw DropException::tournamentNotOngoing();
         }
 

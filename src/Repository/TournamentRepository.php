@@ -73,7 +73,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->andWhere('t.status IN (:statuses)')
             ->andWhere('t.date >= :minDate')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->setParameter('minDate', $minDate)
             ->orderBy('t.date', 'ASC')
             ->getQuery()
@@ -98,7 +98,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->where('t.visibility = :visibility')
             ->andWhere('t.status IN (:statuses)')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING]);
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED]);
 
         if ($format !== null) {
             $qb->andWhere('t.format = :format')
@@ -231,7 +231,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->andWhere('t.latitude IS NOT NULL')
             ->andWhere('t.longitude IS NOT NULL')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING]);
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED]);
 
         // Format filter
         if ($format !== null) {
@@ -332,7 +332,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->where('t.visibility = :visibility')
             ->andWhere('t.status IN (:statuses)')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->groupBy('t.format')
             ->getQuery()
             ->getResult();
@@ -362,7 +362,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->addSelect('MAX(r.roundNumber) as currentRound')
             ->leftJoin('t.rounds', 'r')
             ->where('t.status IN (:statuses)')
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->groupBy('t.id, o.id')
             ->orderBy('t.status', 'DESC')
             ->addOrderBy('t.date', 'ASC');
@@ -425,7 +425,7 @@ class TournamentRepository extends ServiceEntityRepository
             $status = $tournament->getStatus();
             if ($status === TournamentStatus::DRAFT) {
                 $grouped['drafts'][] = $data;
-            } elseif ($status === TournamentStatus::PUBLISHED || $status === TournamentStatus::ONGOING) {
+            } elseif (in_array($status, [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED], true)) {
                 $grouped['active'][] = $data;
             } else {
                 // COMPLETED or CANCELLED
@@ -444,7 +444,7 @@ class TournamentRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.status IN (:statuses)')
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -568,5 +568,62 @@ class TournamentRepository extends ServiceEntityRepository
         }
 
         return $distribution;
+    }
+
+    /**
+     * Find ONGOING tournaments with no activity for the specified number of days.
+     * Activity is defined as the most recent of:
+     * - Tournament's updatedAt timestamp
+     * - Latest match completedAt timestamp
+     *
+     * @param int $inactiveDays Number of days without activity (default: 3)
+     *
+     * @return Tournament[]
+     */
+    public function findInactiveOngoingTournaments(int $inactiveDays = 3): array
+    {
+        $threshold = new \DateTimeImmutable("-{$inactiveDays} days");
+
+        // Use native SQL for the complex aggregation with GREATEST/COALESCE
+        $sql = "
+            SELECT t.id
+            FROM tournaments t
+            LEFT JOIN rounds r ON r.tournament_id = t.id
+            LEFT JOIN matches m ON m.round_id = r.id
+            WHERE t.status = :status
+            GROUP BY t.id, t.updated_at
+            HAVING COALESCE(
+                GREATEST(t.updated_at, MAX(m.completed_at)),
+                t.updated_at
+            ) < :threshold
+        ";
+
+        $conn = $this->getEntityManager()->getConnection();
+        $results = $conn->executeQuery($sql, [
+            'status' => TournamentStatus::ONGOING->value,
+            'threshold' => $threshold->format('Y-m-d H:i:s'),
+        ])->fetchAllAssociative();
+
+        if (empty($results)) {
+            return [];
+        }
+
+        $ids = array_column($results, 'id');
+
+        return $this->createQueryBuilder('t')
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find ABANDONED tournaments (for admin dashboard filtering).
+     *
+     * @return Tournament[]
+     */
+    public function findAbandonedTournaments(): array
+    {
+        return $this->findByStatus(TournamentStatus::ABANDONED);
     }
 }

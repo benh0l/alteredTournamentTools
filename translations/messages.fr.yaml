@@ -95,6 +95,7 @@ enum:
         draft: "Brouillon"
         published: "Publié"
         ongoing: "En cours"
+        abandoned: "Abandonné"
         completed: "Terminé"
         cancelled: "Annulé"
 

@@ -191,7 +191,7 @@ final class TournamentVoter extends Voter
         }
 
         // Registered players can view dashboard of their tournament (even if private)
-        if (in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::COMPLETED], true)) {
+        if (in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::ABANDONED, TournamentStatus::COMPLETED], true)) {
             return $this->registrationRepository->isPlayerRegistered($tournament, $user);
         }
 
@@ -200,7 +200,7 @@ final class TournamentVoter extends Voter
 
     /**
      * Can view dashboard publicly (anonymous access).
-     * Only PUBLIC tournaments that are ONGOING or COMPLETED.
+     * Only PUBLIC tournaments that are ONGOING, ABANDONED or COMPLETED.
      */
     private function canViewDashboardPublicly(Tournament $tournament): bool
     {
@@ -208,6 +208,6 @@ final class TournamentVoter extends Voter
             return false;
         }
 
-        return in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::COMPLETED], true);
+        return in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::ABANDONED, TournamentStatus::COMPLETED], true);
     }
 }

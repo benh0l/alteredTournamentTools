@@ -89,10 +89,11 @@ final class TournamentEnumsTest extends TestCase
     {
         $cases = TournamentStatus::cases();
 
-        $this->assertCount(5, $cases);
+        $this->assertCount(6, $cases);
         $this->assertSame('draft', TournamentStatus::DRAFT->value);
         $this->assertSame('published', TournamentStatus::PUBLISHED->value);
         $this->assertSame('ongoing', TournamentStatus::ONGOING->value);
+        $this->assertSame('abandoned', TournamentStatus::ABANDONED->value);
         $this->assertSame('completed', TournamentStatus::COMPLETED->value);
         $this->assertSame('cancelled', TournamentStatus::CANCELLED->value);
     }
@@ -102,6 +103,7 @@ final class TournamentEnumsTest extends TestCase
         $this->assertSame('enum.tournament_status.draft', TournamentStatus::DRAFT->getLabel());
         $this->assertSame('enum.tournament_status.published', TournamentStatus::PUBLISHED->getLabel());
         $this->assertSame('enum.tournament_status.ongoing', TournamentStatus::ONGOING->getLabel());
+        $this->assertSame('enum.tournament_status.abandoned', TournamentStatus::ABANDONED->getLabel());
         $this->assertSame('enum.tournament_status.completed', TournamentStatus::COMPLETED->getLabel());
         $this->assertSame('enum.tournament_status.cancelled', TournamentStatus::CANCELLED->getLabel());
     }
@@ -113,15 +115,25 @@ final class TournamentEnumsTest extends TestCase
         $this->assertTrue(TournamentStatus::DRAFT->canTransitionTo(TournamentStatus::CANCELLED));
         $this->assertFalse(TournamentStatus::DRAFT->canTransitionTo(TournamentStatus::ONGOING));
         $this->assertFalse(TournamentStatus::DRAFT->canTransitionTo(TournamentStatus::COMPLETED));
+        $this->assertFalse(TournamentStatus::DRAFT->canTransitionTo(TournamentStatus::ABANDONED));
 
         // PUBLISHED can transition to ONGOING or CANCELLED
         $this->assertTrue(TournamentStatus::PUBLISHED->canTransitionTo(TournamentStatus::ONGOING));
         $this->assertTrue(TournamentStatus::PUBLISHED->canTransitionTo(TournamentStatus::CANCELLED));
         $this->assertFalse(TournamentStatus::PUBLISHED->canTransitionTo(TournamentStatus::COMPLETED));
+        $this->assertFalse(TournamentStatus::PUBLISHED->canTransitionTo(TournamentStatus::ABANDONED));
 
-        // ONGOING can transition to COMPLETED or CANCELLED
+        // ONGOING can transition to COMPLETED, ABANDONED or CANCELLED
         $this->assertTrue(TournamentStatus::ONGOING->canTransitionTo(TournamentStatus::COMPLETED));
+        $this->assertTrue(TournamentStatus::ONGOING->canTransitionTo(TournamentStatus::ABANDONED));
         $this->assertTrue(TournamentStatus::ONGOING->canTransitionTo(TournamentStatus::CANCELLED));
+
+        // ABANDONED can transition to ONGOING, COMPLETED or CANCELLED
+        $this->assertTrue(TournamentStatus::ABANDONED->canTransitionTo(TournamentStatus::ONGOING));
+        $this->assertTrue(TournamentStatus::ABANDONED->canTransitionTo(TournamentStatus::COMPLETED));
+        $this->assertTrue(TournamentStatus::ABANDONED->canTransitionTo(TournamentStatus::CANCELLED));
+        $this->assertFalse(TournamentStatus::ABANDONED->canTransitionTo(TournamentStatus::PUBLISHED));
+        $this->assertFalse(TournamentStatus::ABANDONED->canTransitionTo(TournamentStatus::DRAFT));
 
         // COMPLETED and CANCELLED are terminal states
         $this->assertFalse(TournamentStatus::COMPLETED->canTransitionTo(TournamentStatus::CANCELLED));
@@ -134,23 +146,44 @@ final class TournamentEnumsTest extends TestCase
         $this->assertTrue(TournamentStatus::DRAFT->isEditable());
         $this->assertFalse(TournamentStatus::PUBLISHED->isEditable());
         $this->assertFalse(TournamentStatus::ONGOING->isEditable());
+        $this->assertFalse(TournamentStatus::ABANDONED->isEditable());
 
         // acceptsRegistrations
         $this->assertFalse(TournamentStatus::DRAFT->acceptsRegistrations());
         $this->assertTrue(TournamentStatus::PUBLISHED->acceptsRegistrations());
         $this->assertFalse(TournamentStatus::ONGOING->acceptsRegistrations());
+        $this->assertFalse(TournamentStatus::ABANDONED->acceptsRegistrations());
 
-        // isActive
+        // isActive (includes PUBLISHED, ONGOING, ABANDONED)
         $this->assertFalse(TournamentStatus::DRAFT->isActive());
         $this->assertTrue(TournamentStatus::PUBLISHED->isActive());
         $this->assertTrue(TournamentStatus::ONGOING->isActive());
+        $this->assertTrue(TournamentStatus::ABANDONED->isActive());
         $this->assertFalse(TournamentStatus::COMPLETED->isActive());
+        $this->assertFalse(TournamentStatus::CANCELLED->isActive());
 
         // isFinished
         $this->assertFalse(TournamentStatus::DRAFT->isFinished());
         $this->assertFalse(TournamentStatus::ONGOING->isFinished());
+        $this->assertFalse(TournamentStatus::ABANDONED->isFinished());
         $this->assertTrue(TournamentStatus::COMPLETED->isFinished());
         $this->assertTrue(TournamentStatus::CANCELLED->isFinished());
+
+        // isInProgress (ONGOING or ABANDONED - allows match operations)
+        $this->assertFalse(TournamentStatus::DRAFT->isInProgress());
+        $this->assertFalse(TournamentStatus::PUBLISHED->isInProgress());
+        $this->assertTrue(TournamentStatus::ONGOING->isInProgress());
+        $this->assertTrue(TournamentStatus::ABANDONED->isInProgress());
+        $this->assertFalse(TournamentStatus::COMPLETED->isInProgress());
+        $this->assertFalse(TournamentStatus::CANCELLED->isInProgress());
+
+        // isDeletable
+        $this->assertTrue(TournamentStatus::DRAFT->isDeletable());
+        $this->assertTrue(TournamentStatus::PUBLISHED->isDeletable());
+        $this->assertFalse(TournamentStatus::ONGOING->isDeletable());
+        $this->assertFalse(TournamentStatus::ABANDONED->isDeletable());
+        $this->assertFalse(TournamentStatus::COMPLETED->isDeletable());
+        $this->assertFalse(TournamentStatus::CANCELLED->isDeletable());
     }
 
     public function testMatchFormatHasExpectedCases(): void

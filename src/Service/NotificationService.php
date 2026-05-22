@@ -88,7 +88,7 @@ class NotificationService
             ->andWhere('t.time IS NOT NULL')
             ->andWhere('t.status IN (:statuses)')
             ->setParameter('today', $now->setTime(0, 0, 0))
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->getQuery()
             ->getResult();
 

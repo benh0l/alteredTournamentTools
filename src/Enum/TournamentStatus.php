@@ -9,15 +9,19 @@ namespace App\Enum;
  *
  * State Machine:
  * DRAFT -> PUBLISHED -> ONGOING -> COMPLETED
- *    |        |           |
- *    v        v           v
- * CANCELLED  CANCELLED  CANCELLED
+ *    |        |           |    \      ^
+ *    v        v           v     v    /
+ * CANCELLED  CANCELLED  CANCELLED  ABANDONED
+ *
+ * ABANDONED: Tournaments stuck in ONGOING with no activity for 3+ days.
+ *            Behaves like ONGOING but flags inactive tournaments for admins.
  */
 enum TournamentStatus: string
 {
     case DRAFT = 'draft';
     case PUBLISHED = 'published';
     case ONGOING = 'ongoing';
+    case ABANDONED = 'abandoned';
     case COMPLETED = 'completed';
     case CANCELLED = 'cancelled';
 
@@ -27,6 +31,7 @@ enum TournamentStatus: string
             self::DRAFT => 'enum.tournament_status.draft',
             self::PUBLISHED => 'enum.tournament_status.published',
             self::ONGOING => 'enum.tournament_status.ongoing',
+            self::ABANDONED => 'enum.tournament_status.abandoned',
             self::COMPLETED => 'enum.tournament_status.completed',
             self::CANCELLED => 'enum.tournament_status.cancelled',
         };
@@ -41,6 +46,7 @@ enum TournamentStatus: string
             self::DRAFT => 'bg-gray-100 text-gray-800',
             self::PUBLISHED => 'bg-green-100 text-green-800',
             self::ONGOING => 'bg-blue-100 text-blue-800',
+            self::ABANDONED => 'bg-orange-100 text-orange-800',
             self::COMPLETED => 'bg-purple-100 text-purple-800',
             self::CANCELLED => 'bg-red-100 text-red-800',
         };
@@ -54,7 +60,8 @@ enum TournamentStatus: string
         return match ($this) {
             self::DRAFT => in_array($target, [self::PUBLISHED, self::CANCELLED], true),
             self::PUBLISHED => in_array($target, [self::ONGOING, self::CANCELLED], true),
-            self::ONGOING => in_array($target, [self::COMPLETED, self::CANCELLED], true),
+            self::ONGOING => in_array($target, [self::COMPLETED, self::ABANDONED, self::CANCELLED], true),
+            self::ABANDONED => in_array($target, [self::ONGOING, self::COMPLETED, self::CANCELLED], true),
             self::COMPLETED => false,
             self::CANCELLED => false,
         };
@@ -77,11 +84,11 @@ enum TournamentStatus: string
     }
 
     /**
-     * Check if tournament is active (published or ongoing).
+     * Check if tournament is active (published, ongoing, or abandoned).
      */
     public function isActive(): bool
     {
-        return in_array($this, [self::PUBLISHED, self::ONGOING], true);
+        return in_array($this, [self::PUBLISHED, self::ONGOING, self::ABANDONED], true);
     }
 
     /**
@@ -99,5 +106,14 @@ enum TournamentStatus: string
     public function isDeletable(): bool
     {
         return in_array($this, [self::DRAFT, self::PUBLISHED], true);
+    }
+
+    /**
+     * Check if tournament is in progress (ongoing or abandoned).
+     * Both statuses allow match submissions and tournament operations.
+     */
+    public function isInProgress(): bool
+    {
+        return in_array($this, [self::ONGOING, self::ABANDONED], true);
     }
 }
