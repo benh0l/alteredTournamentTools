@@ -37,6 +37,7 @@ class AdminDashboardController extends AbstractController
         // Calculate stats
         $ongoingCount = 0;
         $publishedCount = 0;
+        $abandonedCount = count($groupedTournaments['abandoned']);
         $draftCount = count($groupedTournaments['drafts']);
         $finishedCount = count($groupedTournaments['finished']);
         $totalPlayers = 0;
@@ -61,6 +62,7 @@ class AdminDashboardController extends AbstractController
             'stats' => [
                 'ongoing' => $ongoingCount,
                 'published' => $publishedCount,
+                'abandoned' => $abandonedCount,
                 'drafts' => $draftCount,
                 'finished' => $finishedCount,
                 'totalActive' => count($groupedTournaments['active']),

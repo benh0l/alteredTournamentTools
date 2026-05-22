@@ -144,7 +144,7 @@
                         <p class="text-2xl font-semibold" style="color: var(--text-primary);" data-admin-dashboard-target="activeTournaments">
                             {{ stats.totalActive }}
                         </p>
-                        <p class="text-xs" style="color: var(--text-muted);">{{ stats.ongoing }} en cours, {{ stats.published }} ouverts</p>
+                        <p class="text-xs" style="color: var(--text-muted);">{{ stats.ongoing }} en cours, {{ stats.published }} ouverts{% if stats.abandoned > 0 %}, {{ stats.abandoned }} abandonnés{% endif %}</p>
                     </div>
                 </div>
             </div>
@@ -213,6 +213,13 @@
                 </button>
                 <button type="button"
                         class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        data-tab="abandoned"
+                        onclick="switchTab('abandoned')"
+                        style="color: var(--text-muted);">
+                    Abandonnés ({{ stats.abandoned }})
+                </button>
+                <button type="button"
+                        class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                         data-tab="drafts"
                         onclick="switchTab('drafts')"
                         style="color: var(--text-muted);">
@@ -237,6 +244,10 @@
             {# Tab Panels #}
             <div id="tab-active" class="tab-panel" data-admin-dashboard-target="tournamentList">
                 {{ _self.tournament_table(tournaments.active, 'Aucun tournoi actif pour le moment.') }}
+            </div>
+
+            <div id="tab-abandoned" class="tab-panel hidden">
+                {{ _self.tournament_table(tournaments.abandoned, 'Aucun tournoi abandonné.') }}
             </div>
 
             <div id="tab-drafts" class="tab-panel hidden">

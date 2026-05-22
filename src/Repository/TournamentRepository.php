@@ -383,10 +383,10 @@ class TournamentRepository extends ServiceEntityRepository
 
     /**
      * Find all tournaments grouped by category for admin dashboard.
-     * Categories: active (published/ongoing), drafts, finished (completed/cancelled), all
+     * Categories: active (published/ongoing/abandoned), abandoned, drafts, finished (completed/cancelled), all
      * Optimized to use a single query with aggregation instead of N+1 queries.
      *
-     * @return array{active: array, drafts: array, finished: array, all: array}
+     * @return array{active: array, abandoned: array, drafts: array, finished: array, all: array}
      */
     public function findAllGroupedByCategory(): array
     {
@@ -405,6 +405,7 @@ class TournamentRepository extends ServiceEntityRepository
 
         $grouped = [
             'active' => [],
+            'abandoned' => [],
             'drafts' => [],
             'finished' => [],
             'all' => [],
@@ -425,7 +426,9 @@ class TournamentRepository extends ServiceEntityRepository
             $status = $tournament->getStatus();
             if ($status === TournamentStatus::DRAFT) {
                 $grouped['drafts'][] = $data;
-            } elseif (in_array($status, [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED], true)) {
+            } elseif ($status === TournamentStatus::ABANDONED) {
+                $grouped['abandoned'][] = $data;
+            } elseif (in_array($status, [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING], true)) {
                 $grouped['active'][] = $data;
             } else {
                 // COMPLETED or CANCELLED
