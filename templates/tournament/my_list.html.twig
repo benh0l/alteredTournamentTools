@@ -72,7 +72,8 @@
                                     'draft': 'bg-gray-500/20 text-gray-800 dark:text-gray-300',
                                     'published': 'bg-green-500/20 text-green-800 dark:text-green-300',
                                     'ongoing': 'bg-blue-500/20 text-blue-800 dark:text-blue-300',
-                                    'completed': 'bg-purple-500/20 text-purple-800 dark:text-purple-300'
+                                    'completed': 'bg-purple-500/20 text-purple-800 dark:text-purple-300',
+                                    'abandoned': 'bg-orange-500/20 text-orange-800 dark:text-orange-300'
                                 } %}
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusColors[tournament.status.value] }}">
                                     {{ tournament.status.label|trans }}

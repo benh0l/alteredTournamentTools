@@ -215,6 +215,8 @@
                     {# Color header based on status #}
                     {% if tournament.ongoing %}
                         <div class="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                    {% elseif tournament.abandoned %}
+                        <div class="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
                     {% elseif tournament.completed %}
                         <div class="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
                     {% elseif tournament.published %}
@@ -234,6 +236,10 @@
                             {% if tournament.ongoing %}
                                 <span class="px-3 py-1 text-xs font-semibold rounded-full border border-blue-500/30" style="background-color: rgba(59, 130, 246, 0.2); color: var(--badge-blue-text);">
                                     {{ 'enum.tournament_status.ongoing'|trans }}
+                                </span>
+                            {% elseif tournament.abandoned %}
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full border border-orange-500/30" style="background-color: rgba(249, 115, 22, 0.2); color: var(--badge-orange-text, #c2410c);">
+                                    {{ 'enum.tournament_status.abandoned'|trans }}
                                 </span>
                             {% elseif tournament.completed %}
                                 <span class="px-3 py-1 text-xs font-semibold rounded-full border border-emerald-500/30" style="background-color: rgba(16, 185, 129, 0.2); color: var(--badge-emerald-text);">
