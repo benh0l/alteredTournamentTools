@@ -339,6 +339,29 @@
   }
 }
 
+/* Mobile menu styles */
+@layer components {
+  .mobile-menu-panel {
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  }
+
+  .mobile-menu-panel.mobile-menu-open {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Mobile menu link hover effect */
+  .mobile-menu-panel a:hover {
+    background-color: var(--bg-muted);
+  }
+
+  .mobile-menu-panel a:active {
+    background-color: var(--bg-subtle);
+  }
+}
+
 /* Custom utility classes */
 @layer utilities {
   /* Text utilities for responsive typography */

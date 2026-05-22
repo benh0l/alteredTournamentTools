@@ -618,7 +618,7 @@ final class BracketServiceTest extends TestCase
         $tournament->setName('Test Tournament');
         $tournament->setOrganizer($organizer);
         $tournament->setDate(new \DateTimeImmutable());
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(TournamentStructure::MIXED);
         $tournament->setVisibility(TournamentVisibility::PUBLIC);
         $tournament->setDecklistTransparency(DecklistTransparency::OPEN);

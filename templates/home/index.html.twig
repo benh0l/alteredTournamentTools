@@ -378,30 +378,160 @@
         {# ========================================================================= #}
         {# Landing page for non-authenticated users                                  #}
         {# ========================================================================= #}
-        <section class="text-center py-16">
-            <div class="w-32 h-32 mx-auto rounded-2xl flex items-center justify-center mb-8 shadow-2xl overflow-hidden">
+        <section class="text-center py-8">
+            <div class="w-20 h-20 mx-auto rounded-xl flex items-center justify-center mb-4 shadow-xl overflow-hidden">
                 <img src="{{ asset('logo/alteredTT_logo.png') }}" alt="Altered Tournament Tools" class="w-full h-full object-cover">
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--text-primary);">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color: var(--text-primary);">
                 <span class="text-accent-glow">{{ 'home.landing.title'|trans }}</span>
             </h1>
-            <p class="text-xl mb-10 max-w-2xl mx-auto" style="color: var(--text-secondary);">
+            <p class="text-base mb-6 max-w-xl mx-auto" style="color: var(--text-secondary);">
                 {{ 'home.landing.subtitle'|trans }}
             </p>
 
-            <div class="flex justify-center gap-4">
+            <div class="flex justify-center gap-3">
                 <a href="{{ path('app_register') }}"
-                   class="inline-flex items-center text-lg px-8 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                   class="inline-flex items-center px-5 py-2 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
                    style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
-                    {{ ux_icon('lucide:user-plus', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ ux_icon('lucide:user-plus', {class: 'w-4 h-4 mr-2'}) }}
                     {{ 'home.landing.create_account'|trans }}
                 </a>
                 <a href="{{ path('app_login') }}"
-                   class="inline-flex items-center text-lg px-8 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                   class="inline-flex items-center px-5 py-2 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
                    style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
-                    {{ ux_icon('lucide:log-in', {class: 'w-5 h-5 mr-2'}) }}
+                    {{ ux_icon('lucide:log-in', {class: 'w-4 h-4 mr-2'}) }}
                     {{ 'home.landing.sign_in'|trans }}
                 </a>
+            </div>
+        </section>
+
+        {# ========================================================================= #}
+        {# Tutorial Section - How it works                                           #}
+        {# ========================================================================= #}
+        <section class="py-12">
+            <h2 class="text-2xl font-bold text-center mb-10" style="color: var(--text-primary);">
+                {{ 'home.tutorial.title'|trans }}
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                {# Player Journey #}
+                <div class="rounded-2xl border-2 p-6 transition-all hover:shadow-lg" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                            {{ ux_icon('lucide:gamepad-2', {class: 'w-6 h-6 text-white'}) }}
+                        </div>
+                        <h3 class="text-xl font-bold" style="color: var(--text-primary);">{{ 'home.tutorial.player.title'|trans }}</h3>
+                    </div>
+
+                    <div class="flex items-start justify-between mb-6">
+                        {# Step 1 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-blue-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:search', {class: 'w-6 h-6 text-blue-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.player.step1.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.player.step1.description'|trans }}</p>
+                        </div>
+
+                        <div class="px-1 pt-4" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4'}) }}
+                        </div>
+
+                        {# Step 2 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-blue-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:user-plus', {class: 'w-6 h-6 text-blue-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.player.step2.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.player.step2.description'|trans }}</p>
+                        </div>
+
+                        <div class="px-1 pt-4" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4'}) }}
+                        </div>
+
+                        {# Step 3 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-blue-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:swords', {class: 'w-6 h-6 text-blue-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.player.step3.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.player.step3.description'|trans }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ path('tournament_list') }}"
+                       class="block w-full text-center px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all shadow-md">
+                        {{ ux_icon('lucide:search', {class: 'w-5 h-5 inline mr-2'}) }}
+                        {{ 'home.tutorial.player.cta'|trans }}
+                    </a>
+                </div>
+
+                {# Organizer Journey #}
+                <div class="rounded-2xl border-2 p-6 transition-all hover:shadow-lg" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-400 rounded-xl flex items-center justify-center shadow-lg mr-4">
+                            {{ ux_icon('lucide:crown', {class: 'w-6 h-6 text-white'}) }}
+                        </div>
+                        <h3 class="text-xl font-bold" style="color: var(--text-primary);">{{ 'home.tutorial.organizer.title'|trans }}</h3>
+                    </div>
+
+                    <div class="flex items-start justify-between mb-6">
+                        {# Step 1 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-amber-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:plus-circle', {class: 'w-6 h-6 text-amber-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.organizer.step1.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.organizer.step1.description'|trans }}</p>
+                        </div>
+
+                        <div class="px-1 pt-4" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4'}) }}
+                        </div>
+
+                        {# Step 2 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-amber-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:share-2', {class: 'w-6 h-6 text-amber-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.organizer.step2.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.organizer.step2.description'|trans }}</p>
+                        </div>
+
+                        <div class="px-1 pt-4" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4'}) }}
+                        </div>
+
+                        {# Step 3 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-amber-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:users', {class: 'w-6 h-6 text-amber-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.organizer.step3.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.organizer.step3.description'|trans }}</p>
+                        </div>
+
+                        <div class="px-1 pt-4" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4'}) }}
+                        </div>
+
+                        {# Step 4 #}
+                        <div class="flex-1 text-center">
+                            <div class="w-12 h-12 mx-auto bg-amber-500/20 rounded-xl flex items-center justify-center mb-2">
+                                {{ ux_icon('lucide:play-circle', {class: 'w-6 h-6 text-amber-500'}) }}
+                            </div>
+                            <p class="font-semibold text-xs" style="color: var(--text-primary);">{{ 'home.tutorial.organizer.step4.title'|trans }}</p>
+                            <p class="text-xs mt-1 hidden sm:block" style="color: var(--text-muted);">{{ 'home.tutorial.organizer.step4.description'|trans }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ path('tournament_create') }}"
+                       class="block w-full text-center px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-600 transition-all shadow-md">
+                        {{ ux_icon('lucide:plus', {class: 'w-5 h-5 inline mr-2'}) }}
+                        {{ 'home.tutorial.organizer.cta'|trans }}
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -483,31 +613,31 @@
             </h2>
 
             <div class="grid md:grid-cols-3 gap-6">
-                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
-                    <div class="w-16 h-16 rounded-xl flex items-center justify-center mb-4 shadow-lg theme-primary-gradient">
-                        {{ ux_icon('lucide:layers', {class: 'w-8 h-8 text-white'}) }}
+                <div class="rounded-2xl border-2 p-6 transition-all hover:shadow-lg hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4 shadow-lg theme-primary-gradient">
+                        {{ ux_icon('lucide:layers', {class: 'w-7 h-7 text-white'}) }}
                     </div>
-                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.management.title'|trans }}</h3>
+                    <h3 class="text-base font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.management.title'|trans }}</h3>
                     <p class="text-sm" style="color: var(--text-secondary);">
                         {{ 'home.features.management.description'|trans }}
                     </p>
                 </div>
 
-                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
-                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                        {{ ux_icon('lucide:zap', {class: 'w-8 h-8 text-white'}) }}
+                <div class="rounded-2xl border-2 p-6 transition-all hover:shadow-lg hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                        {{ ux_icon('lucide:zap', {class: 'w-7 h-7 text-white'}) }}
                     </div>
-                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.realtime.title'|trans }}</h3>
+                    <h3 class="text-base font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.realtime.title'|trans }}</h3>
                     <p class="text-sm" style="color: var(--text-secondary);">
                         {{ 'home.features.realtime.description'|trans }}
                     </p>
                 </div>
 
-                <div class="card hover:shadow-xl transition-all hover:-translate-y-1">
-                    <div class="w-16 h-16 bg-gradient-to-br from-rose-400 to-pink-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                        {{ ux_icon('lucide:smartphone', {class: 'w-8 h-8 text-white'}) }}
+                <div class="rounded-2xl border-2 p-6 transition-all hover:shadow-lg hover:-translate-y-1" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                    <div class="w-14 h-14 bg-gradient-to-br from-rose-400 to-pink-400 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                        {{ ux_icon('lucide:smartphone', {class: 'w-7 h-7 text-white'}) }}
                     </div>
-                    <h3 class="text-lg font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.mobile.title'|trans }}</h3>
+                    <h3 class="text-base font-bold mb-2" style="color: var(--text-primary);">{{ 'home.features.mobile.title'|trans }}</h3>
                     <p class="text-sm" style="color: var(--text-secondary);">
                         {{ 'home.features.mobile.description'|trans }}
                     </p>
@@ -522,48 +652,78 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const timerElement = document.getElementById('match-timer');
-            if (!timerElement) return;
+        (function() {
+            let timerInterval = null;
+            const abortController = new AbortController();
 
-            const startedAt = timerElement.dataset.startedAt;
-            if (!startedAt) return;
+            function init() {
+                const timerElement = document.getElementById('match-timer');
+                if (!timerElement) return;
 
-            const startTime = new Date(startedAt);
-            const maxTimerMinutes = 90; // Timer stops at 90 minutes
+                const startedAt = timerElement.dataset.startedAt;
+                if (!startedAt) return;
 
-            function updateTimer() {
-                const now = new Date();
-                let elapsed = Math.floor((now - startTime) / 1000);
+                const startTime = new Date(startedAt);
+                const maxTimerMinutes = 90; // Timer stops at 90 minutes
 
-                // Cap at 90 minutes (5400 seconds)
-                const maxSeconds = maxTimerMinutes * 60;
-                if (elapsed > maxSeconds) {
-                    elapsed = maxSeconds;
+                function updateTimer() {
+                    const now = new Date();
+                    let elapsed = Math.floor((now - startTime) / 1000);
+
+                    // Cap at 90 minutes (5400 seconds)
+                    const maxSeconds = maxTimerMinutes * 60;
+                    if (elapsed > maxSeconds) {
+                        elapsed = maxSeconds;
+                    }
+
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+
+                    timerElement.textContent =
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+
+                    // Color coding
+                    timerElement.classList.remove('text-emerald-200', 'text-yellow-200', 'text-red-200');
+
+                    if (minutes < 35) {
+                        timerElement.classList.add('text-emerald-200');
+                    } else if (minutes < 50) {
+                        timerElement.classList.add('text-yellow-200');
+                    } else {
+                        timerElement.classList.add('text-red-200');
+                    }
                 }
 
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-
-                timerElement.textContent =
-                    String(minutes).padStart(2, '0') + ':' +
-                    String(seconds).padStart(2, '0');
-
-                // Color coding
-                timerElement.classList.remove('text-emerald-200', 'text-yellow-200', 'text-red-200');
-
-                if (minutes < 35) {
-                    timerElement.classList.add('text-emerald-200');
-                } else if (minutes < 50) {
-                    timerElement.classList.add('text-yellow-200');
-                } else {
-                    timerElement.classList.add('text-red-200');
+                // Clear any existing interval
+                if (timerInterval) {
+                    clearInterval(timerInterval);
                 }
+
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
             }
 
-            updateTimer();
-            setInterval(updateTimer, 1000);
-        });
+            function cleanup() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                abortController.abort();
+            }
+
+            // Cleanup on Turbo navigation - AbortController removes listeners automatically
+            document.addEventListener('turbo:before-visit', cleanup, { signal: abortController.signal });
+            document.addEventListener('turbo:before-render', cleanup, { signal: abortController.signal });
+            window.addEventListener('beforeunload', cleanup, { signal: abortController.signal });
+
+            // Initialize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { signal: abortController.signal });
+            } else {
+                init();
+            }
+        })();
     </script>
 {% endblock %}
 {% endif %}

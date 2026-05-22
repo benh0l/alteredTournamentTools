@@ -1,0 +1,213 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'api.admin.title'|trans }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        {# Header #}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
+                    {{ 'api.admin.title'|trans }}
+                </h1>
+                <p class="text-sm mt-1" style="color: var(--text-muted);">
+                    Gerer les demandes d'acces et les cles API
+                </p>
+            </div>
+
+            {# Pending requests badge #}
+            {% if pendingCount > 0 %}
+                <div class="mt-4 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        {{ ux_icon('lucide:bell', {class: 'h-4 w-4 mr-1'}) }}
+                        {{ pendingCount }} demande(s) en attente
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Stats Cards #}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="rounded-xl p-4 shadow" style="background-color: var(--card-bg);">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
+                        {{ ux_icon('lucide:key', {class: 'w-5 h-5 text-blue-600 dark:text-blue-400'}) }}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm" style="color: var(--text-muted);">Cles totales</p>
+                        <p class="text-xl font-bold" style="color: var(--text-primary);">{{ credentialStats.total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-xl p-4 shadow" style="background-color: var(--card-bg);">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+                        {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 text-green-600 dark:text-green-400'}) }}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm" style="color: var(--text-muted);">Actives</p>
+                        <p class="text-xl font-bold" style="color: var(--text-primary);">{{ credentialStats.active }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-xl p-4 shadow" style="background-color: var(--card-bg);">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-lg bg-red-100 dark:bg-red-900">
+                        {{ ux_icon('lucide:x-circle', {class: 'w-5 h-5 text-red-600 dark:text-red-400'}) }}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm" style="color: var(--text-muted);">Revoquees</p>
+                        <p class="text-xl font-bold" style="color: var(--text-primary);">{{ credentialStats.revoked }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-xl p-4 shadow" style="background-color: var(--card-bg);">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900">
+                        {{ ux_icon('lucide:activity', {class: 'w-5 h-5 text-purple-600 dark:text-purple-400'}) }}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm" style="color: var(--text-muted);">Utilisees aujourd'hui</p>
+                        <p class="text-xl font-bold" style="color: var(--text-primary);">{{ credentialStats.used_today }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Filters #}
+        <div class="rounded-2xl shadow p-4 mb-6" style="background-color: var(--card-bg);">
+            <form method="get" class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label for="status" class="text-sm font-medium" style="color: var(--text-secondary);">
+                        Statut
+                    </label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="form-input rounded-lg text-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">Tous</option>
+                        {% for status in statuses %}
+                            <option value="{{ status.value }}" {% if statusFilter == status.value %}selected{% endif %}>
+                                {{ status.label|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if statusFilter %}
+                    <a href="{{ path('admin_api_access') }}" class="text-sm text-primary-600 hover:text-primary-700">
+                        Effacer les filtres
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        {# Requests Table #}
+        <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+            {% if requests|length > 0 %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y" style="border-color: var(--border-color);">
+                        <thead style="background-color: var(--bg-secondary);">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Statut
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Utilisateur
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Projet
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Date
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y" style="border-color: var(--border-color);">
+                            {% for request in requests %}
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors {% if request.status.value == 'pending' %}bg-yellow-50/50 dark:bg-yellow-900/10{% endif %}">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ request.status.badgeClasses }}">
+                                            {{ request.status.label|trans }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            {% if request.user.avatar %}
+                                                <img src="/uploads/avatars/{{ request.user.avatar }}" alt="" class="h-8 w-8 rounded-full object-cover">
+                                            {% else %}
+                                                <div class="h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium" style="background-color: var(--bg-secondary); color: var(--text-muted);">
+                                                    {{ request.user.pseudo|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium" style="color: var(--text-primary);">{{ request.user.pseudo }}</p>
+                                                <p class="text-xs" style="color: var(--text-muted);">{{ request.user.email }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm font-medium" style="color: var(--text-primary);">{{ request.projectName }}</p>
+                                        <p class="text-xs truncate max-w-xs" style="color: var(--text-muted);">{{ request.intendedUse|slice(0, 50) }}{% if request.intendedUse|length > 50 %}...{% endif %}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
+                                        {{ request.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <a href="{{ path('admin_api_access_view', {id: request.id}) }}"
+                                           class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                                           style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                                            {{ ux_icon('lucide:eye', {class: 'w-4 h-4 mr-1'}) }}
+                                            Voir
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if pages > 1 %}
+                    <div class="px-6 py-4 flex items-center justify-between" style="border-top: 1px solid var(--border-color);">
+                        <p class="text-sm" style="color: var(--text-muted);">
+                            {{ total }} demande(s) au total
+                        </p>
+                        <nav class="flex items-center gap-2">
+                            {% if page > 1 %}
+                                <a href="{{ path('admin_api_access', {page: page - 1, status: statusFilter}) }}"
+                                   class="px-3 py-1 rounded-lg text-sm" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                                    Precedent
+                                </a>
+                            {% endif %}
+                            <span class="px-3 py-1 text-sm" style="color: var(--text-muted);">
+                                Page {{ page }} / {{ pages }}
+                            </span>
+                            {% if page < pages %}
+                                <a href="{{ path('admin_api_access', {page: page + 1, status: statusFilter}) }}"
+                                   class="px-3 py-1 rounded-lg text-sm" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                                    Suivant
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="p-12 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: var(--bg-secondary);">
+                        {{ ux_icon('lucide:key', {class: 'w-8 h-8', style: 'color: var(--text-muted);'}) }}
+                    </div>
+                    <p class="font-medium" style="color: var(--text-primary);">{{ 'api.admin.no_requests'|trans }}</p>
+                    <p class="text-sm mt-1" style="color: var(--text-muted);">Aucune demande d'acces API pour le moment</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

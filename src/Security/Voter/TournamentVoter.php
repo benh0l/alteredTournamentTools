@@ -16,11 +16,12 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter for Tournament entity permissions.
  *
  * Permission Matrix:
- * - EDIT: Organizer only, DRAFT status only
- * - DELETE: Organizer only, DRAFT status only (no registrations check done in service)
+ * - EDIT: Organizer only, DRAFT or PUBLISHED (not started) status
+ * - DELETE: Organizer only, DRAFT or PUBLISHED (not started) status
  * - MANAGE: Organizer only, any status (for dashboard access, publish, start)
- * - VIEW: Public tournaments visible to all, private to organizer only
- * - VIEW_DASHBOARD: Organizer, registered players, or anyone for public ONGOING/COMPLETED tournaments
+ * - MANAGE_REGISTRATIONS: Organizer or admin
+ * - VIEW: Public tournaments visible to all, private to organizer or admin
+ * - VIEW_DASHBOARD: Organizer, admin, registered players, or anyone for public ONGOING/COMPLETED tournaments
  *
  * @extends Voter<string, Tournament>
  */
@@ -97,8 +98,8 @@ final class TournamentVoter extends Voter
     }
 
     /**
-     * Can delete: Must be organizer AND DRAFT status.
-     * Additional registration check is done in the service layer.
+     * Can delete: Must be organizer AND tournament not started (DRAFT or PUBLISHED without rounds).
+     * Registrations are removed by the service layer when deleting a published tournament.
      */
     private function canDelete(Tournament $tournament, User $user): bool
     {
@@ -126,12 +127,12 @@ final class TournamentVoter extends Voter
         }
 
         // Admin can manage any tournament's registrations
-        return in_array('ROLE_ADMIN', $user->getRoles(), true);
+        return $this->isAdmin($user);
     }
 
     /**
      * Can view: Public tournaments viewable by all,
-     * private tournaments viewable by organizer only.
+     * private tournaments viewable by organizer or admin.
      */
     private function canView(Tournament $tournament, User $user): bool
     {
@@ -139,12 +140,23 @@ final class TournamentVoter extends Voter
             return true;
         }
 
-        return $this->isOrganizer($tournament, $user);
+        // Organizer can always view their tournament
+        if ($this->isOrganizer($tournament, $user)) {
+            return true;
+        }
+
+        // Admin can view any tournament (including private)
+        return $this->isAdmin($user);
     }
 
     private function isOrganizer(Tournament $tournament, User $user): bool
     {
         return $tournament->getOrganizer()->getId() === $user->getId();
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return in_array('ROLE_ADMIN', $user->getRoles(), true);
     }
 
     private function isPubliclyViewable(Tournament $tournament): bool
@@ -159,12 +171,17 @@ final class TournamentVoter extends Voter
     }
 
     /**
-     * Can view dashboard: Organizer, registered players, or anyone for public ongoing/completed tournaments.
+     * Can view dashboard: Organizer, admin, registered players, or anyone for public ongoing/completed tournaments.
      */
     private function canViewDashboard(Tournament $tournament, User $user): bool
     {
         // Organizer can always view dashboard
         if ($this->isOrganizer($tournament, $user)) {
+            return true;
+        }
+
+        // Admin can view any tournament's dashboard
+        if ($this->isAdmin($user)) {
             return true;
         }
 
@@ -174,7 +191,7 @@ final class TournamentVoter extends Voter
         }
 
         // Registered players can view dashboard of their tournament (even if private)
-        if (in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::COMPLETED], true)) {
+        if (in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::ABANDONED, TournamentStatus::COMPLETED], true)) {
             return $this->registrationRepository->isPlayerRegistered($tournament, $user);
         }
 
@@ -183,7 +200,7 @@ final class TournamentVoter extends Voter
 
     /**
      * Can view dashboard publicly (anonymous access).
-     * Only PUBLIC tournaments that are ONGOING or COMPLETED.
+     * Only PUBLIC tournaments that are ONGOING, ABANDONED or COMPLETED.
      */
     private function canViewDashboardPublicly(Tournament $tournament): bool
     {
@@ -191,6 +208,6 @@ final class TournamentVoter extends Voter
             return false;
         }
 
-        return in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::COMPLETED], true);
+        return in_array($tournament->getStatus(), [TournamentStatus::ONGOING, TournamentStatus::ABANDONED, TournamentStatus::COMPLETED], true);
     }
 }

@@ -168,47 +168,157 @@
                     </div>
                 </div>
 
-                {# Joueurs, rondes, top cut #}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div>
-                        <label for="{{ form.expectedPlayers.vars.id }}" class="block form-label mb-2">
-                            {{ ux_icon('lucide:users', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            {{ 'form.tournament.expected_players'|trans }}
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                {{ ux_icon('lucide:hash', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                {# Joueurs, rondes, top cut (hidden when group stage) #}
+                <div data-tournament-form-target="standardPlayersSection">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label for="{{ form.expectedPlayers.vars.id }}" class="block form-label mb-2">
+                                {{ ux_icon('lucide:users', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                                {{ 'form.tournament.expected_players'|trans }}
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    {{ ux_icon('lucide:hash', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                                {{ form_widget(form.expectedPlayers, {'attr': {
+                                    'class': 'form-input w-full pl-10',
+                                    'data-tournament-form-target': 'expectedPlayers',
+                                    'data-action': 'input->tournament-form#suggestRounds'
+                                }}) }}
                             </div>
-                            {{ form_widget(form.expectedPlayers, {'attr': {
-                                'class': 'form-input w-full pl-10',
-                                'data-tournament-form-target': 'expectedPlayers',
-                                'data-action': 'input->tournament-form#suggestRounds'
-                            }}) }}
+                            {{ form_errors(form.expectedPlayers) }}
                         </div>
-                        {{ form_errors(form.expectedPlayers) }}
+                        <div data-tournament-form-target="swissRoundsContainer">
+                            <label for="{{ form.swissRounds.vars.id }}" class="block form-label mb-2">
+                                {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                                {{ 'form.tournament.swiss_rounds'|trans }}
+                            </label>
+                            {{ form_widget(form.swissRounds, {'attr': {
+                                'class': 'form-input w-full',
+                                'data-tournament-form-target': 'swissRounds'
+                            }}) }}
+                            {{ form_errors(form.swissRounds) }}
+                            <p class="text-xs text-orange-600 mt-1" data-tournament-form-target="roundsSuggestion"></p>
+                        </div>
+                        <div data-tournament-form-target="topCutSizeContainer">
+                            <label for="{{ form.topCutSize.vars.id }}" class="block form-label mb-2">
+                                {{ ux_icon('lucide:award', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
+                                {{ 'form.tournament.top_cut_size'|trans }}
+                            </label>
+                            {{ form_widget(form.topCutSize, {'attr': {
+                                'class': 'form-input w-full'
+                            }}) }}
+                            {{ form_errors(form.topCutSize) }}
+                        </div>
                     </div>
-                    <div data-tournament-form-target="swissRoundsContainer">
-                        <label for="{{ form.swissRounds.vars.id }}" class="block form-label mb-2">
-                            {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            {{ 'form.tournament.swiss_rounds'|trans }}
-                        </label>
-                        {{ form_widget(form.swissRounds, {'attr': {
-                            'class': 'form-input w-full',
-                            'data-tournament-form-target': 'swissRounds'
-                        }}) }}
-                        {{ form_errors(form.swissRounds) }}
-                        <p class="text-xs text-orange-600 mt-1" data-tournament-form-target="roundsSuggestion"></p>
+                </div>
+
+                {# Group Stage Configuration (shown when group_stage_elimination is selected) #}
+                <div data-tournament-form-target="groupStageSection" class="hidden">
+                    <div class="rounded-xl p-5 border" style="background-color: var(--color-green-50); border-color: var(--color-green-200);">
+                        <h3 class="text-lg font-semibold mb-5 flex items-center" style="color: var(--color-green-800);">
+                            {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'form.tournament.group_stage_config'|trans }}
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                            <div>
+                                <label for="{{ form.groupCount.vars.id }}" class="block form-label mb-2">
+                                    {{ 'form.tournament.group_count'|trans }}
+                                </label>
+                                {{ form_widget(form.groupCount, {'attr': {
+                                    'class': 'form-input w-full',
+                                    'data-tournament-form-target': 'groupCount',
+                                    'data-action': 'input->tournament-form#updateGroupSummary',
+                                    'placeholder': 'Ex: 4'
+                                }}) }}
+                                {{ form_errors(form.groupCount) }}
+                            </div>
+                            <div>
+                                <label for="{{ form.playersPerGroup.vars.id }}" class="block form-label mb-2">
+                                    {{ 'form.tournament.players_per_group'|trans }}
+                                </label>
+                                {{ form_widget(form.playersPerGroup, {'attr': {
+                                    'class': 'form-input w-full',
+                                    'data-tournament-form-target': 'playersPerGroup',
+                                    'data-action': 'input->tournament-form#updateGroupSummary',
+                                    'placeholder': 'Ex: 4'
+                                }}) }}
+                                {{ form_errors(form.playersPerGroup) }}
+                            </div>
+                            <div>
+                                <label for="{{ form.qualifiersPerGroup.vars.id }}" class="block form-label mb-2">
+                                    {{ 'form.tournament.qualifiers_per_group'|trans }}
+                                </label>
+                                {{ form_widget(form.qualifiersPerGroup, {'attr': {
+                                    'class': 'form-input w-full',
+                                    'data-tournament-form-target': 'qualifiersPerGroup',
+                                    'data-action': 'change->tournament-form#updateGroupSummary'
+                                }}) }}
+                                {{ form_errors(form.qualifiersPerGroup) }}
+                            </div>
+                        </div>
+
+                        {# Summary #}
+                        <div data-tournament-form-target="groupSummary" class="rounded-lg p-4 border" style="background-color: var(--card-bg); border-color: var(--color-green-200);">
+                            <h4 class="font-medium mb-3 flex items-center" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:calculator', {class: 'w-4 h-4 mr-2', style: 'color: var(--color-green-600);'}) }}
+                                {{ 'form.tournament.group_summary'|trans }}
+                            </h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                <div data-tournament-form-target="totalPlayersDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                                    <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'form.tournament.total_players'|trans }}</div>
+                                    <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                                </div>
+                                <div data-tournament-form-target="roundsPerGroupDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                                    <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'form.tournament.rounds_per_group'|trans }}</div>
+                                    <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                                </div>
+                                <div data-tournament-form-target="totalQualifiersDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--bg-subtle);">
+                                    <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'form.tournament.total_qualifiers'|trans }}</div>
+                                    <div class="font-bold text-lg" style="color: var(--text-primary);"><span>-</span></div>
+                                </div>
+                                <div data-tournament-form-target="bracketSizeDisplay" class="text-center p-2 rounded-lg" style="background-color: var(--color-green-50);">
+                                    <div class="text-xs mb-1" style="color: var(--text-muted);">{{ 'form.tournament.bracket_size'|trans }}</div>
+                                    <div class="font-bold text-sm" style="color: var(--color-green-700);"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div data-tournament-form-target="topCutSizeContainer">
-                        <label for="{{ form.topCutSize.vars.id }}" class="block form-label mb-2">
-                            {{ ux_icon('lucide:award', {class: 'w-4 h-4 inline mr-1', style: 'color: var(--text-muted);'}) }}
-                            {{ 'form.tournament.top_cut_size'|trans }}
-                        </label>
-                        {{ form_widget(form.topCutSize, {'attr': {
-                            'class': 'form-input w-full'
-                        }}) }}
-                        {{ form_errors(form.topCutSize) }}
-                    </div>
+                </div>
+
+                {# Tournament Type Flags #}
+                <div class="flex flex-wrap gap-4 pt-4" style="border-top: 1px solid var(--border-muted);">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.isTumult, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:zap', {class: 'w-4 h-4 inline mr-1 text-amber-500'}) }}
+                                {{ 'form.tournament.is_tumult'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.is_tumult_help'|trans }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.isSeasonFinalsQualifier, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:star', {class: 'w-4 h-4 inline mr-1 text-purple-500'}) }}
+                                {{ 'form.tournament.is_season_finals_qualifier'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.is_season_finals_qualifier_help'|trans }}</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-transparent cursor-pointer transition-all" style="background-color: var(--bg-subtle);">
+                        {{ form_widget(form.checkInEnabled, {'attr': {'class': 'h-4 w-4', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                        <span class="ml-3">
+                            <span class="flex items-center text-sm font-medium" style="color: var(--text-primary);">
+                                {{ ux_icon('lucide:user-check', {class: 'w-4 h-4 inline mr-1 text-cyan-500'}) }}
+                                {{ 'form.tournament.check_in_enabled'|trans }}
+                            </span>
+                            <span class="block text-xs mt-0.5" style="color: var(--text-muted);">{{ 'form.tournament.check_in_enabled_help'|trans }}</span>
+                        </span>
+                    </label>
                 </div>
             </div>
         </div>

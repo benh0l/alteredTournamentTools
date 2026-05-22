@@ -174,6 +174,15 @@ final class TournamentWizardService
             if (isset($wizardData[9]['alteredGgLink'])) {
                 $tournament->setAlteredGgLink($wizardData[9]['alteredGgLink']);
             }
+            if (isset($wizardData[9]['isTumult'])) {
+                $tournament->setIsTumult((bool) $wizardData[9]['isTumult']);
+            }
+            if (isset($wizardData[9]['isSeasonFinalsQualifier'])) {
+                $tournament->setIsSeasonFinalsQualifier((bool) $wizardData[9]['isSeasonFinalsQualifier']);
+            }
+            if (isset($wizardData[9]['checkInEnabled'])) {
+                $tournament->setCheckInEnabled((bool) $wizardData[9]['checkInEnabled']);
+            }
         }
 
         $tournament->setOrganizer($organizer);
@@ -244,6 +253,12 @@ final class TournamentWizardService
                 $swissFormat
             );
             $summary['swissRoundsAutoSuggested'] = true;
+        }
+
+        // Calculate rounds for round-robin (championship) format
+        $hasRoundRobin = $structure instanceof TournamentStructure && $structure->hasRoundRobin();
+        if ($hasRoundRobin && $summary['expectedPlayers'] !== null) {
+            $summary['roundRobinRounds'] = (int) $summary['expectedPlayers'] - 1;
         }
 
         // Step 7: Visibility

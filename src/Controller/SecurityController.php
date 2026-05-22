@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\OAuth\OAuthFeatureService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,6 +12,11 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class SecurityController extends AbstractController
 {
+    public function __construct(
+        private readonly OAuthFeatureService $oauthFeatureService,
+    ) {
+    }
+
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -28,6 +34,7 @@ final class SecurityController extends AbstractController
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'oauth_altered_reunion_enabled' => $this->oauthFeatureService->isAlteredReunionEnabled(),
         ]);
     }
 

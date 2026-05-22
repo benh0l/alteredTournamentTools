@@ -41,6 +41,14 @@
     --card-border: #e5e7eb;
     --card-shadow: rgba(0, 0, 0, 0.1);
 
+    /* Badge text colors - darker for light mode contrast */
+    --badge-green-text: #15803d;
+    --badge-blue-text: #1d4ed8;
+    --badge-purple-text: #7e22ce;
+    --badge-emerald-text: #047857;
+    --badge-orange-text: #c2410c;
+    --badge-yellow-text: #a16207;
+
     /* Header gradient */
     --header-from: #f97316;
     --header-via: #f59e0b;
@@ -68,6 +76,14 @@
     --card-bg: #1f2937;
     --card-border: #374151;
     --card-shadow: rgba(0, 0, 0, 0.3);
+
+    /* Badge text colors - brighter for dark mode contrast */
+    --badge-green-text: #86efac;
+    --badge-blue-text: #93c5fd;
+    --badge-purple-text: #d8b4fe;
+    --badge-emerald-text: #6ee7b7;
+    --badge-orange-text: #fdba74;
+    --badge-yellow-text: #fde047;
 
     /* Override light primary colors for dark mode - use darker versions */
     --color-primary-50: #1c1917;

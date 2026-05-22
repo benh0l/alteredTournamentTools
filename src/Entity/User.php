@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\Validator\UniqueEmailOrGuest;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\Index(name: 'idx_users_email', columns: ['email'])]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['email'], message: 'Cette adresse email est deja utilisee')]
+#[UniqueEmailOrGuest]
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est deja utilise')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -94,6 +96,46 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'theme_mode', type: 'string', length: 10, nullable: true)]
     private ?string $themeMode = 'light';
 
+    /**
+     * Privacy settings for GDPR compliance.
+     *
+     * @var array{show_real_name: bool, show_in_results: bool, show_match_history: bool}
+     */
+    #[ORM\Column(name: 'privacy_settings', type: 'json')]
+    private array $privacySettings = [
+        'show_real_name' => false,
+        'show_in_results' => true,
+        'show_match_history' => true,
+    ];
+
+    /**
+     * Whether this user is a guest (created by organizer, no real account).
+     */
+    #[ORM\Column(name: 'is_guest', type: 'boolean', options: ['default' => false])]
+    private bool $isGuest = false;
+
+    /**
+     * Token for claiming a guest account (bulk import feature).
+     */
+    #[ORM\Column(name: 'claim_token', type: 'string', length: 64, nullable: true, unique: true)]
+    private ?string $claimToken = null;
+
+    /**
+     * Expiration date for the claim token.
+     */
+    #[ORM\Column(name: 'claim_token_expires_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $claimTokenExpiresAt = null;
+
+    /**
+     * Whether this user was created via OAuth (no local password initially).
+     */
+    #[ORM\Column(name: 'created_via_oauth', type: 'boolean', options: ['default' => false])]
+    private bool $createdViaOauth = false;
+
+    /** @var Collection<int, UserOAuthLink> */
+    #[ORM\OneToMany(targetEntity: UserOAuthLink::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $oauthLinks;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'player', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $registrations;
@@ -103,6 +145,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
         $this->roles = ['ROLE_USER'];
         $this->registrations = new ArrayCollection();
+        $this->oauthLinks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -258,9 +301,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Get display name with team tag if set.
      * Format: [TAG] Pseudo or just Pseudo if no tag.
+     * For guest accounts, returns their real name instead.
      */
     public function getDisplayName(): string
     {
+        // For guests, return their real name
+        if ($this->isGuest && $this->name) {
+            return $this->name;
+        }
+
         if ($this->teamTag) {
             return '[' . $this->teamTag . '] ' . $this->pseudo;
         }
@@ -301,6 +350,83 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isVerified = $isVerified;
 
         return $this;
+    }
+
+    public function isGuest(): bool
+    {
+        return $this->isGuest;
+    }
+
+    public function setIsGuest(bool $isGuest): self
+    {
+        $this->isGuest = $isGuest;
+
+        return $this;
+    }
+
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function setClaimToken(?string $claimToken): self
+    {
+        $this->claimToken = $claimToken;
+
+        return $this;
+    }
+
+    public function getClaimTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->claimTokenExpiresAt;
+    }
+
+    public function setClaimTokenExpiresAt(?\DateTimeImmutable $claimTokenExpiresAt): self
+    {
+        $this->claimTokenExpiresAt = $claimTokenExpiresAt;
+
+        return $this;
+    }
+
+    /**
+     * Generate a new claim token for guest account activation.
+     * Token expires after 6 months.
+     */
+    public function generateClaimToken(): void
+    {
+        $this->claimToken = Uuid::v4()->toRfc4122();
+        $this->claimTokenExpiresAt = new \DateTimeImmutable('+6 months');
+    }
+
+    /**
+     * Check if this account can be claimed (is a guest with valid token).
+     */
+    public function isClaimable(): bool
+    {
+        return $this->isGuest
+            && $this->claimToken !== null
+            && $this->claimTokenExpiresAt !== null
+            && $this->claimTokenExpiresAt > new \DateTimeImmutable();
+    }
+
+    /**
+     * Claim this guest account by setting pseudo and password.
+     * Converts the guest account to a full account.
+     *
+     * @throws \LogicException if account is not claimable
+     */
+    public function claim(string $pseudo, string $hashedPassword): void
+    {
+        if (!$this->isClaimable()) {
+            throw new \LogicException('Account is not claimable');
+        }
+
+        $this->pseudo = $pseudo;
+        $this->password = $hashedPassword;
+        $this->isGuest = false;
+        $this->claimToken = null;
+        $this->claimTokenExpiresAt = null;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     /**
@@ -389,6 +515,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Get privacy settings.
+     *
+     * @return array{show_real_name: bool, show_in_results: bool, show_match_history: bool}
+     */
+    public function getPrivacySettings(): array
+    {
+        return $this->privacySettings;
+    }
+
+    /**
+     * Set privacy settings.
+     *
+     * @param array{show_real_name?: bool, show_in_results?: bool, show_match_history?: bool} $privacySettings
+     */
+    public function setPrivacySettings(array $privacySettings): self
+    {
+        $this->privacySettings = array_merge($this->privacySettings, $privacySettings);
+
+        return $this;
+    }
+
+    /**
+     * Check if real name should be displayed publicly.
+     */
+    public function shouldShowRealName(): bool
+    {
+        return $this->privacySettings['show_real_name'] ?? false;
+    }
+
+    /**
+     * Check if user should appear in public results.
+     */
+    public function shouldShowInResults(): bool
+    {
+        return $this->privacySettings['show_in_results'] ?? true;
+    }
+
+    /**
+     * Check if match history should be public.
+     */
+    public function shouldShowMatchHistory(): bool
+    {
+        return $this->privacySettings['show_match_history'] ?? true;
+    }
+
+    /**
      * Get user's preferred theme color.
      */
     public function getThemeColor(): string
@@ -426,6 +598,92 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($themeMode === null || in_array($themeMode, $validModes, true)) {
             $this->themeMode = $themeMode;
         }
+
+        return $this;
+    }
+
+    /**
+     * Check if this user was created via OAuth.
+     */
+    public function isCreatedViaOauth(): bool
+    {
+        return $this->createdViaOauth;
+    }
+
+    /**
+     * Set whether this user was created via OAuth.
+     */
+    public function setCreatedViaOauth(bool $createdViaOauth): self
+    {
+        $this->createdViaOauth = $createdViaOauth;
+
+        return $this;
+    }
+
+    /**
+     * Check if user has a local password set.
+     * Users created via OAuth initially have no password (empty or placeholder hash).
+     */
+    public function hasLocalPassword(): bool
+    {
+        // If not created via OAuth, they have a password
+        if (!$this->createdViaOauth) {
+            return true;
+        }
+
+        // Check if password is set and not empty/placeholder
+        return $this->password !== '' && $this->password !== 'OAUTH_NO_PASSWORD';
+    }
+
+    /**
+     * @return Collection<int, UserOAuthLink>
+     */
+    public function getOauthLinks(): Collection
+    {
+        return $this->oauthLinks;
+    }
+
+    /**
+     * Get OAuth link for a specific provider.
+     */
+    public function getOAuthLink(string $provider): ?UserOAuthLink
+    {
+        foreach ($this->oauthLinks as $link) {
+            if ($link->getProvider() === $provider) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if user has an OAuth link for a specific provider.
+     */
+    public function hasOAuthLink(string $provider): bool
+    {
+        return $this->getOAuthLink($provider) !== null;
+    }
+
+    /**
+     * Add an OAuth link.
+     */
+    public function addOauthLink(UserOAuthLink $oauthLink): self
+    {
+        if (!$this->oauthLinks->contains($oauthLink)) {
+            $this->oauthLinks->add($oauthLink);
+            $oauthLink->setUser($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove an OAuth link.
+     */
+    public function removeOauthLink(UserOAuthLink $oauthLink): self
+    {
+        $this->oauthLinks->removeElement($oauthLink);
 
         return $this;
     }

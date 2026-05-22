@@ -52,11 +52,28 @@ final class TournamentResultsController extends AbstractController
             return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
         }
 
-        $standings = $this->standingsService->calculateStandings($tournament);
+        // Get elimination rounds for bracket display
+        $eliminationRounds = [];
+        foreach ($tournament->getRounds() as $round) {
+            if ($round->isEliminationRound()) {
+                $eliminationRounds[] = $round;
+            }
+        }
+        // Sort by round number
+        usort($eliminationRounds, fn ($a, $b) => $a->getRoundNumber() <=> $b->getRoundNumber());
+
+        // If tournament has elimination phase, show Swiss standings only
+        // (the bracket already shows elimination results)
+        $hasEliminationPhase = !empty($eliminationRounds);
+        $standings = $hasEliminationPhase
+            ? $this->standingsService->calculateSwissStandings($tournament)
+            : $this->standingsService->calculateStandings($tournament);
 
         return $this->render('tournament_results/final_standings.html.twig', [
             'tournament' => $tournament,
             'standings' => $standings,
+            'elimination_rounds' => $eliminationRounds,
+            'has_elimination_phase' => $hasEliminationPhase,
         ]);
     }
 
@@ -168,6 +185,11 @@ final class TournamentResultsController extends AbstractController
         // Organizer can always see results of their own tournament
         $user = $this->getUser();
         if ($user !== null && $tournament->getOrganizer() === $user) {
+            return true;
+        }
+
+        // Admins can always see results of any tournament
+        if ($this->isGranted('ROLE_ADMIN')) {
             return true;
         }
 

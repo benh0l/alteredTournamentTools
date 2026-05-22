@@ -34,6 +34,16 @@ final class TournamentController extends AbstractController
     ) {
     }
 
+    #[Route('/results', name: 'tournament_results_list', methods: ['GET'])]
+    public function resultsList(): Response
+    {
+        $tournaments = $this->tournamentRepository->findPublicCompletedTournaments();
+
+        return $this->render('tournament/results_list.html.twig', [
+            'tournaments' => $tournaments,
+        ]);
+    }
+
     #[Route('', name: 'tournament_list', methods: ['GET'])]
     public function list(Request $request): Response
     {
@@ -43,36 +53,63 @@ final class TournamentController extends AbstractController
         $tournaments = [];
         $searchResults = null;
 
-        $lat = $form->get('lat')->getData();
-        $lng = $form->get('lng')->getData();
+        // Get filter values from request (more reliable for GET forms)
+        $lat = $request->query->get('lat');
+        $lng = $request->query->get('lng');
+        $formatValue = $request->query->get('format');
+        $dateFromStr = $request->query->get('dateFrom');
+        $dateToStr = $request->query->get('dateTo');
+        $radius = (float) ($request->query->get('radius') ?: 50);
+        $isTumult = $request->query->getBoolean('isTumult', false) ?: null;
+        $isSeasonFinalsQualifier = $request->query->getBoolean('isSeasonFinalsQualifier', false) ?: null;
+
+        // Parse format
+        $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
+
+        // Parse dates
+        $dateFrom = null;
+        $dateTo = null;
+        if (!empty($dateFromStr)) {
+            try {
+                $dateFrom = new \DateTimeImmutable($dateFromStr);
+            } catch (\Exception $e) {
+                // Invalid date, ignore
+            }
+        }
+        if (!empty($dateToStr)) {
+            try {
+                $dateTo = new \DateTimeImmutable($dateToStr);
+            } catch (\Exception $e) {
+                // Invalid date, ignore
+            }
+        }
+
+        // Check if any search params are provided
+        $hasSearchParams = $request->query->count() > 0;
 
         if ($lat && $lng) {
             // Search by location with coordinates
-            $radius = (float) ($form->get('radius')->getData() ?? 50);
-            $formatValue = $form->get('format')->getData();
-            $format = $formatValue ? TournamentFormat::tryFrom($formatValue) : null;
-
-            // Handle date filters (dateFrom = minimum, dateTo = maximum, both optional)
-            $dateFrom = $form->get('dateFrom')->getData();
-            $dateTo = $form->get('dateTo')->getData();
-
-            if ($dateFrom instanceof \DateTime) {
-                $dateFrom = \DateTimeImmutable::createFromMutable($dateFrom);
-            }
-            if ($dateTo instanceof \DateTime) {
-                $dateTo = \DateTimeImmutable::createFromMutable($dateTo);
-            }
-
             $searchResults = $this->tournamentRepository->findByLocation(
                 (float) $lat,
                 (float) $lng,
                 $radius,
                 $format,
                 $dateFrom,
-                $dateTo
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
+            );
+        } elseif ($hasSearchParams) {
+            // Search without location but with filters
+            $searchResults = $this->tournamentRepository->findPublicTournamentsFiltered(
+                $format,
+                $dateFrom,
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
             );
         } else {
-            // No location filter, show all public tournaments
+            // No filters, show all public tournaments
             $tournaments = $this->tournamentRepository->findPublicTournaments();
         }
 
@@ -115,19 +152,82 @@ final class TournamentController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/copy', name: 'tournament_copy', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_USER')]
+    public function copy(Request $request, Tournament $source): Response
+    {
+        // Only organizer can copy their tournament
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $source);
+
+        $tournament = new Tournament();
+
+        // Copy all relevant fields from source
+        $tournament->setName($source->getName() . ' (copie)');
+        $tournament->setDate($source->getDate());
+        $tournament->setTime($source->getTime());
+        $tournament->setLocation($source->getLocation());
+        $tournament->setLatitude($source->getLatitude());
+        $tournament->setLongitude($source->getLongitude());
+        $tournament->setDescription($source->getDescription());
+        $tournament->setEntryFee($source->getEntryFee());
+        $tournament->setPrizes($source->getPrizes());
+        $tournament->setAlteredGgLink($source->getAlteredGgLink());
+        $tournament->setFormat($source->getFormat());
+        $tournament->setStructure($source->getStructure());
+        $tournament->setVisibility($source->getVisibility());
+        $tournament->setDecklistTransparency($source->getDecklistTransparency());
+        $tournament->setSwissMatchFormat($source->getSwissMatchFormat());
+        $tournament->setEliminationMatchFormat($source->getEliminationMatchFormat());
+        $tournament->setSwissRounds($source->getSwissRounds());
+        $tournament->setExpectedPlayers($source->getExpectedPlayers());
+        $tournament->setMaxPlayers($source->getMaxPlayers());
+        $tournament->setTopCutSize($source->getTopCutSize());
+        $tournament->setGroupCount($source->getGroupCount());
+        $tournament->setPlayersPerGroup($source->getPlayersPerGroup());
+        $tournament->setQualifiersPerGroup($source->getQualifiersPerGroup());
+        $tournament->setGroupFormationMethod($source->getGroupFormationMethod());
+        $tournament->setIsTumult($source->isTumult());
+        $tournament->setIsSeasonFinalsQualifier($source->isSeasonFinalsQualifier());
+        $tournament->setCheckInEnabled($source->isCheckInEnabled());
+
+        $form = $this->createForm(TournamentType::class, $tournament);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User $user */
+            $user = $this->getUser();
+            $this->tournamentService->createTournament($tournament, $user);
+
+            $this->addFlash('success', $this->translator->trans('flash.success.tournament_created'));
+
+            return $this->redirectToRoute('tournament_show', [
+                'id' => $tournament->getId(),
+            ]);
+        }
+
+        return $this->render('tournament/create.html.twig', [
+            'form' => $form,
+            'is_copy' => true,
+            'source_tournament' => $source,
+        ]);
+    }
+
     #[Route('/{id}', name: 'tournament_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Tournament $tournament): Response
     {
         $isRegistered = false;
+        $registration = null;
         $user = $this->getUser();
 
         if ($user instanceof User) {
-            $isRegistered = $this->registrationService->isPlayerRegistered($user, $tournament);
+            $registration = $this->registrationService->getRegistrationForPlayer($user, $tournament);
+            $isRegistered = $registration !== null;
         }
 
         return $this->render('tournament/show.html.twig', [
             'tournament' => $tournament,
             'is_registered' => $isRegistered,
+            'registration' => $registration,
         ]);
     }
 

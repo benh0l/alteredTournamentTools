@@ -59,14 +59,11 @@ final class RegistrationEmailService
 
             $this->logger->info('Registration confirmation email sent', [
                 'player_id' => $player->getId(),
-                'player_email' => $player->getEmail(),
                 'tournament_id' => $tournament->getId(),
-                'tournament_name' => $tournament->getName(),
             ]);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send registration confirmation email', [
                 'player_id' => $player->getId(),
-                'player_email' => $player->getEmail(),
                 'tournament_id' => $tournament->getId(),
                 'error' => $e->getMessage(),
             ]);
@@ -105,13 +102,10 @@ final class RegistrationEmailService
             $this->mailer->send($email);
 
             $this->logger->info('Registration removal email sent', [
-                'player_email' => $playerEmail,
                 'tournament_id' => $tournamentId,
-                'tournament_name' => $tournamentName,
             ]);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send registration removal email', [
-                'player_email' => $playerEmail,
                 'tournament_id' => $tournamentId,
                 'error' => $e->getMessage(),
             ]);

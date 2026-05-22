@@ -238,7 +238,7 @@ final class RegistrationServiceTest extends TestCase
         $tournament->setName('Test Tournament');
         $tournament->setOrganizer($organizer);
         $tournament->setDate(new \DateTimeImmutable('+1 week'));
-        $tournament->setFormat(\App\Enum\TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(\App\Enum\TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(\App\Enum\TournamentStructure::SWISS_ONLY);
         $tournament->setVisibility(\App\Enum\TournamentVisibility::PUBLIC);
         $tournament->setDecklistTransparency(\App\Enum\DecklistTransparency::OPEN);

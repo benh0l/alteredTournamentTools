@@ -41,8 +41,8 @@ class PlayerMatchService
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
 
-            // Only check ongoing tournaments
-            if ($tournament->getStatus() !== TournamentStatus::ONGOING) {
+            // Only check tournaments in progress (ongoing or abandoned)
+            if (!$tournament->getStatus()->isInProgress()) {
                 continue;
             }
 
@@ -75,7 +75,7 @@ class PlayerMatchService
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
 
-            if ($tournament->getStatus() !== TournamentStatus::ONGOING) {
+            if (!$tournament->getStatus()->isInProgress()) {
                 continue;
             }
 
@@ -142,7 +142,7 @@ class PlayerMatchService
         $ongoing = [];
 
         foreach ($registrations as $registration) {
-            if ($registration->getTournament()->getStatus() === TournamentStatus::ONGOING) {
+            if ($registration->getTournament()->getStatus()->isInProgress()) {
                 $ongoing[] = $registration;
             }
         }

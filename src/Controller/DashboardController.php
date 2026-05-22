@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Tournament;
+use App\Entity\User;
 use App\Enum\MatchStatus;
 use App\Enum\TournamentStructure;
+use App\Repository\RegistrationRepository;
+use App\Repository\TournamentGroupRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
+use App\Service\DropService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,6 +38,9 @@ final class DashboardController extends AbstractController
     public function __construct(
         private readonly TournamentMatchRepository $matchRepository,
         private readonly BracketService $bracketService,
+        private readonly RegistrationRepository $registrationRepository,
+        private readonly DropService $dropService,
+        private readonly TournamentGroupRepository $groupRepository,
     ) {
     }
 
@@ -71,6 +78,33 @@ final class DashboardController extends AbstractController
             }
         }
 
+        // Get player registration for drop functionality
+        $playerRegistration = null;
+        $hasActiveMatch = false;
+        /** @var User|null $user */
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
+            if ($playerRegistration !== null && !$playerRegistration->isDropped()) {
+                $hasActiveMatch = $this->dropService->hasActiveMatch($playerRegistration);
+            }
+        }
+
+        // Check if group phase is complete (for group stage tournaments)
+        $groupPhaseComplete = false;
+        $isGroupStageTournament = $tournament->hasGroupStage() && !$tournament->isInEliminationPhase();
+        if ($isGroupStageTournament && $tournament->hasGroups()) {
+            $groups = $this->groupRepository->findByTournamentWithPlayers($tournament);
+            if (count($groups) > 0) {
+                // Check if all group rounds are completed
+                $groupRoundsPlayed = $tournament->getRounds()->filter(
+                    fn ($r) => !$r->isEliminationRound() && $r->isCompleted()
+                )->count();
+                $requiredRounds = $groups[0]->getRequiredRounds();
+                $groupPhaseComplete = $groupRoundsPlayed >= $requiredRounds;
+            }
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'tournament' => $tournament,
             'current_round' => $currentRound,
@@ -81,6 +115,10 @@ final class DashboardController extends AbstractController
             'can_manage' => $canManage,
             'is_bracket_complete' => $isBracketComplete,
             'can_advance_bracket' => $canAdvanceBracket,
+            'player_registration' => $playerRegistration,
+            'has_active_match' => $hasActiveMatch,
+            'group_phase_complete' => $groupPhaseComplete,
+            'is_group_stage_tournament' => $isGroupStageTournament,
         ]);
     }
 
@@ -117,6 +155,23 @@ final class DashboardController extends AbstractController
             'current_round' => $tournament->getCurrentRound(),
             'rounds' => $tournament->getRounds(),
             'can_manage' => $canManage,
+        ]);
+    }
+
+    /**
+     * Fullscreen timer page for projection.
+     * Displays only the round timer in a large format suitable for venue screens.
+     */
+    #[Route('/timer', name: 'tournament_timer_fullscreen', methods: ['GET'])]
+    public function timerFullscreen(Tournament $tournament): Response
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::VIEW_DASHBOARD, $tournament);
+
+        $currentRound = $tournament->getCurrentRound();
+
+        return $this->render('dashboard/timer_fullscreen.html.twig', [
+            'tournament' => $tournament,
+            'current_round' => $currentRound,
         ]);
     }
 

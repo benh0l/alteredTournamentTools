@@ -78,6 +78,72 @@
                 </dl>
             </div>
 
+            {# Linked Accounts Section #}
+            {% if oauth_altered_reunion_enabled is defined and oauth_altered_reunion_enabled %}
+            <div class="px-8 py-6 border-t" style="border-color: var(--border-muted);">
+                <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:link', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                    Comptes liés
+                </h3>
+
+                <div class="rounded-xl p-4" style="background-color: var(--bg-subtle);">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            {{ ux_icon('lucide:gamepad-2', {class: 'w-6 h-6', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <p class="font-medium" style="color: var(--text-primary);">Altered Re:Union</p>
+                                {% set altered_link = user.getOAuthLink('altered_reunion') %}
+                                {% if altered_link %}
+                                    <p class="text-sm" style="color: var(--text-muted);">
+                                        Lié en tant que : <span class="font-medium" style="color: var(--color-primary-600);">{{ altered_link.providerUsername }}</span>
+                                    </p>
+                                {% else %}
+                                    <p class="text-sm" style="color: var(--text-muted);">Non lié</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if altered_link %}
+                            {# Show unlink button #}
+                            {% if user.isCreatedViaOauth and not user.hasLocalPassword %}
+                                {# Cannot unlink without password #}
+                                <div class="text-right">
+                                    <p class="text-xs mb-1" style="color: var(--color-warning-600);">
+                                        Définissez d'abord un mot de passe
+                                    </p>
+                                    <a href="{{ path('app_profile_set_password') }}"
+                                       class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                                       style="color: var(--color-primary-600); background-color: var(--color-primary-50);">
+                                        {{ ux_icon('lucide:key', {class: 'w-4 h-4 mr-1'}) }}
+                                        Définir un mot de passe
+                                    </a>
+                                </div>
+                            {% else %}
+                                <form method="post" action="{{ path('profile_oauth_unlink', {provider: 'altered_reunion'}) }}"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir délier ce compte ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('oauth_unlink_altered_reunion') }}">
+                                    <button type="submit"
+                                            class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                                            style="color: var(--color-danger-600); background-color: var(--color-danger-50);">
+                                        {{ ux_icon('lucide:unlink', {class: 'w-4 h-4 mr-1'}) }}
+                                        Délier
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            {# Show link button #}
+                            <a href="{{ path('oauth_altered_reunion_link') }}"
+                               class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                               style="color: var(--color-primary-600); background-color: var(--color-primary-50);">
+                                {{ ux_icon('lucide:link', {class: 'w-4 h-4 mr-1'}) }}
+                                Lier mon compte
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             {# Actions Section #}
             <div class="px-8 py-6 border-t" style="background-color: var(--bg-subtle); border-color: var(--border-muted);">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -88,18 +154,41 @@
                         {{ 'profile.edit_profile'|trans }}
                     </a>
 
+                    {% if user.isCreatedViaOauth and not user.hasLocalPassword %}
+                    <a href="{{ path('app_profile_set_password') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:key', {class: 'w-5 h-5 mr-2'}) }}
+                        Définir un mot de passe
+                    </a>
+                    {% else %}
                     <a href="{{ path('app_profile_change_password') }}"
                        class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
                        style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
                         {{ ux_icon('lucide:key', {class: 'w-5 h-5 mr-2'}) }}
                         {{ 'profile.change_password.title'|trans }}
                     </a>
+                    {% endif %}
 
                     <a href="{{ path('profile_notifications') }}"
                        class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
                        style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
                         {{ ux_icon('lucide:bell', {class: 'w-5 h-5 mr-2'}) }}
                         {{ 'profile.notifications.title'|trans }}
+                    </a>
+
+                    <a href="{{ path('profile_privacy') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.privacy.title'|trans }}
+                    </a>
+
+                    <a href="{{ path('app_profile_match_history') }}"
+                       class="flex items-center justify-center px-6 py-3 border-2 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                       style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                        {{ ux_icon('lucide:history', {class: 'w-5 h-5 mr-2'}) }}
+                        {{ 'profile.match_history.title'|trans }}
                     </a>
 
                     <a href="{{ path('app_profile_delete') }}"

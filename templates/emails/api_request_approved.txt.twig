@@ -1,0 +1,30 @@
+Votre demande d'acces API a ete approuvee !
+==========================================
+
+Bonjour {{ user.pseudo }},
+
+Bonne nouvelle ! Votre demande d'acces a l'API pour le projet "{{ request.projectName }}" a ete approuvee.
+
+Votre cle API
+-------------
+{{ credential.apiKey }}
+
+IMPORTANT : Conservez cette cle en lieu sur. Elle ne sera plus affichee en entier apres cet email.
+
+Comment utiliser votre cle API
+------------------------------
+Incluez votre cle API dans l'en-tete HTTP "X-API-Key" de vos requetes :
+
+curl -H "X-API-Key: {{ credential.apiKey }}" {{ apiUrl|replace({'/profile/api': '/api/v1/tournaments'}) }}
+
+Limites de debit
+----------------
+- 60 requetes par minute
+- 1 000 requetes par heure
+- 10 000 requetes par jour
+
+Documentation API : {{ docUrl }}
+Gerer ma cle : {{ apiUrl }}
+
+---
+Altered Tournament Tools

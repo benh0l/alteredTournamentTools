@@ -74,7 +74,7 @@ final class TournamentRepositoryTest extends TestCase
         $tournament->setName('Test Tournament');
         $tournament->setOrganizer($user);
         $tournament->setDate(new \DateTimeImmutable());
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $tournament->setVisibility(TournamentVisibility::PUBLIC);
 
@@ -102,7 +102,7 @@ final class TournamentRepositoryTest extends TestCase
         $tournament->setName('Test Tournament');
         $tournament->setOrganizer($user);
         $tournament->setDate(new \DateTimeImmutable());
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $tournament->setVisibility(TournamentVisibility::PUBLIC);
 

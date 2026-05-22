@@ -7,14 +7,14 @@
     {# Header #}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-            <nav class="text-sm text-gray-500 mb-2">
-                <a href="{{ path('tournament_show', {'id': tournament.id}) }}" class="hover:text-gray-700">
+            <nav class="text-sm mb-2" style="color: var(--text-muted);">
+                <a href="{{ path('tournament_show', {'id': tournament.id}) }}" class="hover:opacity-80" style="color: var(--text-secondary);">
                     {{ tournament.name }}
                 </a>
                 <span class="mx-2">/</span>
                 <span>{{ 'tournament.registrations.breadcrumb'|trans }}</span>
             </nav>
-            <h1 class="text-3xl font-bold">{{ 'tournament.registrations.header'|trans }}</h1>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'tournament.registrations.header'|trans }}</h1>
         </div>
 
         <div class="mt-4 md:mt-0 flex items-center space-x-4">
@@ -26,9 +26,19 @@
 
             {# Export Button #}
             <a href="{{ path('tournament_registrations_export', {'id': tournament.id}) }}"
-               class="bg-gray-500/20 hover:bg-gray-500/30 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-medium transition">
+               class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                {{ ux_icon('lucide:download', {class: 'w-4 h-4 inline mr-1'}) }}
                 {{ 'tournament.registrations.export_csv'|trans }}
             </a>
+
+            {# Import Button #}
+            {% if tournament.isPublished or tournament.isOngoing %}
+                <a href="{{ path('tournament_import', {'id': tournament.id}) }}"
+                   class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                    {{ ux_icon('lucide:upload', {class: 'w-4 h-4 inline mr-1'}) }}
+                    {{ 'tournament.registrations.import_csv'|trans }}
+                </a>
+            {% endif %}
 
             {# Close/Reopen Registrations Button #}
             {% if not tournament.registrationsClosed %}
@@ -51,6 +61,64 @@
             {% endif %}
         </div>
     </div>
+
+    {# Check-in Control Section #}
+    {% if tournament.checkInEnabled %}
+        <div class="rounded-lg shadow-md overflow-hidden mb-6 border-l-4 border-cyan-400" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4" style="background: linear-gradient(to right, rgb(6 182 212 / 0.1), transparent);">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        {{ ux_icon('lucide:user-check', {class: 'w-6 h-6 text-cyan-500'}) }}
+                        <div>
+                            <h2 class="text-lg font-bold" style="color: var(--text-primary);">{{ 'tournament.checkin.organizer.title'|trans }}</h2>
+                            <p class="text-sm" style="color: var(--text-muted);">
+                                {% if tournament.checkInOpen %}
+                                    {{ 'tournament.checkin.organizer.status_open'|trans }}
+                                {% else %}
+                                    {{ 'tournament.checkin.organizer.status_closed'|trans }}
+                                {% endif %}
+                                -
+                                {{ tournament.checkedInCount }}/{{ registrations|length }} {{ 'tournament.checkin.organizer.checked_in'|trans }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        {% if tournament.checkInOpen %}
+                            <form action="{{ path('tournament_checkin_close', {id: tournament.id}) }}" method="POST" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('checkin_close' ~ tournament.id) }}">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+                                    {{ ux_icon('lucide:x-circle', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'tournament.checkin.organizer.close_btn'|trans }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <form action="{{ path('tournament_checkin_open', {id: tournament.id}) }}" method="POST" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('checkin_open' ~ tournament.id) }}">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition">
+                                    {{ ux_icon('lucide:play-circle', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'tournament.checkin.organizer.open_btn'|trans }}
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {% if tournament.checkInOpen or tournament.checkedInCount > 0 %}
+                            <form action="{{ path('tournament_checkin_remove_absent', {id: tournament.id}) }}" method="POST" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('checkin_remove_absent' ~ tournament.id) }}">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition"
+                                        onclick="return confirm('{{ 'tournament.checkin.organizer.remove_absent_confirm'|trans }}')">
+                                    {{ ux_icon('lucide:user-minus', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'tournament.checkin.organizer.remove_absent_btn'|trans }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     {# Status Badge #}
     {% if tournament.registrationsClosed %}
@@ -235,25 +303,143 @@
             <p id="no-results" class="hidden theme-text-muted text-sm text-center py-4">
                 {{ 'tournament.registrations.no_user_found'|trans }}
             </p>
+
+            {# Guest Player Form #}
+            <div class="mt-6 pt-6 border-t" style="border-color: var(--border-default);">
+                <button type="button"
+                        id="toggle-guest-form"
+                        class="flex items-center text-sm font-medium theme-text-secondary hover:opacity-80">
+                    {{ ux_icon('lucide:user-plus-2', {class: 'w-4 h-4 mr-2 text-orange-500'}) }}
+                    {{ 'tournament.registrations.add_guest_title'|trans }}
+                    {{ ux_icon('lucide:chevron-down', {class: 'w-4 h-4 ml-1 transform transition-transform', id: 'guest-form-chevron'}) }}
+                </button>
+
+                <div id="guest-form" class="hidden mt-4">
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-4">
+                        <p class="text-xs text-orange-700 dark:text-orange-400">
+                            {{ ux_icon('lucide:info', {class: 'w-4 h-4 inline mr-1'}) }}
+                            {{ 'tournament.registrations.guest_notice'|trans }}
+                        </p>
+                    </div>
+
+                    <form action="{{ path('tournament_registrations_add_guest', {'id': tournament.id}) }}"
+                          method="POST"
+                          class="space-y-4"
+                          data-turbo="false"
+                          data-controller="registration-form"
+                          data-registration-form-heroes-value='{{ heroesData|json_encode|raw }}'
+                          data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                          data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_guest' ~ tournament.id) }}">
+
+                        <div>
+                            <label for="guest_name" class="block text-sm font-medium theme-text-secondary mb-2">
+                                {{ 'tournament.registrations.guest_name_label'|trans }} <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text"
+                                   name="guest_name"
+                                   id="guest_name"
+                                   class="form-input"
+                                   placeholder="{{ 'tournament.registrations.guest_name_placeholder'|trans }}"
+                                   required>
+                        </div>
+
+                        {% if tournament.format.isConstructed %}
+                            <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
+                                <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
+                                    {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
+                                    {{ 'tournament.registrations.faction_hero_title'|trans }}
+                                </h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="guest-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                                        </label>
+                                        <select name="faction"
+                                                id="guest-faction"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="faction"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    {% if tournament.format.isBifaction %}
+                                        <div>
+                                            <label for="guest-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                                {{ 'tournament.registrations.second_faction'|trans }}
+                                            </label>
+                                            <select name="faction2"
+                                                    id="guest-faction2"
+                                                    class="form-select text-sm"
+                                                    data-registration-form-target="faction2"
+                                                    data-action="change->registration-form#factionChanged">
+                                                <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                                {% for label, value in factionChoices %}
+                                                    <option value="{{ value }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="{{ tournament.format.isBifaction ? 'md:col-span-2' : '' }}">
+                                        <label for="guest-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ 'tournament.registrations.hero_label'|trans }}
+                                        </label>
+                                        <select name="hero"
+                                                id="guest-hero"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="hero"
+                                                disabled>
+                                            <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div>
+                            <label for="guest_decklist_url" class="block text-sm font-medium theme-text-secondary mb-2">
+                                {{ 'tournament.registrations.decklist_url_label'|trans }}
+                            </label>
+                            <input type="url"
+                                   name="decklist_url"
+                                   id="guest_decklist_url"
+                                   class="form-input"
+                                   placeholder="https://...">
+                        </div>
+
+                        <button type="submit"
+                                class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                            {{ 'tournament.registrations.add_guest_btn'|trans }}
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     {% endif %}
 
     {# Registrations Table #}
     {% if registrations|length > 0 %}
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-500/10">
+    <div class="rounded-lg shadow-md overflow-hidden" style="background-color: var(--card-bg);">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y" style="border-color: var(--border-default);">
+                <thead style="background-color: var(--bg-subtle);">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         #
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         <a href="{{ path('tournament_registrations', {
                             'id': tournament.id,
                             'sort': 'player.pseudo',
                             'direction': sort_field == 'player.pseudo' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
-                        }) }}" class="flex items-center hover:text-gray-700">
+                        }) }}" class="flex items-center hover:opacity-80">
                             {{ 'tournament.registrations.table.pseudo'|trans }}
                             {% if sort_field == 'player.pseudo' %}
                                 {% if sort_direction == 'ASC' %}
@@ -264,18 +450,18 @@
                             {% endif %}
                         </a>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         {{ 'tournament.registrations.table.faction_hero'|trans }}
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         {{ 'tournament.registrations.table.decklist'|trans }}
                     </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         <a href="{{ path('tournament_registrations', {
                             'id': tournament.id,
                             'sort': 'registeredAt',
                             'direction': sort_field == 'registeredAt' and sort_direction == 'ASC' ? 'DESC' : 'ASC'
-                        }) }}" class="flex items-center hover:text-gray-700">
+                        }) }}" class="flex items-center hover:opacity-80">
                             {{ 'tournament.registrations.table.registered_at'|trans }}
                             {% if sort_field == 'registeredAt' %}
                                 {% if sort_direction == 'ASC' %}
@@ -286,27 +472,32 @@
                             {% endif %}
                         </a>
                     </th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {% if tournament.checkInEnabled %}
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                        {{ 'tournament.registrations.table.checkin'|trans }}
+                    </th>
+                    {% endif %}
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
                         {{ 'tournament.registrations.table.actions'|trans }}
                     </th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody style="background-color: var(--card-bg);" class="divide-y divide-gray-200 dark:divide-gray-700">
                 {% for registration in registrations %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
                         {{ loop.index }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-sm font-medium text-gray-600">
+                            <div class="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center" style="background-color: var(--bg-muted);">
+                                <span class="text-sm font-medium" style="color: var(--text-secondary);">
                                     {{ registration.player.pseudo|first|upper }}
                                 </span>
                             </div>
                             <div class="ml-3">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium text-gray-900">
+                                    <span class="text-sm font-medium" style="color: var(--text-primary);">
                                         {{ registration.player.pseudo }}
                                     </span>
                                     {% if registration.player.id == tournament.organizer.id %}
@@ -314,9 +505,14 @@
                                             {{ 'tournament.registrations.organizer_badge'|trans }}
                                         </span>
                                     {% endif %}
+                                    {% if registration.player.guest %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-800 dark:text-orange-400">
+                                            {{ 'tournament.registrations.guest_badge'|trans }}
+                                        </span>
+                                    {% endif %}
                                 </div>
                                 {% if registration.player.name %}
-                                <div class="text-sm text-gray-500">
+                                <div class="text-sm" style="color: var(--text-muted);">
                                     {{ registration.player.name }}
                                 </div>
                                 {% endif %}
@@ -325,23 +521,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         {% if registration.faction %}
-                            {% set factionColors = {
-                                'axiom': {'bg': 'rgba(59, 130, 246, 0.2)', 'text': '#3b82f6', 'border': '#3b82f6'},
-                                'bravos': {'bg': 'rgba(239, 68, 68, 0.2)', 'text': '#ef4444', 'border': '#ef4444'},
-                                'lyra': {'bg': 'rgba(168, 85, 247, 0.2)', 'text': '#a855f7', 'border': '#a855f7'},
-                                'muna': {'bg': 'rgba(34, 197, 94, 0.2)', 'text': '#22c55e', 'border': '#22c55e'},
-                                'ordis': {'bg': 'rgba(245, 158, 11, 0.2)', 'text': '#f59e0b', 'border': '#f59e0b'}
-                            } %}
-                            {% set colors = factionColors[registration.faction.value] ?? {'bg': 'rgba(107, 114, 128, 0.2)', 'text': '#6b7280', 'border': '#6b7280'} %}
+                            {% set factionColor = registration.faction.color %}
                             <div class="flex items-center gap-3">
                                 {% if registration.heroImage %}
-                                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2" style="border-color: {{ colors.border }};">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2" style="border-color: {{ factionColor }};">
                                         <img src="{{ registration.heroImage }}" alt="{{ registration.heroLabel }}" class="w-full h-full object-cover">
                                     </div>
                                 {% endif %}
                                 <div class="flex flex-col gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ colors.bg }}; color: {{ colors.text }};">
-                                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: {{ colors.text }};"></span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ factionColor }}20; color: {{ factionColor }};">
+                                        <span class="w-2 h-2 rounded-full mr-1" style="background-color: {{ factionColor }};"></span>
                                         {{ registration.faction.label|trans }}
                                     </span>
                                     {% if registration.heroLabel %}
@@ -352,52 +541,223 @@
                                 </div>
                             </div>
                         {% else %}
-                            <span class="text-gray-400 text-xs">{{ 'tournament.registrations.not_specified'|trans }}</span>
+                            <span class="text-xs" style="color: var(--text-muted);">{{ 'tournament.registrations.not_specified'|trans }}</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         {% if registration.decklistUrl %}
                             <a href="{{ registration.decklistUrl }}"
                                target="_blank"
-                               class="text-blue-600 hover:text-blue-800 flex items-center">
+                               class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center">
                                 {{ 'tournament.registrations.view_decklist'|trans }}
                                 {{ ux_icon('lucide:external-link', {class: 'w-4 h-4 ml-1'}) }}
                             </a>
                         {% else %}
-                            <span class="text-gray-400">{{ 'tournament.registrations.not_provided'|trans }}</span>
+                            <span style="color: var(--text-muted);">{{ 'tournament.registrations.not_provided'|trans }}</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
                         {{ registration.registeredAt|date('d/m/Y H:i') }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {% if tournament.status.value == 'published' %}
-                        <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
-                              method="POST"
-                              class="inline">
-                            <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
-                            <button type="submit"
-                                    class="text-red-600 hover:text-red-900"
-                                    onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">
-                                {{ 'tournament.registrations.remove_player'|trans }}
-                            </button>
-                        </form>
+                    {% if tournament.checkInEnabled %}
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        {% if registration.isCheckedIn %}
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500 text-white shadow-sm">
+                                    {{ ux_icon('lucide:check-circle', {class: 'w-4 h-4 mr-1.5'}) }}
+                                    {{ registration.checkedInAt|date('H:i') }}
+                                </span>
+                                <form action="{{ path('tournament_organizer_undo_checkin', {id: tournament.id, registrationId: registration.id}) }}"
+                                      method="POST"
+                                      class="inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('organizer-undo-checkin-' ~ registration.id) }}">
+                                    <button type="submit"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500 hover:text-white transition-all"
+                                            style="background-color: var(--bg-muted); color: var(--text-muted);"
+                                            title="{{ 'tournament.checkin.organizer.undo'|trans }}">
+                                        {{ ux_icon('lucide:x', {class: 'w-4 h-4'}) }}
+                                    </button>
+                                </form>
+                            </div>
                         {% else %}
-                        <span class="text-gray-400">-</span>
+                            <form action="{{ path('tournament_organizer_checkin', {id: tournament.id, registrationId: registration.id}) }}"
+                                  method="POST"
+                                  class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('organizer-checkin-' ~ registration.id) }}">
+                                <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500 hover:bg-green-500 text-white shadow-sm transition-all">
+                                    {{ ux_icon('lucide:user-plus', {class: 'w-4 h-4 mr-1.5'}) }}
+                                    {{ 'tournament.checkin.organizer.checkin_btn'|trans }}
+                                </button>
+                            </form>
                         {% endif %}
+                    </td>
+                    {% endif %}
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end gap-2">
+                            {# Edit button #}
+                            <button type="button"
+                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    data-edit-registration-id="{{ registration.id }}"
+                                    data-edit-registration-pseudo="{{ registration.player.pseudo }}"
+                                    data-edit-registration-faction="{{ registration.faction ? registration.faction.value : '' }}"
+                                    data-edit-registration-faction2="{{ registration.faction2 ? registration.faction2.value : '' }}"
+                                    data-edit-registration-hero="{{ registration.hero ?? '' }}"
+                                    data-edit-registration-decklist="{{ registration.decklistUrl ?? '' }}"
+                                    data-edit-registration-csrf="{{ csrf_token('edit_registration' ~ registration.id) }}"
+                                    onclick="openEditModal(this)"
+                                    title="{{ 'tournament.registrations.edit_player'|trans }}">
+                                {{ ux_icon('lucide:pencil', {class: 'w-4 h-4'}) }}
+                            </button>
+                            {# Remove button #}
+                            {% if tournament.status.value == 'published' %}
+                            <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
+                                  method="POST"
+                                  class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
+                                <button type="submit"
+                                        class="text-red-600 hover:text-red-900"
+                                        onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">
+                                    {{ ux_icon('lucide:trash-2', {class: 'w-4 h-4'}) }}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
     {% else %}
-    <div class="bg-white rounded-lg shadow-md p-8 text-center">
-        {{ ux_icon('lucide:users', {class: 'w-16 h-16 mx-auto text-gray-400 mb-4'}) }}
-        <h2 class="text-xl font-medium text-gray-900 mb-2">{{ 'tournament.registrations.no_players_title'|trans }}</h2>
-        <p class="text-gray-500">{{ 'tournament.registrations.no_players_message'|trans }}</p>
+    <div class="rounded-lg shadow-md p-8 text-center" style="background-color: var(--card-bg);">
+        {{ ux_icon('lucide:users', {class: 'w-16 h-16 mx-auto mb-4', style: 'color: var(--text-muted);'}) }}
+        <h2 class="text-xl font-medium mb-2" style="color: var(--text-primary);">{{ 'tournament.registrations.no_players_title'|trans }}</h2>
+        <p style="color: var(--text-muted);">{{ 'tournament.registrations.no_players_message'|trans }}</p>
     </div>
     {% endif %}
+
+    {# Edit Registration Modal #}
+    <div id="edit-registration-modal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/50" onclick="closeEditModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="relative w-full max-w-md rounded-xl shadow-2xl" style="background-color: var(--card-bg);">
+                <div class="flex items-center justify-between p-4 border-b" style="border-color: var(--border-default);">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                        {{ 'tournament.registrations.edit_modal_title'|trans }}
+                    </h3>
+                    <button type="button" onclick="closeEditModal()" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        {{ ux_icon('lucide:x', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                    </button>
+                </div>
+
+                <form id="edit-registration-form" method="POST" class="p-4 space-y-4"
+                      data-controller="registration-form"
+                      data-registration-form-heroes-value='{{ heroesData|json_encode|raw }}'
+                      data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                      data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                    <input type="hidden" name="_token" id="edit-csrf-token" value="">
+
+                    {# Player name display #}
+                    <div class="flex items-center p-3 rounded-lg" style="background-color: var(--bg-muted);">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center" style="background-color: var(--bg-subtle);">
+                            <span id="edit-player-initial" class="text-lg font-medium" style="color: var(--text-secondary);">?</span>
+                        </div>
+                        <div class="ml-3">
+                            <div id="edit-player-pseudo" class="text-sm font-medium" style="color: var(--text-primary);">-</div>
+                        </div>
+                    </div>
+
+                    {% if tournament.format.isConstructed %}
+                        {# Faction & Hero Selection #}
+                        <div class="border rounded-lg p-4" style="border-color: var(--border-default);">
+                            <h4 class="text-sm font-medium theme-text-primary mb-3 flex items-center">
+                                {{ ux_icon('lucide:shield', {class: 'w-4 h-4 mr-2'}) }}
+                                {{ 'tournament.registrations.faction_hero_title'|trans }}
+                            </h4>
+
+                            <div class="grid grid-cols-1 gap-3">
+                                {# Faction Select #}
+                                <div>
+                                    <label for="edit-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                                    </label>
+                                    <select name="faction"
+                                            id="edit-faction"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="faction"
+                                            data-action="change->registration-form#factionChanged">
+                                        <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                        {% for label, value in factionChoices %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% if tournament.format.isBifaction %}
+                                    {# Faction 2 Select for Bifaction #}
+                                    <div>
+                                        <label for="edit-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ 'tournament.registrations.second_faction'|trans }}
+                                        </label>
+                                        <select name="faction2"
+                                                id="edit-faction2"
+                                                class="form-select text-sm"
+                                                data-registration-form-target="faction2"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+
+                                {# Hero Select #}
+                                <div>
+                                    <label for="edit-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                        {{ 'tournament.registrations.hero_label'|trans }}
+                                    </label>
+                                    <select name="hero"
+                                            id="edit-hero"
+                                            class="form-select text-sm"
+                                            data-registration-form-target="hero">
+                                        <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Decklist URL #}
+                    <div>
+                        <label for="edit-decklist" class="block text-sm font-medium theme-text-secondary mb-2">
+                            {{ 'tournament.registrations.decklist_url_label'|trans }}
+                        </label>
+                        <input type="url"
+                               name="decklist_url"
+                               id="edit-decklist"
+                               class="form-input"
+                               placeholder="https://...">
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button"
+                                onclick="closeEditModal()"
+                                class="flex-1 px-4 py-2 rounded-lg font-medium border transition"
+                                style="border-color: var(--border-default); color: var(--text-secondary);">
+                            {{ 'tournament.registrations.edit_cancel'|trans }}
+                        </button>
+                        <button type="submit"
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                            {{ 'tournament.registrations.edit_save'|trans }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -449,6 +809,22 @@
                     chevron.classList.toggle('rotate-180');
                 }
             });
+
+            // Toggle guest player form
+            const toggleGuestBtn = document.getElementById('toggle-guest-form');
+            const guestForm = document.getElementById('guest-form');
+            const guestChevron = document.getElementById('guest-form-chevron');
+
+            if (toggleGuestBtn && guestForm) {
+                toggleGuestBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    guestForm.classList.toggle('hidden');
+                    if (guestChevron) {
+                        guestChevron.classList.toggle('rotate-180');
+                    }
+                });
+            }
 
             // Search users with debounce
             if (searchInput) {
@@ -574,4 +950,76 @@
     })();
     </script>
     {% endif %}
+
+    <script>
+    // Edit Registration Modal Functions
+    const editBaseUrl = '{{ path('organizer_registration_edit', {'id': tournament.id, 'registrationId': 0}) }}';
+
+    function openEditModal(button) {
+        const modal = document.getElementById('edit-registration-modal');
+        const form = document.getElementById('edit-registration-form');
+        const registrationId = button.dataset.editRegistrationId;
+        const pseudo = button.dataset.editRegistrationPseudo;
+        const faction = button.dataset.editRegistrationFaction;
+        const faction2 = button.dataset.editRegistrationFaction2;
+        const hero = button.dataset.editRegistrationHero;
+        const decklist = button.dataset.editRegistrationDecklist;
+        const csrfToken = button.dataset.editRegistrationCsrf;
+
+        // Update form action URL
+        form.action = editBaseUrl.replace('/0/edit', '/' + registrationId + '/edit');
+
+        // Update CSRF token
+        document.getElementById('edit-csrf-token').value = csrfToken;
+
+        // Update player display
+        document.getElementById('edit-player-initial').textContent = pseudo.charAt(0).toUpperCase();
+        document.getElementById('edit-player-pseudo').textContent = pseudo;
+
+        // Set current values
+        const factionSelect = document.getElementById('edit-faction');
+        const faction2Select = document.getElementById('edit-faction2');
+        const heroSelect = document.getElementById('edit-hero');
+        const decklistInput = document.getElementById('edit-decklist');
+
+        if (factionSelect) {
+            factionSelect.value = faction || '';
+            // Trigger change to load heroes
+            factionSelect.dispatchEvent(new Event('change'));
+        }
+
+        if (faction2Select) {
+            faction2Select.value = faction2 || '';
+            faction2Select.dispatchEvent(new Event('change'));
+        }
+
+        if (decklistInput) {
+            decklistInput.value = decklist || '';
+        }
+
+        // Set hero after a short delay to allow the heroes to load
+        setTimeout(() => {
+            if (heroSelect && hero) {
+                heroSelect.value = hero;
+            }
+        }, 100);
+
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('edit-registration-modal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+        }
+    });
+    </script>
 {% endblock %}

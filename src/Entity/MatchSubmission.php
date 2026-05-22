@@ -31,8 +31,8 @@ class MatchSubmission
     private TournamentMatch $match;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'submitted_by_id', nullable: false)]
-    private User $submittedBy;
+    #[ORM\JoinColumn(name: 'submitted_by_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $submittedBy = null;
 
     /**
      * The registration ID of the claimed winner.
@@ -87,12 +87,12 @@ class MatchSubmission
         return $this;
     }
 
-    public function getSubmittedBy(): User
+    public function getSubmittedBy(): ?User
     {
         return $this->submittedBy;
     }
 
-    public function setSubmittedBy(User $submittedBy): self
+    public function setSubmittedBy(?User $submittedBy): self
     {
         $this->submittedBy = $submittedBy;
 
@@ -189,10 +189,14 @@ class MatchSubmission
      */
     public function findSubmitterRegistration(): ?Registration
     {
+        if ($this->submittedBy === null) {
+            return null;
+        }
+
         $player1 = $this->match->getPlayer1();
         $player2 = $this->match->getPlayer2();
 
-        if ($player1->getPlayer() === $this->submittedBy) {
+        if ($player1 !== null && $player1->getPlayer() === $this->submittedBy) {
             return $player1;
         }
 

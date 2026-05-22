@@ -1,0 +1,199 @@
+{#
+    Share-friendly standings template for image capture.
+    This template is designed for html2canvas capture with:
+    - Solid dark background (no transparency)
+    - Clean layout optimized for sharing
+    - Branding footer
+#}
+{% set has_bracket = elimination_rounds is defined and elimination_rounds|length > 0 %}
+{% set container_width = has_bracket ? '900px' : '600px' %}
+<div data-share-image-target="content" class="share-content" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 24px; border-radius: 16px; width: {{ container_width }}; font-family: system-ui, -apple-system, sans-serif;">
+    {# Header #}
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #ffffff; font-size: 24px; font-weight: bold; margin: 0 0 4px 0;">{{ tournament.name }}</h1>
+        <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+            {{ 'share.standings.subtitle'|trans }} - {{ tournament.completedAt|date('d/m/Y') }}
+        </p>
+    </div>
+
+    {# Stats summary #}
+    <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 20px;">
+        <div style="text-align: center;">
+            <p style="color: #60a5fa; font-size: 28px; font-weight: bold; margin: 0;">{{ standings|length }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.players'|trans }}</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="color: #34d399; font-size: 28px; font-weight: bold; margin: 0;">{{ tournament.completedRoundsCount }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.rounds'|trans }}</p>
+        </div>
+        <div style="text-align: center;">
+            <p style="color: #a78bfa; font-size: 28px; font-weight: bold; margin: 0;">{{ tournament.format.label|trans }}</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">{{ 'share.format'|trans }}</p>
+        </div>
+    </div>
+
+    {# Elimination bracket (if applicable) #}
+    {% if has_bracket %}
+    <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <span style="color: #f59e0b; font-size: 16px; margin-right: 8px;">&#127942;</span>
+            <span style="color: #ffffff; font-size: 16px; font-weight: bold;">Phase d'elimination</span>
+        </div>
+        <div style="background-color: #374151; border-radius: 12px; padding: 16px; overflow-x: auto;">
+            <div style="display: flex; gap: 8px; min-width: max-content;">
+                {% for round in elimination_rounds %}
+                    {% set matches = round.matches|filter(m => not m.isByeMatch) %}
+
+                    {# Round column #}
+                    <div style="display: flex; flex-direction: column; flex-shrink: 0; width: 180px;">
+                        {# Round header #}
+                        <div style="text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #f59e0b;">
+                            <span style="color: #f59e0b; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                                {% if loop.last and matches|length == 1 %}
+                                    Finale
+                                {% elseif matches|length == 2 %}
+                                    Demi-finales
+                                {% elseif matches|length == 4 %}
+                                    Quarts
+                                {% else %}
+                                    Ronde {{ loop.index }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {# Matches #}
+                        <div style="display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 6px;">
+                            {% for match in matches %}
+                                <div style="background-color: #1f2937; border-radius: 6px; border: 1px solid #4b5563;">
+                                    {# Player 1 #}
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %} border-bottom: 1px solid #4b5563;">
+                                        <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
+                                            {% if match.player1 %}{{ match.player1.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}
+                                                <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
+                                            {% endif %}
+                                        </span>
+                                        <span style="color: #ffffff; font-size: 12px; font-weight: bold; margin-left: 8px; position: relative; top: -7px;">
+                                            {% if match.completed %}{{ match.player1Score ?? 0 }}{% else %}-{% endif %}
+                                        </span>
+                                    </div>
+                                    {# Player 2 #}
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %}">
+                                        <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
+                                            {% if match.player2 %}{{ match.player2.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}
+                                                <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
+                                            {% endif %}
+                                        </span>
+                                        <span style="color: #ffffff; font-size: 12px; font-weight: bold; margin-left: 8px; position: relative; top: -7px;">
+                                            {% if match.completed %}{{ match.player2Score ?? 0 }}{% else %}-{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# Connector between rounds #}
+                    {% if not loop.last %}
+                        <div style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 16px;">
+                            <div style="width: 1px; height: 60%; background-color: #4b5563;"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {# Champion display #}
+                {% set final_round = elimination_rounds|last %}
+                {% set final_match = final_round.matches|first %}
+                {% if final_match and final_match.completed and final_match.winner %}
+                    <div style="display: flex; flex-direction: column; flex-shrink: 0; width: 140px; justify-content: center;">
+                        <div style="text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #fbbf24;">
+                            <span style="color: #fbbf24; font-size: 11px; font-weight: bold; text-transform: uppercase;">Champion</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.2)); border-radius: 8px; border: 2px solid #fbbf24;">
+                            <span style="font-size: 24px; margin-bottom: 4px;">&#128081;</span>
+                            <span style="color: #ffffff; font-size: 12px; font-weight: bold; text-align: center;">
+                                {{ final_match.winner.player.displayName }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Section title for Swiss standings #}
+    <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="color: #60a5fa; font-size: 16px; margin-right: 8px;">&#128202;</span>
+        <span style="color: #ffffff; font-size: 16px; font-weight: bold;">Classement des rondes suisses</span>
+    </div>
+    {% endif %}
+
+    {# Standings list #}
+    <div style="background-color: #374151; border-radius: 12px; overflow: hidden;">
+        {% for entry in standings|slice(0, 10) %}
+            <div style="display: flex; align-items: center; min-height: 44px; padding: 0 16px; {% if not loop.last %}border-bottom: 1px solid #4b5563;{% endif %} {% if loop.index <= 3 %}background-color: rgba(251, 191, 36, 0.1);{% endif %}">
+                {# Rank #}
+                <div style="width: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                    {% if loop.index == 1 %}
+                        <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: #fbbf24; color: #78350f; font-weight: bold; font-size: 13px; padding-bottom: 14px; box-sizing: border-box;">1</span>
+                    {% elseif loop.index == 2 %}
+                        <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: #9ca3af; color: #374151; font-weight: bold; font-size: 13px; padding-bottom: 14px; box-sizing: border-box;">2</span>
+                    {% elseif loop.index == 3 %}
+                        <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background-color: #d97706; color: #ffffff; font-weight: bold; font-size: 13px; padding-bottom: 14px; box-sizing: border-box;">3</span>
+                    {% else %}
+                        <span style="color: #9ca3af; font-size: 14px; font-weight: 500; margin-top: -16px;">{{ loop.index }}</span>
+                    {% endif %}
+                </div>
+
+                {# Player name and hero #}
+                <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #ffffff; font-size: 14px; font-weight: 500; margin-top: -16px;">{{ entry.registration.player.displayName }}</span>
+                    {% if entry.registration.heroLabel %}
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            {% if entry.registration.heroImage %}
+                                <img src="{{ entry.registration.heroImage }}" alt="" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid {{ entry.registration.faction ? entry.registration.faction.color : '#6b7280' }};">
+                            {% endif %}
+                            <span style="color: #6b7280; font-size: 12px; margin-top: -16px;">{{ entry.registration.heroLabel }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Stats #}
+                <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; gap: 2px;">
+                        <span style="color: #22c55e; font-size: 14px; font-weight: 600; margin-top: -16px;">{{ entry.wins }}</span>
+                        <span style="color: #6b7280; font-size: 11px; margin-top: -16px;">V</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 2px;">
+                        <span style="color: #f59e0b; font-size: 14px; margin-top: -16px;">{{ entry.draws }}</span>
+                        <span style="color: #6b7280; font-size: 11px; margin-top: -16px;">N</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 2px;">
+                        <span style="color: #ef4444; font-size: 14px; margin-top: -16px;">{{ entry.losses }}</span>
+                        <span style="color: #6b7280; font-size: 11px; margin-top: -16px;">D</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 2px; min-width: 55px; justify-content: flex-end;">
+                        <span style="color: #ffffff; font-size: 15px; font-weight: bold; margin-top: -16px;">{{ entry.matchPoints }}</span>
+                        <span style="color: #6b7280; font-size: 11px; margin-top: -16px;">pts</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if standings|length > 10 %}
+            <div style="padding: 12px 16px; text-align: center; color: #6b7280; font-size: 12px;">
+                {{ 'share.and_more'|trans({'%count%': standings|length - 10}) }}
+            </div>
+        {% endif %}
+    </div>
+
+    {# Branding footer #}
+    <div style="display: flex; align-items: center; justify-content: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid #374151;">
+        <img src="{{ asset('assets/logo/alteredTT_logo-sPNTRlM.png') }}" alt="Logo" style="width: 32px; height: 32px; margin-right: 12px; border-radius: 6px;">
+        <div>
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">{{ 'share.branding'|trans }}</p>
+            <p style="color: #60a5fa; font-size: 12px; margin: 0;">altered-tournament-tools.com</p>
+        </div>
+    </div>
+</div>

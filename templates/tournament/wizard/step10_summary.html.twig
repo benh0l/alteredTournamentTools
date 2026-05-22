@@ -76,7 +76,12 @@
                     <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.expected_players'|trans }}</dt>
                     <dd class="text-lg font-bold text-orange-600">{{ summary.expectedPlayers }}</dd>
                 </div>
-                {% if summary.swissRounds %}
+                {% if summary.roundRobinRounds %}
+                    <div class="bg-rose-500/20 rounded-xl p-3 text-center">
+                        <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.championship_rounds'|trans|default('Rounds') }}</dt>
+                        <dd class="text-lg font-bold text-rose-600">{{ summary.roundRobinRounds }}</dd>
+                    </div>
+                {% elseif summary.swissRounds %}
                     <div class="bg-blue-500/20 rounded-xl p-3 text-center">
                         <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.swiss_rounds'|trans }}</dt>
                         <dd class="text-lg font-bold text-blue-600">

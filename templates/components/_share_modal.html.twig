@@ -1,0 +1,77 @@
+{#
+    Share modal component for image sharing.
+
+    Usage:
+    {{ include('components/_share_modal.html.twig') }}
+
+    Requires the share-image Stimulus controller to be active on a parent element.
+#}
+<div data-share-image-target="modal"
+     data-action="click->share-image#closeOnBackdrop"
+     class="hidden fixed inset-0 z-50 overflow-y-auto"
+     style="background-color: rgba(0, 0, 0, 0.75);">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl rounded-xl shadow-2xl" style="background-color: var(--card-bg);">
+            {# Header #}
+            <div class="flex items-center justify-between px-6 py-4" style="border-bottom: 1px solid var(--border-default);">
+                <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                    {{ 'share.modal.title'|trans }}
+                </h3>
+                <button data-action="click->share-image#close" class="p-2 rounded-lg hover:bg-gray-500/20 transition-colors" style="color: var(--text-muted);">
+                    {{ ux_icon('lucide:x', {class: 'w-5 h-5'}) }}
+                </button>
+            </div>
+
+            {# Content #}
+            <div class="p-6">
+                {# Loading state #}
+                <div data-share-image-target="loading" class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-t-transparent" style="border-color: var(--color-primary-600); border-top-color: transparent;"></div>
+                    <p class="mt-4" style="color: var(--text-secondary);">{{ 'share.modal.generating'|trans }}</p>
+                </div>
+
+                {# Preview #}
+                <div data-share-image-target="preview" class="max-h-96 overflow-auto rounded-lg" style="background-color: var(--bg-subtle);">
+                    {# Canvas preview will be inserted here by JS #}
+                </div>
+
+                {# Action buttons #}
+                <div data-share-image-target="actions" class="hidden mt-6 space-y-3">
+                    {# Primary actions #}
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {# Download #}
+                        <button type="button"
+                                data-action="click->share-image#download"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-white shadow-md hover:shadow-lg transition-all duration-200"
+                                style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                            {{ ux_icon('lucide:download', {class: 'w-5 h-5'}) }}
+                            <span>{{ 'share.modal.download'|trans }}</span>
+                        </button>
+
+                        {# Copy to clipboard #}
+                        <button type="button"
+                                data-action="click->share-image#copyToClipboard"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium border-2 shadow-md hover:shadow-lg transition-all duration-200"
+                                style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                            {{ ux_icon('lucide:clipboard-copy', {class: 'w-5 h-5'}) }}
+                            <span>{{ 'share.modal.copy'|trans }}</span>
+                        </button>
+
+                        {# Native share (mobile) #}
+                        <button type="button"
+                                data-action="click->share-image#nativeShare"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-white shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
+                            {{ ux_icon('lucide:share-2', {class: 'w-5 h-5'}) }}
+                            <span>{{ 'share.modal.share'|trans }}</span>
+                        </button>
+                    </div>
+
+                    {# Help text #}
+                    <p class="text-center text-sm" style="color: var(--text-muted);">
+                        {{ 'share.modal.help'|trans }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

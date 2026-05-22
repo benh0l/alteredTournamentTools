@@ -1,0 +1,185 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'contact.admin.title'|trans }} - Administration{% endblock %}
+
+{% block admin_content %}
+<div class="py-8">
+    <div class="container mx-auto px-4">
+        {# Header #}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
+                    {{ 'contact.admin.title'|trans }}
+                </h1>
+                <p class="text-sm mt-1" style="color: var(--text-muted);">
+                    {{ 'contact.admin.subtitle'|trans }}
+                </p>
+            </div>
+
+            {# New reports badge #}
+            {% if newCount > 0 %}
+                <div class="mt-4 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        {{ ux_icon('lucide:bell', {class: 'h-4 w-4 mr-1'}) }}
+                        {{ 'contact.admin.new_reports'|trans({'%count%': newCount}) }}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Filters #}
+        <div class="rounded-2xl shadow p-4 mb-6" style="background-color: var(--card-bg);">
+            <form method="get" class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label for="status" class="text-sm font-medium" style="color: var(--text-secondary);">
+                        {{ 'contact.admin.filter.status'|trans }}
+                    </label>
+                    <select
+                        id="status"
+                        name="status"
+                        class="form-input rounded-lg text-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">{{ 'contact.admin.filter.all'|trans }}</option>
+                        {% for status in statuses %}
+                            <option value="{{ status.value }}" {% if statusFilter == status.value %}selected{% endif %}>
+                                {{ status.label|trans }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if statusFilter %}
+                    <a href="{{ path('admin_contact_reports') }}" class="text-sm text-primary-600 hover:text-primary-700">
+                        {{ 'contact.admin.filter.clear'|trans }}
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        {# Reports Table #}
+        <div class="rounded-2xl shadow overflow-hidden" style="background-color: var(--card-bg);">
+            {% if reports|length > 0 %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y" style="border-color: var(--border-color);">
+                        <thead style="background-color: var(--bg-secondary);">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.status'|trans }}
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.subject'|trans }}
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.user'|trans }}
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.message'|trans }}
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.date'|trans }}
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                                    {{ 'contact.admin.table.actions'|trans }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y" style="border-color: var(--border-color);">
+                            {% for report in reports %}
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors {% if report.status.value == 'new' %}bg-yellow-50/50 dark:bg-yellow-900/10{% endif %}">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ report.status.color }} text-white">
+                                            {{ report.status.label|trans }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm font-medium" style="color: var(--text-primary);">
+                                            {{ report.subject.label|trans }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div>
+                                                <div class="text-sm font-medium" style="color: var(--text-primary);">
+                                                    {{ report.user.pseudo }}
+                                                </div>
+                                                <div class="text-xs" style="color: var(--text-muted);">
+                                                    {{ report.user.email }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="text-sm truncate max-w-xs" style="color: var(--text-secondary);">
+                                            {{ report.message|length > 80 ? report.message|slice(0, 80) ~ '...' : report.message }}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm" style="color: var(--text-muted);">
+                                            {{ report.createdAt|date('d/m/Y H:i') }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                                        <a
+                                            href="{{ path('admin_contact_report_view', {id: report.id}) }}"
+                                            class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                                        >
+                                            {{ 'contact.admin.action.view'|trans }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if pages > 1 %}
+                    <div class="px-6 py-4 border-t" style="border-color: var(--border-color);">
+                        <nav class="flex items-center justify-between">
+                            <div class="text-sm" style="color: var(--text-muted);">
+                                {{ 'contact.admin.pagination.showing'|trans({'%total%': total}) }}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                {% if page > 1 %}
+                                    <a
+                                        href="{{ path('admin_contact_reports', {page: page - 1, status: statusFilter}) }}"
+                                        class="px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        style="color: var(--text-secondary);"
+                                    >
+                                        {{ 'contact.admin.pagination.prev'|trans }}
+                                    </a>
+                                {% endif %}
+
+                                <span class="text-sm" style="color: var(--text-muted);">
+                                    {{ page }} / {{ pages }}
+                                </span>
+
+                                {% if page < pages %}
+                                    <a
+                                        href="{{ path('admin_contact_reports', {page: page + 1, status: statusFilter}) }}"
+                                        class="px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        style="color: var(--text-secondary);"
+                                    >
+                                        {{ 'contact.admin.pagination.next'|trans }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-12">
+                    {{ ux_icon('lucide:inbox', {class: 'h-12 w-12 mx-auto mb-4', style: 'color: var(--text-muted);'}) }}
+                    <p class="text-lg font-medium" style="color: var(--text-secondary);">
+                        {{ 'contact.admin.empty.title'|trans }}
+                    </p>
+                    <p class="text-sm mt-1" style="color: var(--text-muted);">
+                        {{ 'contact.admin.empty.subtitle'|trans }}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

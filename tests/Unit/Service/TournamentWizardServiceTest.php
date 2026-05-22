@@ -36,7 +36,7 @@ final class TournamentWizardServiceTest extends TestCase
         $tournament = $this->service->buildTournamentFromWizardData($wizardData, $user);
 
         $this->assertSame('Test Tournament', $tournament->getName());
-        $this->assertSame(TournamentFormat::CONSTRUCTED, $tournament->getFormat());
+        $this->assertSame(TournamentFormat::CONSTRUCTED_STANDARD, $tournament->getFormat());
         $this->assertSame(TournamentStructure::SWISS_ONLY, $tournament->getStructure());
         $this->assertSame(MatchFormat::BO3, $tournament->getSwissMatchFormat());
         $this->assertSame(16, $tournament->getExpectedPlayers());
@@ -154,7 +154,7 @@ final class TournamentWizardServiceTest extends TestCase
                 'time' => new \DateTime('14:00'),
                 'location' => 'Game Store Paris',
             ],
-            3 => ['format' => TournamentFormat::CONSTRUCTED],
+            3 => ['format' => TournamentFormat::CONSTRUCTED_STANDARD],
             4 => ['structure' => TournamentStructure::SWISS_ONLY],
             5 => [
                 'swissMatchFormat' => MatchFormat::BO3,

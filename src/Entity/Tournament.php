@@ -135,10 +135,10 @@ class Tournament
     private ?int $qualifiersPerGroup = null;
 
     /**
-     * Method used to form groups (RANDOM or SERPENTINE).
+     * Method used to form groups (always RANDOM for now).
      */
     #[ORM\Column(name: 'group_formation_method', type: 'string', length: 20, nullable: true, enumType: GroupFormationMethod::class)]
-    private ?GroupFormationMethod $groupFormationMethod = null;
+    private ?GroupFormationMethod $groupFormationMethod = GroupFormationMethod::RANDOM;
 
     #[ORM\Column(name: 'registrations_closed', type: 'boolean')]
     private bool $registrationsClosed = false;
@@ -165,6 +165,30 @@ class Tournament
      */
     #[ORM\Column(name: 'results_published', type: 'boolean')]
     private bool $resultsPublished = false;
+
+    /**
+     * Whether this is a Tumult tournament.
+     */
+    #[ORM\Column(name: 'is_tumult', type: 'boolean')]
+    private bool $isTumult = false;
+
+    /**
+     * Whether this tournament is a Season Finals Qualifier.
+     */
+    #[ORM\Column(name: 'is_season_finals_qualifier', type: 'boolean')]
+    private bool $isSeasonFinalsQualifier = false;
+
+    /**
+     * Whether check-in is enabled for this tournament.
+     */
+    #[ORM\Column(name: 'check_in_enabled', type: 'boolean')]
+    private bool $checkInEnabled = false;
+
+    /**
+     * Whether check-in is currently open (organizer controls this).
+     */
+    #[ORM\Column(name: 'check_in_open', type: 'boolean')]
+    private bool $checkInOpen = false;
 
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'tournament', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -689,6 +713,106 @@ class Tournament
     }
 
     /**
+     * Check if this is a Tumult tournament.
+     */
+    public function isTumult(): bool
+    {
+        return $this->isTumult;
+    }
+
+    /**
+     * Set whether this is a Tumult tournament.
+     */
+    public function setIsTumult(bool $isTumult): self
+    {
+        $this->isTumult = $isTumult;
+
+        return $this;
+    }
+
+    /**
+     * Check if this tournament is a Season Finals Qualifier.
+     */
+    public function isSeasonFinalsQualifier(): bool
+    {
+        return $this->isSeasonFinalsQualifier;
+    }
+
+    /**
+     * Set whether this tournament is a Season Finals Qualifier.
+     */
+    public function setIsSeasonFinalsQualifier(bool $isSeasonFinalsQualifier): self
+    {
+        $this->isSeasonFinalsQualifier = $isSeasonFinalsQualifier;
+
+        return $this;
+    }
+
+    /**
+     * Check if check-in is enabled for this tournament.
+     */
+    public function isCheckInEnabled(): bool
+    {
+        return $this->checkInEnabled;
+    }
+
+    /**
+     * Set whether check-in is enabled for this tournament.
+     */
+    public function setCheckInEnabled(bool $checkInEnabled): self
+    {
+        $this->checkInEnabled = $checkInEnabled;
+
+        return $this;
+    }
+
+    /**
+     * Check if check-in is currently open.
+     */
+    public function isCheckInOpen(): bool
+    {
+        return $this->checkInOpen;
+    }
+
+    /**
+     * Set whether check-in is currently open.
+     */
+    public function setCheckInOpen(bool $checkInOpen): self
+    {
+        $this->checkInOpen = $checkInOpen;
+
+        return $this;
+    }
+
+    /**
+     * Open check-in for players.
+     */
+    public function openCheckIn(): self
+    {
+        $this->checkInOpen = true;
+
+        return $this;
+    }
+
+    /**
+     * Close check-in for players.
+     */
+    public function closeCheckIn(): self
+    {
+        $this->checkInOpen = false;
+
+        return $this;
+    }
+
+    /**
+     * Check if a player can check-in to this tournament.
+     */
+    public function canCheckIn(): bool
+    {
+        return $this->checkInEnabled && $this->checkInOpen && $this->isPublished();
+    }
+
+    /**
      * Check if tournament can be edited.
      * Editing is allowed in DRAFT and PUBLISHED status until the first round is generated.
      */
@@ -872,6 +996,28 @@ class Tournament
     }
 
     /**
+     * Get the count of checked-in players.
+     */
+    public function getCheckedInCount(): int
+    {
+        return $this->registrations->filter(
+            fn (Registration $registration): bool => $registration->isCheckedIn()
+        )->count();
+    }
+
+    /**
+     * Get registrations that have not checked in yet.
+     *
+     * @return Collection<int, Registration>
+     */
+    public function getNotCheckedInRegistrations(): Collection
+    {
+        return $this->registrations->filter(
+            fn (Registration $registration): bool => !$registration->isCheckedIn() && !$registration->isDropped()
+        );
+    }
+
+    /**
      * Check if a user is registered in this tournament.
      */
     public function isPlayerRegistered(User $player): bool
@@ -987,6 +1133,25 @@ class Tournament
     }
 
     /**
+     * Check if the tournament has reached its round-robin limit.
+     * For round-robin, max rounds = active players - 1.
+     */
+    public function hasReachedRoundRobinLimit(): bool
+    {
+        if ($this->structure !== TournamentStructure::ROUND_ROBIN) {
+            return false;
+        }
+
+        $activePlayerCount = $this->registrations
+            ->filter(fn (Registration $r): bool => !$r->isDropped())
+            ->count();
+
+        $maxRounds = $activePlayerCount - 1;
+
+        return $this->getRoundsCount() >= $maxRounds;
+    }
+
+    /**
      * Check if another round can be started.
      * Returns true if the tournament is ongoing and hasn't reached the round limit.
      */
@@ -994,6 +1159,10 @@ class Tournament
     {
         if (!$this->isOngoing()) {
             return false;
+        }
+
+        if ($this->structure === TournamentStructure::ROUND_ROBIN) {
+            return !$this->hasReachedRoundRobinLimit();
         }
 
         return !$this->hasReachedSwissRoundLimit();

@@ -25,4 +25,7 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    'html2canvas' => [
+        'version' => '1.4.1',
+    ],
 ];

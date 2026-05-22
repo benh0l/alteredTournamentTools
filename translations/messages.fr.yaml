@@ -8,6 +8,7 @@
 nav:
     home: "Accueil"
     tournaments: "Tournois"
+    results: "Résultats"
     my_tournaments: "Mes tournois"
     profile: "Profil"
     admin: "Administration"
@@ -45,6 +46,10 @@ action:
 # Common Labels
 # ----------------------------------------------------------------------------
 common:
+    back: "Retour"
+    you: "vous"
+    save: "Enregistrer"
+    cancel: "Annuler"
     yes: "Oui"
     no: "Non"
     or: "ou"
@@ -80,6 +85,7 @@ common:
     rounds: "Rondes"
     match: "Match"
     matches: "Matchs"
+    back_home: "Retour à l'accueil"
 
 # ----------------------------------------------------------------------------
 # Enums - Tournament Status
@@ -89,6 +95,7 @@ enum:
         draft: "Brouillon"
         published: "Publié"
         ongoing: "En cours"
+        abandoned: "Abandonné"
         completed: "Terminé"
         cancelled: "Annulé"
 
@@ -104,7 +111,9 @@ enum:
         constructed_nuc: "Construit NUC"
         constructed_hero_oof: "(Fun) Héros Out of Faction"
         constructed_bifaction: "(Fun) Bifaction"
-        limited: "Limité"
+        limited: "Limité Scellé"
+        limited_draft: "Limité Draft"
+        fun_expedition_krakn: "(Fun) Héros Expédition Krak'N"
 
     tournament_format_description:
         constructed_standard: "39 cartes + Héros minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
@@ -113,18 +122,22 @@ enum:
         constructed_hero_oof: "Le héros doit appartenir à une faction différente de celle du deck."
         constructed_bifaction: "Le joueur choisit deux factions et un héros issu de l'une de ces factions."
         limited: "Les decks sont construits sur place à partir de boosters."
+        limited_draft: "Les decks sont construits sur place via un draft de boosters."
+        fun_expedition_krakn: "Les joueurs viennent avec leur propre deck. Le héros doit être un des héros Expédition Krak'n."
 
     tournament_structure:
         swiss_only: "Rondes Suisses uniquement"
         single_elimination: "Élimination directe"
         mixed: "Suisses + Top Cut"
-        group_stage_elimination: "Phase de poules + Élimination"
+        group_stage_elimination: "Phase de groupes + Élimination"
+        round_robin: "Championnat (Round-Robin)"
 
     tournament_structure_description:
         swiss_only: "Plusieurs rondes, tout le monde joue tous les matchs"
         single_elimination: "Élimination directe dès le premier match"
         mixed: "Rondes suisses puis Top Cut en élimination"
-        group_stage_elimination: "Phase de poules (round-robin) puis élimination des qualifiés"
+        group_stage_elimination: "Phase de groupes (round-robin) puis élimination des qualifiés"
+        round_robin: "Chaque joueur affronte tous les autres une fois (n-1 rondes)"
 
     decklist_transparency:
         open: "Decklists ouvertes"
@@ -195,7 +208,7 @@ enum:
         serpentine: "Serpentine (selon classement)"
 
     group_formation_method_description:
-        random: "Les joueurs sont répartis aléatoirement dans les poules"
+        random: "Les joueurs sont répartis aléatoirement dans les groupes"
         serpentine: "Les joueurs sont répartis en serpentine selon leur classement (1,2,3,4 puis 8,7,6,5...)"
 
     faction:
@@ -235,7 +248,7 @@ home:
     my_registrations: "Mes inscriptions"
     landing:
         title: "Altered Tournament Tools"
-        subtitle: "Organisez et gérez vos tournois de cartes Altered en toute simplicité"
+        subtitle: "Jouez, organisez et gérez vos tournois Altered en toute simplicité"
         create_account: "Créer un compte"
         sign_in: "Se connecter"
         upcoming: "Prochains tournois"
@@ -250,6 +263,35 @@ home:
         mobile:
             title: "Mobile-first"
             description: "Interface optimisée pour les appareils mobiles et tablettes"
+    tutorial:
+        title: "Comment ça marche ?"
+        player:
+            title: "Joueur"
+            step1:
+                title: "Trouvez"
+                description: "Parcourez les tournois disponibles"
+            step2:
+                title: "Inscrivez-vous"
+                description: "Rejoignez un tournoi en un clic"
+            step3:
+                title: "Jouez"
+                description: "Suivez vos matchs et résultats"
+            cta: "Rechercher un tournoi"
+        organizer:
+            title: "Organisateur"
+            step1:
+                title: "Créez"
+                description: "Configurez votre tournoi"
+            step2:
+                title: "Partagez"
+                description: "Envoyez le lien aux joueurs"
+            step3:
+                title: "Gérez"
+                description: "Validez les inscriptions"
+            step4:
+                title: "Lancez"
+                description: "Arbitrez en temps réel"
+            cta: "Créer un tournoi"
 
 # ----------------------------------------------------------------------------
 # Authentication
@@ -289,6 +331,8 @@ auth:
         submit: "Créer mon compte"
         already_account: "Déjà un compte ?"
         login_link: "Se connecter"
+        oauth_reunion: "Créer un compte avec Altered Re:Union"
+        oauth_reunion_hint: "Inscription rapide avec votre compte Re:Union existant"
 
     reset_password:
         request:
@@ -397,6 +441,65 @@ profile:
         auto_save_note: "Les modifications sont sauvegardées automatiquement."
         email_notifications: "Notifications par email"
 
+    privacy:
+        title: "Confidentialité"
+        page_title: "Paramètres de confidentialité - Altered Tournament Tools"
+        subtitle: "Gérez la visibilité de vos données personnelles"
+        saved: "Préférences sauvegardées"
+        visibility_title: "Visibilité du profil"
+        visibility_desc: "Contrôlez quelles informations sont visibles par les autres utilisateurs."
+        show_real_name: "Afficher mon nom réel"
+        show_real_name_desc: "Votre nom complet sera visible sur votre profil public"
+        show_in_results: "Apparaître dans les classements"
+        show_in_results_desc: "Votre pseudo apparaîtra dans les résultats publics des tournois"
+        show_match_history: "Afficher l'historique des matchs"
+        show_match_history_desc: "Les autres joueurs pourront voir votre historique de matchs"
+        your_rights_title: "Vos droits RGPD"
+        your_rights_desc: "Exercez vos droits sur vos données personnelles."
+        export_data: "Exporter mes données"
+        export_data_desc: "Téléchargez une copie de toutes vos données personnelles"
+        delete_account: "Supprimer mon compte"
+        delete_account_desc: "Supprimez définitivement votre compte et toutes vos données"
+        privacy_policy: "Politique de confidentialité"
+        privacy_policy_desc: "Consultez notre politique de protection des données"
+        auto_save_note: "Les modifications sont sauvegardées automatiquement."
+
+    match_history:
+        title: "Historique des matchs"
+        page_title: "Historique des matchs - Altered Tournament Tools"
+        subtitle: "Statistiques de %name%"
+        total_matches: "Matchs joués"
+        winrate: "Winrate"
+        record: "V / D"
+        tournaments: "Tournois"
+        best_result: "Meilleur résultat"
+        position_1: "1er"
+        position_2: "2ème"
+        position_3: "3ème"
+        position_n: "%n%ème"
+        recent_matches: "Matchs récents"
+        no_matches: "Aucun match joué pour le moment."
+        bye: "Exempt (BYE)"
+        unknown_opponent: "Adversaire inconnu"
+        faction_stats: "Statistiques par faction"
+        frequent_opponents: "Adversaires fréquents"
+        search_player: "Rechercher un joueur..."
+        matches_played: "matchs"
+        head_to_head: "Face à face"
+
+    head_to_head:
+        title: "Face à face contre %opponent%"
+        page_title: "Face à face"
+        subtitle: "Historique des confrontations"
+        you: "Vous"
+        wins: "Victoires"
+        losses: "Défaites"
+        draws: "Nuls"
+        matches_total: "matchs au total"
+        match_history: "Historique des matchs"
+        no_matches: "Aucun match contre ce joueur."
+        round: "Ronde %n%"
+
     avatar: "Photo de profil"
     change_avatar: "Changer la photo"
     member_since: "Membre depuis"
@@ -409,20 +512,35 @@ profile:
 tournament:
     title: "Tournois"
     organized_by: "Organisé par"
+    group: "groupe"
     list:
         title: "Liste des tournois"
         no_tournaments: "Aucun tournoi disponible"
         no_results: "Aucun tournoi trouvé dans cette zone"
         results_found: "tournoi(s) trouvé(s)"
+        players_badge: "%count% joueurs"
         search_placeholder: "Rechercher un tournoi..."
         filter_format: "Filtrer par format"
         filter_status: "Filtrer par statut"
         all_formats: "Tous les formats"
         all_statuses: "Tous les statuts"
+    results_list:
+        page_title: "Résultats des tournois"
+        title: "Résultats des tournois"
+        subtitle: "Consultez les classements des tournois terminés"
+        find_tournament: "Trouver un tournoi"
+        no_results: "Aucun tournoi terminé pour le moment"
+        count: "tournoi(s) terminé(s)"
+        players: "joueurs"
+        view_standings: "Classement"
+        view_stats: "Stats"
     search:
-        location: "Ville"
-        location_placeholder: "Rechercher une ville..."
-        radius: "Rayon"
+        page_title: "Rechercher un tournoi"
+        title: "Trouver un tournoi"
+        subtitle: "Recherchez des tournois Altered près de chez vous"
+        location: "Ville ou code postal"
+        location_placeholder: "Ex: Paris, 75001, Lyon..."
+        radius: "Rayon (km)"
         format: "Format"
         date_range: "Période"
         date_from: "Du"
@@ -433,6 +551,13 @@ tournament:
         this_week: "Cette semaine"
         this_month: "Ce mois"
         custom: "Personnalisé"
+        clear_filters: "Effacer les filtres"
+        results_count: "{0}Aucun tournoi trouvé|{1}1 tournoi trouvé|]1,Inf[%count% tournois trouvés"
+        near_location: "près de <strong>%location%</strong>"
+        view_list: "Liste"
+        view_map: "Carte"
+        is_tumult: "Tumult uniquement"
+        is_season_finals_qualifier: "Qualifiers Season Finals"
 
     show:
         information: "Informations"
@@ -452,6 +577,24 @@ tournament:
         prizes: "Dotations"
         view_on_altered: "Voir sur Altered.gg"
         entry_fee: "Prix d'entrée"
+
+    checkin:
+        title: "Check-in"
+        confirmed: "Vous avez confirmé votre présence"
+        open_message: "Le check-in est ouvert ! Confirmez votre présence."
+        button: "Je suis présent"
+        not_open_yet: "Le check-in n'est pas encore ouvert"
+        organizer:
+            title: "Gestion du check-in"
+            status_open: "Check-in ouvert"
+            status_closed: "Check-in fermé"
+            checked_in: "présents"
+            open_btn: "Ouvrir le check-in"
+            close_btn: "Fermer le check-in"
+            remove_absent_btn: "Retirer les absents"
+            remove_absent_confirm: "Retirer tous les joueurs qui ne se sont pas présentés ? Cette action est irréversible."
+            checkin_btn: "Présent"
+            undo: "Annuler"
 
     completed:
         title: "Tournoi terminé"
@@ -497,11 +640,12 @@ tournament:
         delete: "Supprimer"
         delete_confirm: "Supprimer ce tournoi ? Cette action est irréversible."
         manage_registrations: "Gérer inscriptions"
-        manage_groups: "Gérer les poules"
+        manage_groups: "Gérer les groupes"
         start_tournament: "Lancer le tournoi"
         start_confirm: "Lancer le tournoi ? Cela générera les pairings de la première ronde."
         min_players: "Min. %count% joueurs pour lancer"
         config_locked: "Configuration verrouillée"
+        copy: "Copier le tournoi"
 
     registrations:
         title: "Gestion des inscriptions"
@@ -510,6 +654,7 @@ tournament:
         header: "Gestion des inscriptions"
         players_count: "joueurs"
         export_csv: "Exporter CSV"
+        import_csv: "Importer CSV"
         close_registrations: "Fermer les inscriptions"
         close_confirm: "Fermer les inscriptions ?"
         reopen_registrations: "Rouvrir les inscriptions"
@@ -537,13 +682,24 @@ tournament:
             faction_hero: "Faction / Héros"
             decklist: "Decklist"
             registered_at: "Inscrit le"
+            checkin: "Check-in"
             actions: "Actions"
         organizer_badge: "Organisateur"
+        guest_badge: "Invité"
+        add_guest_title: "Ajouter un joueur sans compte (invité)"
+        guest_notice: "Un joueur invité est un joueur qui n'a pas de compte sur la plateforme. Il pourra participer au tournoi mais ne pourra pas se connecter."
+        guest_name_label: "Nom du joueur"
+        guest_name_placeholder: "Ex: Jean Dupont"
+        add_guest_btn: "Ajouter le joueur invité"
         not_specified: "Non renseigné"
         view_decklist: "Voir decklist"
         not_provided: "Non fournie"
         remove_player: "Retirer"
         remove_confirm: "Retirer %player% du tournoi ?"
+        edit_player: "Modifier"
+        edit_modal_title: "Modifier l'inscription"
+        edit_cancel: "Annuler"
+        edit_save: "Sauvegarder"
         no_players_title: "Aucun joueur inscrit"
         no_players_message: "Les joueurs pourront s'inscrire une fois le tournoi publié."
         add_player: "Ajouter un joueur"
@@ -592,6 +748,9 @@ tournament:
                 constructed_hero_oof: "Les joueurs viennent avec leur propre deck. Le héros doit être d'une faction différente du deck."
                 constructed_bifaction: "Les joueurs viennent avec leur propre deck. Deux factions choisies. Héros issu de l'une des deux."
                 draft: "Les decks sont construits sur place à partir de boosters."
+                limited: "Format limité scellé - Les decks sont construits sur place à partir de boosters ou de cartes fournies."
+                limited_draft: "Format limité draft - Les decks sont construits sur place via un draft de boosters."
+                fun_expedition_krakn: "Les joueurs viennent avec leur propre deck. Le héros doit être un des héros Expédition Krak'n."
         step4:
             title: "Structure du tournoi"
             question: "Quelle structure de tournoi ?"
@@ -599,14 +758,15 @@ tournament:
             select_structure: "Sélectionnez la structure"
             swiss_rounds: "Nombre de rondes suisses"
             top_cut_size: "Taille du Top Cut"
-            group_count: "Nombre de poules"
-            players_per_group: "Joueurs par poule"
-            qualifiers_per_group: "Qualifiés par poule"
+            group_count: "Nombre de groupes"
+            players_per_group: "Joueurs par groupe"
+            qualifiers_per_group: "Qualifiés par groupe"
             structure_desc:
                 swiss_only: "Plusieurs rondes, tout le monde joue tous les matchs. Idéal pour les petits tournois."
                 single_elimination: "Élimination directe dès le premier match. Rapide et intense."
                 mixed: "Rondes suisses puis Top Cut en élimination. Le meilleur des deux mondes."
-                group_stage_elimination: "Phase de poules (round-robin) puis élimination des qualifiés."
+                group_stage_elimination: "Phase de groupes (round-robin) puis élimination des qualifiés."
+                round_robin: "Format championnat. Chaque joueur affronte tous les autres une fois."
         step5:
             title: "Format des matchs"
             question: "Quel format de matchs ?"
@@ -614,6 +774,8 @@ tournament:
             swiss_matches: "Matchs en phase Suisse"
             elimination_matches: "Matchs en élimination"
             swiss_rounds: "Rondes Suisses"
+            group_phase: "Phase de groupes"
+            championship_rounds: "Toutes les rondes"
             elimination_phase: "Phase d'élimination"
             elimination_hint: "Applicable pour le Top Cut ou l'élimination directe"
             bo1_info: "En BO1, une ronde supplémentaire sera ajoutée automatiquement (règle officielle Altered TCG)"
@@ -623,18 +785,20 @@ tournament:
         step6:
             title: "Nombre de joueurs"
             question: "Combien de joueurs ?"
-            question_groups: "Configuration des poules"
+            question_groups: "Configuration des groupes"
             subtitle: "Estimez le nombre de participants"
-            subtitle_groups: "Définissez la structure de vos poules"
+            subtitle_groups: "Définissez la structure de vos groupes"
             expected_players: "Joueurs attendus"
             swiss_rounds: "Rondes suisses"
             swiss_rounds_hint: "Laissez vide pour la suggestion automatique"
+            round_robin_info: "Format championnat : chaque joueur affronte tous les autres une fois."
+            round_robin_rounds: "%count% rondes seront jouées"
             top_cut_size: "Taille du Top Cut"
             top_cut_hint: "Nombre de joueurs qui passent en phase d'élimination"
-            group_structure: "Structure des poules"
-            group_count: "Nombre de poules"
-            players_per_group: "Joueurs par poule"
-            qualifiers_per_group: "Qualifiés par poule"
+            group_structure: "Structure des groupes"
+            group_count: "Nombre de groupes"
+            players_per_group: "Joueurs par groupe"
+            qualifiers_per_group: "Qualifiés par groupe"
             qualifiers_choice:
                 "1": "1 (premier uniquement)"
                 "2": "2 (deux premiers)"
@@ -643,7 +807,7 @@ tournament:
             formation_method: "Méthode de formation"
             summary: "Résumé"
             total_players: "Total joueurs"
-            rounds_per_group: "Rondes/poule"
+            rounds_per_group: "Rondes/groupe"
             qualifiers: "Qualifiés"
             bracket: "Bracket"
             max_players: "Nombre maximum de joueurs"
@@ -685,6 +849,8 @@ tournament:
             altered_gg_link: "Lien Altered.gg"
             altered_gg_placeholder: "https://altered.gg/..."
             altered_gg_hint: "Lien vers l'événement sur Altered.gg si existant."
+            check_in_enabled: "Activer le check-in"
+            check_in_enabled_help: "Les joueurs devront confirmer leur présence avant le début du tournoi"
             optional_info: "Tous ces champs sont optionnels. Vous pourrez les modifier après la création du tournoi."
         step10:
             title: "Récapitulatif"
@@ -703,12 +869,13 @@ tournament:
             players_rounds: "Joueurs et rondes"
             expected_players: "Joueurs attendus"
             swiss_rounds: "Rondes suisses"
+            championship_rounds: "Rondes"
             top_cut: "Top Cut"
-            group_config: "Configuration des poules"
-            group_count: "Nombre de poules"
-            players_per_group: "Joueurs/poule"
+            group_config: "Configuration des groupes"
+            group_count: "Nombre de groupes"
+            players_per_group: "Joueurs/groupe"
             total_players: "Total joueurs"
-            qualifiers_per_group: "Qualifiés/poule"
+            qualifiers_per_group: "Qualifiés/groupe"
             total_qualifiers: "Total qualifiés"
             formation: "Formation"
             visibility_section: "Visibilité"
@@ -737,6 +904,8 @@ dashboard:
         completed: "Terminée"
         ongoing: "En cours"
         pending: "En attente"
+        ready: "Prêt"
+        pending_info: "Les pairings sont prêts. Vous pouvez modifier les pairings avant de démarrer."
         completed_at: "Terminée le %date%"
         all_matches_completed: "Tous les matchs sont terminés"
         page_title: "Ronde %number% - Dashboard - %tournament%"
@@ -755,6 +924,15 @@ dashboard:
 
     timer:
         elapsed: "Temps écoulé (%duration% min recommandé)"
+        recommended_bo1: "30 min recommandé"
+        recommended_bo3: "75 min recommandé"
+        start_button: "Lancer chronomètre"
+        waiting_for_start: "En attente du lancement du chronomètre"
+        fullscreen: "Plein écran"
+        fullscreen_title: "Chronomètre - %tournament%"
+        fullscreen_round: "Ronde %number%"
+        fullscreen_waiting: "En attente du lancement du chronomètre..."
+        fullscreen_no_round: "Aucune ronde en cours"
         color_legend:
             green: "< 35 min"
             orange: "35-50 min"
@@ -780,17 +958,23 @@ dashboard:
         full_view: "Vue complète"
         completed_count: "%completed%/%total% matchs terminés"
         resolve: "Résoudre"
-        submit: "Soumettre"
+        submit: "Saisir score"
         start_next_round: "Démarrer la ronde suivante"
         start_elimination: "Démarrer la phase éliminatoire"
+        group_phase_complete: "Phase de groupes terminée !"
         swiss_complete: "Rondes suisses terminées (%current%/%max%) !"
+        championship_complete: "Championnat terminé !"
         complete_tournament: "Terminer le tournoi"
         bracket_complete: "Finale terminée !"
         round_limit_reached: "Limite de rondes atteinte (%current%/%max%)"
+        end_early: "Terminer maintenant"
+        early_end_confirm: "Terminer le tournoi après %current% ronde(s) sur %total% prévue(s) ?"
         player1: "Joueur 1"
         player2: "Joueur 2"
         draw: "Égalité"
         standings: "Classement"
+        winner: "Gagnant"
+        match_completed: "Match terminé"
 
     connection:
         connected: "Connecté"
@@ -880,6 +1064,22 @@ match:
         contact_organizer: "Veuillez contacter l'organisateur pour résoudre ce litige."
 
 # ----------------------------------------------------------------------------
+# Round
+# ----------------------------------------------------------------------------
+round:
+    back_to_rounds: "Retour aux rondes"
+    started_at: "Démarrée le %date%"
+    completed_at: "Terminée le %date%"
+    correct: "Corriger"
+    dispute: "Litige"
+    validate: "Valider"
+    start: "Démarrer la ronde"
+    edit_pairings: "Modifier pairings"
+    bye_zone: "Déposer ici pour attribuer un BYE"
+    rematch_warning_title: "Attention : Rematch détecté"
+    confirm_rematch: "Continuer quand même"
+
+# ----------------------------------------------------------------------------
 # Dispute
 # ----------------------------------------------------------------------------
 dispute:
@@ -926,15 +1126,37 @@ dispute:
 # ----------------------------------------------------------------------------
 standings:
     title: "Classement"
+    page_title: "Classement - %tournament%"
+    back_to_dashboard: "Retour au dashboard"
+    no_standings: "Aucun classement disponible. Le tournoi n'a pas encore démarré."
     rank: "Rang"
     player: "Joueur"
+    hero: "Héros"
     points: "Points"
+    wdl: "V-N-D"
     omw: "OMW%"
+    omw_tooltip: "Opponent Match Win Percentage"
     gw: "GW%"
     ogw: "OGW%"
     wins: "V"
+    wins_short: "V"
     losses: "D"
+    losses_short: "D"
     draws: "N"
+    draws_short: "N"
+    status: "Statut"
+    dropped: "ABANDONNE"
+    active: "Actif"
+    action:
+        drop: "Drop"
+        undrop: "Réintégrer"
+    confirm:
+        drop: "Confirmer le drop de %player% ?"
+
+    legend:
+        points: "3 par victoire, 1 par égalité, 0 par défaite"
+        wdl: "Victoires - Nuls (égalités) - Défaites"
+        omw: "Pourcentage de victoires moyen des adversaires rencontrés (départage)"
 
     final:
         title: "Classement final"
@@ -947,6 +1169,24 @@ standings:
         third: "3ème"
 
 # ----------------------------------------------------------------------------
+# Drop Functionality
+# ----------------------------------------------------------------------------
+drop:
+    status:
+        dropped: "Vous avez abandonné le tournoi"
+        active: "Vous participez au tournoi"
+    dropped_at: "Abandonné le %date%"
+    button:
+        abandon: "Abandonner le tournoi"
+    confirm:
+        message: "Êtes-vous sûr de vouloir abandonner le tournoi ?"
+        consequences: "- Vous ne participerez plus aux rondes suivantes\n- Vous ne pourrez pas vous qualifier pour le top cut\n- Vous resterez dans le classement avec vos points actuels"
+        active_match_warning: "⚠️ Vous avez un match en cours. Il sera déclaré forfait."
+    error:
+        generic: "Une erreur est survenue"
+        connection: "Erreur de connexion"
+
+# ----------------------------------------------------------------------------
 # Statistics
 # ----------------------------------------------------------------------------
 stats:
@@ -957,6 +1197,43 @@ stats:
     average_match_duration: "Durée moyenne des matchs"
     faction_distribution: "Répartition des factions"
     hero_popularity: "Popularité des héros"
+
+# ----------------------------------------------------------------------------
+# Results
+# ----------------------------------------------------------------------------
+results:
+    final_standings: "Classement Final"
+    stats: "Statistiques du tournoi"
+    legend: "V = Victoires | N = Nuls (égalités) | D = Défaites | Points = Points de match | OMW% = % victoires adversaires | GW% = % victoires games"
+
+# ----------------------------------------------------------------------------
+# Share
+# ----------------------------------------------------------------------------
+share:
+    button: "Partager"
+    players: "Joueurs"
+    rounds: "Rondes"
+    format: "Format"
+    matches: "Matchs"
+    games: "Games"
+    and_more: "+ %count% autres joueurs"
+    branding: "Organise ton tournoi sur"
+    faction_champions: "Champions par Faction"
+    top_performers: "Top Performers"
+
+    standings:
+        subtitle: "Classement Final"
+
+    stats:
+        subtitle: "Statistiques"
+
+    modal:
+        title: "Partager l'image"
+        generating: "Génération de l'image en cours..."
+        download: "Télécharger"
+        copy: "Copier"
+        share: "Partager..."
+        help: "Téléchargez l'image ou copiez-la pour la coller dans Discord, Twitter, etc."
 
 # ----------------------------------------------------------------------------
 # Admin
@@ -1063,6 +1340,7 @@ flash:
         registration_updated: "Votre inscription a été mise à jour."
         unregistration_success: "Vous êtes désinscrit du tournoi."
         player_added: "Joueur ajouté avec succès."
+        guest_added: "%s a été ajouté au tournoi en tant qu'invité."
         player_removed: "Joueur retiré avec succès."
         match_result_submitted: "Résultat soumis avec succès."
         match_result_confirmed: "Résultat confirmé !"
@@ -1075,6 +1353,7 @@ flash:
         password_reset: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter."
         settings_saved: "Paramètres enregistrés."
         account_created: "Votre compte a été créé avec succès ! Bienvenue sur Altered Tournament Tools."
+        account_claimed: "Votre compte a été activé avec succès ! Vos inscriptions aux tournois ont été conservées."
         account_deleted: "Votre compte a été supprimé avec succès."
         alert_acknowledged: "L'alerte a été acquittée."
         alert_check_complete: "Vérification terminée. Aucun problème détecté."
@@ -1082,9 +1361,16 @@ flash:
         message_sent_to_user: "Message envoyé à %pseudo%."
         registrations_closed: "Les inscriptions sont fermées."
         registrations_reopened: "Les inscriptions sont réouvertes."
+        checkin_success: "Votre présence a été confirmée !"
+        checkin_opened: "Le check-in est maintenant ouvert."
+        checkin_closed: "Le check-in est maintenant fermé."
+        player_checked_in: "%player% a été marqué présent."
+        player_checkin_undone: "Le check-in de %player% a été annulé."
+        absent_players_removed: "%count% joueur(s) absent(s) retiré(s) du tournoi."
         results_published: "Les résultats du tournoi ont été publiés."
         user_roles_updated: "Les rôles de l'utilisateur ont été mis à jour."
         user_deleted_gdpr: "L'utilisateur a été supprimé conformément au RGPD."
+        player_registration_updated: "L'inscription de %s a été mise à jour."
 
     error:
         tournament_not_found: "Tournoi introuvable."
@@ -1102,6 +1388,7 @@ flash:
         invalid_decklist: "Decklist invalide."
         player_not_found: "Joueur introuvable."
         player_not_registered: "Ce joueur n'est pas inscrit à ce tournoi."
+        guest_name_required: "Le nom du joueur invité est requis."
         player_already_registered: "Ce joueur est déjà inscrit au tournoi."
         cannot_start_tournament: "Impossible de démarrer le tournoi."
         min_players_required: "Nombre minimum de joueurs requis : %count%."
@@ -1119,14 +1406,21 @@ flash:
         reset_link_invalid: "Ce lien de réinitialisation est invalide ou a expiré."
         select_recipient: "Veuillez sélectionner un destinataire."
         select_player: "Veuillez sélectionner un joueur."
-        groups_not_supported: "Ce tournoi ne supporte pas les phases de poules."
-        groups_already_formed: "Les poules ont déjà été formées."
-        groups_not_formed: "Les poules n'ont pas encore été formées."
+        groups_not_supported: "Ce tournoi ne supporte pas les phases de groupes."
+        groups_already_formed: "Les groupes ont déjà été formés."
+        groups_not_formed: "Les groupes n'ont pas encore été formés."
         wizard_incomplete: "Veuillez compléter toutes les étapes de l'assistant."
         not_registered: "Vous n'êtes pas inscrit à ce tournoi."
         cannot_edit_after_start: "Impossible de modifier votre inscription une fois le tournoi commencé."
         cannot_unregister_after_start: "Impossible de se désinscrire une fois le tournoi commencé."
         tournament_not_completed: "Le tournoi doit être terminé pour publier les résultats."
+        checkin_not_available: "Le check-in n'est pas disponible pour ce tournoi."
+        checkin_not_enabled: "Le check-in n'est pas activé pour ce tournoi."
+        already_checked_in: "Vous êtes déjà marqué présent."
+        cannot_checkin_dropped: "Impossible de faire le check-in pour un joueur qui a abandonné."
+        player_already_checked_in: "Ce joueur est déjà marqué présent."
+        player_not_checked_in: "Ce joueur n'est pas marqué présent."
+        registration_not_found: "Inscription introuvable."
 
     warning:
         match_not_in_dispute: "Ce match n'est pas en litige."
@@ -1140,6 +1434,7 @@ flash:
     info:
         match_already_completed: "Ce match est déjà terminé."
         results_already_published: "Les résultats sont déjà publiés."
+        no_absent_players: "Tous les joueurs se sont présentés."
 
 # ----------------------------------------------------------------------------
 # Validation Messages
@@ -1169,6 +1464,8 @@ validation:
         rounds_range: "Le nombre de rondes doit être entre {{ min }} et {{ max }}"
         visibility_required: "La visibilité est requise"
         decklist_transparency_required: "La transparence des decklists est requise"
+        group_count_range: "Le nombre de groupes doit être entre {{ min }} et {{ max }}"
+        players_per_group_range: "Le nombre de joueurs par groupe doit être entre {{ min }} et {{ max }}"
 
     user:
         email_required: "Veuillez entrer votre email"
@@ -1218,6 +1515,25 @@ form:
         elimination_match_format: "Format des matchs (Élimination)"
         altered_gg_link: "Lien Altered.gg (optionnel)"
         altered_gg_placeholder: "https://altered.gg/..."
+        is_tumult: "Tournoi Tumult"
+        is_tumult_help: "Cochez si ce tournoi est un événement Tumult"
+        is_season_finals_qualifier: "Qualifier Season Finals"
+        is_season_finals_qualifier_help: "Cochez si ce tournoi qualifie pour les Season Finals"
+        check_in_enabled: "Activer le check-in"
+        check_in_enabled_help: "Permet aux joueurs de confirmer leur présence avant le début du tournoi"
+        # Group Stage Configuration
+        group_stage_config: "Configuration des groupes"
+        group_count: "Nombre de groupes"
+        group_count_placeholder: "Ex: 4"
+        players_per_group: "Joueurs par groupe"
+        players_per_group_placeholder: "Ex: 4"
+        qualifiers_per_group: "Qualifiés par groupe"
+        group_formation_method: "Méthode de formation"
+        group_summary: "Récapitulatif"
+        total_players: "Total joueurs"
+        rounds_per_group: "Rondes/groupe"
+        total_qualifiers: "Total qualifiés"
+        bracket_size: "Bracket"
 
     registration:
         faction: "Faction"
@@ -1250,6 +1566,14 @@ form:
         new_password: "Nouveau mot de passe"
         agree_terms: "J'accepte les conditions d'utilisation"
 
+    claim:
+        pseudo: "Pseudo"
+        pseudo_placeholder: "Choisissez un pseudo"
+        password: "Mot de passe"
+        password_placeholder: "Minimum 8 caractères"
+        confirm_password: "Confirmer le mot de passe"
+        confirm_password_placeholder: "Répétez votre mot de passe"
+
 # ----------------------------------------------------------------------------
 # JavaScript / Stimulus Controllers
 # ----------------------------------------------------------------------------
@@ -1272,3 +1596,540 @@ js:
         bracket_label: "Bracket de %players% joueurs"
         bracket_byes_label: "Bracket de %bracket% (%byes% BYEs nécessaires)"
         rounds_recommended: "%rounds% rondes recommandées pour %players% joueurs"
+
+# ----------------------------------------------------------------------------
+# Contact / Report Feature
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Error Pages
+# ----------------------------------------------------------------------------
+error:
+    "500":
+        title: "Oups !"
+        subtitle: "Le serveur fait une pause cafe"
+        message: "Pas de panique ! Notre serveur a rencontre un petit souci technique. Ce n'est pas de ta faute, nos hamsters dans la salle serveur ont probablement besoin d'une pause."
+        what_to_do: "Que faire ?"
+        tip_refresh: "Rafraichis la page dans quelques instants"
+        tip_connection: "Verifie ta connexion internet"
+        tip_contact: "Si le probleme persiste, contacte-nous !"
+        back_home: "Retour à l'accueil"
+        retry: "Reessayer"
+        code: "Erreur 500 - Erreur interne du serveur"
+
+contact:
+    button:
+        label: "Signaler un problème"
+    modal:
+        title: "Nous contacter"
+    form:
+        subject: "Sujet"
+        message: "Message"
+        message_placeholder: "Décrivez votre problème ou votre question..."
+        message_hint: "Minimum 10 caractères, maximum 2000"
+        cancel: "Annuler"
+        submit: "Envoyer"
+    subject:
+        bug: "Signaler un bug"
+        contact: "Contact"
+    status:
+        new: "Nouveau"
+        read: "Lu"
+        resolved: "Résolu"
+    success:
+        title: "Message envoyé !"
+        message: "Merci pour votre retour. Nous vous répondrons dans les plus brefs délais."
+    error:
+        validation: "Veuillez corriger les erreurs du formulaire."
+    message:
+        not_blank: "Le message est requis."
+        min_length: "Le message doit contenir au moins 10 caractères."
+        max_length: "Le message ne peut pas dépasser 2000 caractères."
+    admin:
+        title: "Rapports de contact"
+        subtitle: "Gérez les retours et signalements des utilisateurs"
+        new_reports: "{1} 1 nouveau rapport|]1,Inf[ %count% nouveaux rapports"
+        filter:
+            status: "Statut"
+            all: "Tous"
+            clear: "Effacer les filtres"
+        table:
+            status: "Statut"
+            subject: "Sujet"
+            user: "Utilisateur"
+            message: "Message"
+            date: "Date"
+            actions: "Actions"
+        action:
+            view: "Voir"
+            delete: "Supprimer"
+        pagination:
+            showing: "%total% rapport(s) au total"
+            prev: "Précédent"
+            next: "Suivant"
+        empty:
+            title: "Aucun rapport"
+            subtitle: "Aucun rapport de contact pour le moment."
+        view:
+            title: "Rapport"
+            back: "Retour à la liste"
+            sent_at: "Envoyé le"
+            message: "Message"
+            page_url: "Page concernée"
+            delete_confirm: "Êtes-vous sûr de vouloir supprimer ce rapport ?"
+        success:
+            status_updated: "Statut mis à jour"
+            deleted: "Rapport supprimé"
+        error:
+            invalid_status: "Statut invalide"
+            invalid_token: "Token CSRF invalide"
+
+# ----------------------------------------------------------------------------
+# Legal Pages
+# ----------------------------------------------------------------------------
+legal:
+    privacy:
+        title: "Politique de Confidentialité"
+        last_updated: "Dernière mise à jour"
+        controller:
+            title: "1. Responsable du traitement"
+            text: "Les informations suivantes identifient le responsable du traitement de vos données personnelles :"
+            name_label: "Nom"
+            contact_label: "Contact"
+            contact: "Via le formulaire de contact du site"
+        collected:
+            title: "2. Données collectées"
+            intro: "Nous collectons les données personnelles suivantes :"
+            registration:
+                title: "Lors de l'inscription"
+                email: "Adresse email (obligatoire)"
+                pseudo: "Pseudo (obligatoire)"
+                name: "Nom réel (optionnel)"
+                avatar: "Photo de profil (optionnel)"
+                password: "Mot de passe (chiffré, non visible)"
+            tournament:
+                title: "Lors de l'utilisation"
+                registrations: "Inscriptions aux tournois"
+                results: "Résultats des matchs"
+                decklist: "Liens vers les decklists (optionnel)"
+        purpose:
+            title: "3. Finalités et bases légales"
+            purpose_col: "Finalité"
+            basis_col: "Base légale"
+            account: "Gestion de votre compte utilisateur"
+            tournament: "Gestion des tournois et inscriptions"
+            notifications: "Envoi de notifications (rappels, résultats)"
+            security: "Sécurité et prévention des fraudes"
+            basis_contract: "Exécution du contrat"
+            basis_consent: "Consentement"
+            basis_legitimate: "Intérêt légitime"
+        retention:
+            title: "4. Durée de conservation"
+            account: "Données de compte : conservées jusqu'à suppression du compte"
+            tournament: "Historique des tournois : 3 ans après la fin du tournoi"
+            logs: "Journaux techniques : 14 jours"
+        sharing:
+            title: "5. Partage des données"
+            intro: "Vos données peuvent être partagées avec les services tiers suivants :"
+            processors_title: "Sous-traitants"
+            nominatim_title: "OpenStreetMap (Nominatim)"
+            nominatim_purpose: "Géocodage des adresses de tournois pour afficher les cartes"
+            nominatim_data: "Adresses des lieux de tournois uniquement"
+            nominatim_location: "Serveurs situés dans l'Union Européenne"
+            nominatim_policy: "Politique de confidentialité : privacy.osmfoundation.org"
+            no_analytics: "Nous n'utilisons aucun service d'analyse tiers (Google Analytics, etc.)"
+            no_advertising: "Nous n'utilisons aucune plateforme publicitaire"
+            no_sale: "Nous ne vendons jamais vos données personnelles à des tiers."
+        rights:
+            title: "6. Vos droits"
+            intro: "Conformément au RGPD, vous disposez des droits suivants :"
+            access:
+                title: "Droit d'accès"
+                text: "Obtenir une copie de vos données personnelles"
+            rectification:
+                title: "Droit de rectification"
+                text: "Corriger vos données inexactes ou incomplètes"
+            erasure:
+                title: "Droit à l'effacement"
+                text: "Demander la suppression de vos données"
+            portability:
+                title: "Droit à la portabilité"
+                text: "Recevoir vos données dans un format structuré"
+            objection:
+                title: "Droit d'opposition"
+                text: "Vous opposer au traitement de vos données"
+            exercise: "Pour exercer ces droits, utilisez les options dans votre profil ou contactez-nous via le formulaire de contact."
+        complaint:
+            title: "7. Réclamation"
+            text: "Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la CNIL (Commission Nationale de l'Informatique et des Libertés) : www.cnil.fr"
+        cookies:
+            title: "8. Cookies"
+            text: "Nous utilisons des cookies essentiels au fonctionnement du site. Pour plus d'informations, consultez notre"
+            link: "politique de cookies"
+        changes:
+            title: "9. Modifications"
+            text: "Cette politique peut être mise à jour. La date de dernière mise à jour est indiquée en haut de page. Nous vous encourageons à la consulter régulièrement."
+
+    cookies:
+        title: "Politique de Cookies"
+        what:
+            title: "Qu'est-ce qu'un cookie ?"
+            text: "Un cookie est un petit fichier texte stocké sur votre appareil lorsque vous visitez un site web. Les cookies permettent au site de se souvenir de vos actions et préférences."
+        used:
+            title: "Cookies utilisés"
+        essential:
+            title: "Cookies essentiels"
+            text: "Ces cookies sont nécessaires au fonctionnement du site. Ils ne peuvent pas être désactivés."
+        functional:
+            title: "Cookies fonctionnels"
+            text: "Ces cookies améliorent votre expérience utilisateur."
+        table:
+            name: "Nom"
+            purpose: "Finalité"
+            duration: "Durée"
+        session:
+            purpose: "Maintien de votre session utilisateur"
+            duration: "7 jours"
+        remember:
+            purpose: "Connexion automatique (Remember me)"
+            duration: "7 jours"
+        consent:
+            purpose: "Enregistrement de vos choix de cookies"
+            duration: "1 an"
+        localstorage:
+            title: "Stockage local"
+            text: "En plus des cookies, nous utilisons le stockage local du navigateur :"
+        theme:
+            purpose: "Sauvegarde de vos préférences de thème (couleur, mode sombre)"
+        thirdparty:
+            title: "Cookies tiers"
+            text: "Nous n'utilisons actuellement aucun cookie de tracking ou d'analyse tiers. Aucune donnée n'est partagée avec des plateformes publicitaires."
+        manage:
+            title: "Gérer vos cookies"
+            text: "Vous pouvez configurer votre navigateur pour refuser les cookies. Consultez les paramètres de votre navigateur pour plus d'informations."
+            warning: "La désactivation des cookies essentiels peut empêcher le bon fonctionnement du site (connexion, session)."
+        preferences:
+            title: "Modifier vos préférences"
+            text: "Vous pouvez modifier vos préférences de cookies à tout moment :"
+            button: "Gérer mes cookies"
+
+    terms:
+        title: "Conditions Générales d'Utilisation"
+        purpose:
+            title: "1. Objet"
+            text: "Altered Tournament Tools est une plateforme gratuite permettant d'organiser et de participer à des tournois du jeu de cartes Altered TCG. Les présentes CGU régissent l'utilisation de ce service."
+        acceptance:
+            title: "2. Acceptation des conditions"
+            text: "En créant un compte ou en utilisant le service, vous acceptez les présentes conditions d'utilisation ainsi que notre politique de confidentialité."
+        registration:
+            title: "3. Inscription"
+            age: "Vous devez avoir au moins 13 ans pour créer un compte"
+            accuracy: "Les informations fournies doivent être exactes"
+            security: "Vous êtes responsable de la confidentialité de vos identifiants"
+            one_account: "Un seul compte par personne est autorisé"
+        obligations:
+            title: "4. Obligations des utilisateurs"
+            intro: "En utilisant le service, vous vous engagez à :"
+            respect: "Respecter les autres utilisateurs"
+            fair_play: "Jouer de manière loyale et sportive"
+            no_abuse: "Ne pas tenter de manipuler les résultats ou le système"
+            no_illegal: "Ne pas utiliser le service à des fins illégales"
+            no_spam: "Ne pas envoyer de spam ou de contenu non sollicité"
+        organizer:
+            title: "5. Responsabilités des organisateurs"
+            intro: "Les organisateurs de tournois s'engagent à :"
+            accurate_info: "Fournir des informations exactes sur leurs événements"
+            manage_event: "Gérer leur tournoi de manière équitable"
+            communicate: "Communiquer clairement avec les participants"
+            fair_results: "Valider les résultats de manière impartiale"
+        ip:
+            title: "6. Propriété intellectuelle"
+            platform: "La plateforme Altered Tournament Tools et son code sont protégés. Toute reproduction non autorisée est interdite."
+            altered: "Altered TCG est une marque déposée d'Equinox. Cette plateforme n'est pas affiliée à Equinox."
+        liability:
+            title: "7. Limitation de responsabilité"
+            service: "Le service est fourni en l'état. Nous ne garantissons pas une disponibilité continue ou l'absence de bugs."
+            events: "Nous ne sommes pas responsables des événements organisés via la plateforme ni des litiges entre participants."
+        termination:
+            title: "8. Résiliation"
+            user: "Vous pouvez supprimer votre compte à tout moment depuis votre profil"
+            platform: "Nous nous réservons le droit de suspendre ou supprimer tout compte en cas de violation des CGU"
+        modifications:
+            title: "9. Modifications des CGU"
+            text: "Nous pouvons modifier ces conditions à tout moment. Les utilisateurs seront informés des changements significatifs. L'utilisation continue du service vaut acceptation des nouvelles conditions."
+        law:
+            title: "10. Droit applicable"
+            text: "Les présentes CGU sont régies par le droit français. Tout litige sera soumis aux tribunaux compétents de France."
+        privacy:
+            title: "11. Protection des données"
+            text: "Pour en savoir plus sur le traitement de vos données personnelles, consultez notre"
+            link: "politique de confidentialité"
+        contact:
+            title: "12. Contact"
+            text: "Pour toute question concernant ces conditions, utilisez le formulaire de contact disponible sur le site."
+
+# ----------------------------------------------------------------------------
+# Cookie Banner
+# ----------------------------------------------------------------------------
+privacy_settings:
+    title: "Paramètres de confidentialité"
+    description: "Contrôlez la visibilité de vos informations personnelles"
+    show_real_name:
+        label: "Afficher mon nom réel"
+        help: "Si activé, votre nom réel sera visible par les autres utilisateurs"
+    show_in_results:
+        label: "Apparaître dans les résultats publics"
+        help: "Si désactivé, votre pseudo sera masqué dans les classements publics"
+    show_match_history:
+        label: "Historique des matchs public"
+        help: "Si désactivé, votre historique de matchs ne sera pas visible par les autres"
+    saved: "Paramètres de confidentialité enregistrés"
+
+cookie_banner:
+    title: "Nous respectons votre vie privée"
+    description: "Nous utilisons des cookies essentiels pour le fonctionnement du site et des cookies fonctionnels pour améliorer votre expérience."
+    learn_more: "En savoir plus"
+    accept_all: "Accepter tout"
+    accept_essential: "Essentiels uniquement"
+    privacy_policy: "Politique de confidentialité"
+    essential:
+        title: "Essentiels"
+        description: "Session, authentification, sécurité"
+    functional:
+        title: "Fonctionnels"
+        description: "Préférences de thème et langue"
+
+# ----------------------------------------------------------------------------
+# Bulk Import
+# ----------------------------------------------------------------------------
+import:
+    upload:
+        title: "Import CSV"
+        breadcrumb: "Import"
+        header: "Importer des inscriptions"
+        description: "Importez une liste de participants depuis un fichier CSV (HelloAsso, Google Forms, etc.)"
+        drag_drop: "Glissez-déposez votre fichier CSV ici"
+        or_click: "ou cliquez pour parcourir"
+        select_file: "Choisir un fichier"
+        file_selected: "Fichier sélectionné"
+        continue: "Continuer"
+        instructions_title: "Instructions"
+        instruction_format: "Le fichier doit être au format CSV (UTF-8)"
+        instruction_email: "La colonne Email est obligatoire"
+        instruction_columns: "Colonnes supportées : Email, Pseudo, Nom, Faction, Héros, URL Decklist"
+        instruction_limit: "Maximum %maxRows% lignes, %maxSize% Mo"
+        download_template: "Télécharger un modèle CSV"
+        back_to_registrations: "Retour aux inscriptions"
+    mapping:
+        title: "Mapping des colonnes"
+        breadcrumb: "Mapping"
+        header: "Configuration du mapping"
+        description: "%count% lignes à importer"
+        preview_title: "Aperçu des données"
+        rows_remaining: "... et %count% lignes supplémentaires"
+        options_title: "Options"
+        send_emails_label: "Envoyer des emails de confirmation"
+        send_emails_description: "Chaque joueur importé recevra un email de confirmation d'inscription"
+        email_required_warning: "Vous devez mapper une colonne à 'Email' pour continuer"
+        back: "Retour"
+        execute: "Importer %count% inscriptions"
+        field_ignore: "-- Ignorer --"
+        field_email: "Email (requis)"
+        field_pseudo: "Pseudo"
+        field_name: "Nom"
+        field_faction: "Faction principale"
+        field_faction2: "Faction secondaire"
+        field_hero: "Héros"
+        field_decklist_url: "URL Decklist"
+    results:
+        title: "Résultats de l'import"
+        breadcrumb: "Résultats"
+        header: "Import terminé"
+        success_message: "%count% inscription(s) ajoutée(s) avec succès"
+        success_description: "Les joueurs ont été ajoutés au tournoi"
+        stat_total: "Lignes traitées"
+        stat_linked: "Comptes existants"
+        stat_created: "Nouveaux comptes"
+        stat_skipped: "Ignorées"
+        errors_title: "%count% erreur(s)"
+        skipped_title: "%count% ligne(s) ignorée(s)"
+        details_title: "Détails de l'import"
+        type_linked: "Lié"
+        type_created: "Créé"
+        guest_info_title: "Comptes invités créés"
+        guest_info_description: "%count% compte(s) invité(s) ont été créés. Les joueurs pourront réclamer leur compte via un lien unique."
+        import_more: "Importer d'autres joueurs"
+        view_registrations: "Voir les inscriptions"
+    error:
+        invalid_file: "Veuillez sélectionner un fichier CSV valide."
+        csv_only: "Seuls les fichiers CSV sont acceptés."
+        session_expired: "Session expirée. Veuillez recommencer l'import."
+        email_required: "La colonne Email est requise."
+        import_failed: "Erreur lors de l'import : %message%"
+    skip:
+        already_registered: "Déjà inscrit : %email%"
+
+# ----------------------------------------------------------------------------
+# Account Claim
+# ----------------------------------------------------------------------------
+claim:
+    title: "Activer mon compte"
+    header: "Activez votre compte"
+    description: "Vous avez été inscrit à un tournoi. Complétez votre inscription pour accéder à votre compte."
+    email_label: "Email"
+    tournaments_label: "Vos tournois"
+    form_title: "Créer vos identifiants"
+    pseudo_label: "Pseudo"
+    pseudo_placeholder: "Choisissez un pseudo"
+    pseudo_help: "Lettres, chiffres, tirets et underscores uniquement"
+    password_label: "Mot de passe"
+    password_placeholder: "Minimum 8 caractères"
+    confirm_password_label: "Confirmer le mot de passe"
+    confirm_password_placeholder: "Répétez votre mot de passe"
+    submit: "Activer mon compte"
+    already_have_account: "Vous avez déjà un compte ?"
+    login_link: "Se connecter"
+    success: "Votre compte a été activé ! Vous pouvez maintenant vous connecter."
+    error:
+        invalid_or_expired: "Ce lien d'activation est invalide ou expiré."
+        pseudo_taken: "Ce pseudo est déjà utilisé. Veuillez en choisir un autre."
+
+# ----------------------------------------------------------------------------
+# API Access
+# ----------------------------------------------------------------------------
+api:
+    page_title: "Accès API"
+    title: "Accès API"
+    subtitle: "Gérez votre clé API pour accéder aux données de tournois"
+    request_page_title: "Demande d'accès API"
+    request_title: "Demande d'accès API"
+    request_subtitle: "Remplissez ce formulaire pour demander une clé API"
+
+    # Status
+    status:
+        pending: "En attente"
+        approved: "Approuvé"
+        rejected: "Rejeté"
+        revoked: "Révoqué"
+        active: "Actif"
+
+    # Form
+    form:
+        project_name: "Nom du projet"
+        project_name_placeholder: "Mon application Altered"
+        project_name_help: "Le nom de votre application ou projet"
+        intended_use: "Usage prévu"
+        intended_use_placeholder: "Décrivez comment vous comptez utiliser l'API..."
+        intended_use_help: "Expliquez brièvement l'usage que vous ferez de l'API (minimum 20 caractères)"
+        website_url: "URL du site (optionnel)"
+        website_url_help: "L'adresse de votre site ou application"
+        discord_username: "Pseudo Discord (optionnel)"
+        discord_username_placeholder: "username#0000"
+        discord_username_help: "Pour vous contacter si nécessaire"
+
+    # Info box
+    info_title: "Informations importantes"
+    info_item_1: "Votre demande sera examinée par un administrateur"
+    info_item_2: "Vous recevrez une notification une fois votre demande traitée"
+    info_item_3: "Les clés API sont personnelles et ne doivent pas être partagées"
+
+    # Active key
+    active_key: "Clé API active"
+    your_api_key: "Votre clé API"
+    copy_key: "Copier la clé"
+    key_warning: "Gardez cette clé secrète. Ne la partagez jamais publiquement."
+    project_name: "Projet"
+    created_at: "Créée le"
+    last_used: "Dernière utilisation"
+    never_used: "Jamais utilisée"
+    status_label: "Statut"
+    rate_limits: "Limites de requêtes"
+    requests_per_minute: "requêtes par minute"
+    requests_per_hour: "requêtes par heure"
+    requests_per_day: "requêtes par jour"
+    view_documentation: "Voir la documentation API"
+
+    # Request history
+    request_history: "Historique des demandes"
+    request_form_title: "Formulaire de demande"
+    request_access: "Demander un accès API"
+    submit_request: "Soumettre la demande"
+    pending_request_message: "Vous avez déjà une demande en attente de validation."
+
+    # Flash messages
+    flash:
+        request_submitted: "Votre demande a été soumise. Vous serez notifié une fois qu'elle sera traitée."
+        already_has_request: "Vous avez déjà une demande en attente ou une clé API active."
+        approved: "Votre demande d'accès API a été approuvée !"
+        rejected: "Votre demande d'accès API a été rejetée."
+
+    # Validation
+    validation:
+        project_name:
+            not_blank: "Le nom du projet est requis"
+            min_length: "Le nom du projet doit contenir au moins 3 caractères"
+            max_length: "Le nom du projet ne peut pas dépasser 100 caractères"
+        intended_use:
+            not_blank: "La description de l'usage est requise"
+            min_length: "La description doit contenir au moins 20 caractères"
+            max_length: "La description ne peut pas dépasser 2000 caractères"
+        website_url:
+            invalid: "L'URL du site n'est pas valide"
+        discord_username:
+            max_length: "Le pseudo Discord ne peut pas dépasser 100 caractères"
+
+    # Admin
+    admin:
+        title: "Gestion des accès API"
+        pending_requests: "Demandes en attente"
+        all_requests: "Toutes les demandes"
+        no_requests: "Aucune demande d'accès API"
+        view_details: "Voir les détails"
+        approve: "Approuver"
+        reject: "Rejeter"
+        revoke: "Révoquer"
+        rejection_reason: "Raison du rejet"
+        rejection_reason_placeholder: "Expliquez pourquoi la demande est rejetée..."
+        confirm_approve: "Êtes-vous sûr de vouloir approuver cette demande ?"
+        confirm_reject: "Êtes-vous sûr de vouloir rejeter cette demande ?"
+        confirm_revoke: "Êtes-vous sûr de vouloir révoquer cette clé API ?"
+        approved_success: "La demande a été approuvée et la clé API a été générée."
+        rejected_success: "La demande a été rejetée."
+        revoked_success: "La clé API a été révoquée."
+        user_info: "Informations utilisateur"
+        request_info: "Informations de la demande"
+        credential_info: "Informations de la clé"
+        reviewed_by: "Examiné par"
+        reviewed_at: "Examiné le"
+
+# ----------------------------------------------------------------------------
+# Group Stage
+# ----------------------------------------------------------------------------
+groups:
+    title: "Groupes"
+    header: "Phase de groupes"
+    badge:
+        groups_count: "%count% groupes"
+        players_per_group: "%count% joueurs/groupe"
+        qualifiers_per_group: "%count% qualifiés/groupe"
+    matches_played: "Matchs joués"
+    config_incomplete: "Configuration incomplète"
+    configure_groups: "Configurer les groupes"
+    players_registered: "%registered%/%expected% joueurs inscrits"
+    form_groups: "Former les groupes"
+    confirm_form_groups: "Former les groupes ? Les joueurs seront répartis aléatoirement."
+    next_round: "Prochaine ronde"
+    start_elimination: "Lancer l'élimination"
+    confirm_start_elimination: "Lancer la phase éliminatoire ? Les qualifiés seront déterminés par leur classement."
+    not_formed: "Groupes non formés"
+    config_incomplete_title: "Configuration des groupes incomplète"
+    config_incomplete_description: "Vous devez configurer le nombre de groupes, le nombre de joueurs par groupe et le nombre de qualifiés par groupe."
+    configure_tournament: "Configurer le tournoi"
+    not_formed_description: "Les groupes n'ont pas encore été formés. %registered% joueurs inscrits sur %expected% attendus."
+    missing_players: "Il manque %count% joueurs pour remplir tous les groupes."
+    group_name: "Groupe %letter%"
+    standings: "Classement Groupe %letter%"
+    no_matches_in_group: "Aucun match joué dans ce groupe"
+    qualifiers_info: "Les %count% premiers sont qualifiés pour la phase éliminatoire"
+    round_table: "Ronde %round% - Table %table%"
+    no_matches_generated: "Aucun match généré"
+    back_to_tournament: "Retour au tournoi"

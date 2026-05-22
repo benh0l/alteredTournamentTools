@@ -3,7 +3,10 @@
 {% block wizard_content %}
     {% set structure = (wizard_data is defined and wizard_data[4] is defined and wizard_data[4].structure is defined) ? wizard_data[4].structure : null %}
     {% set hasSwiss = structure is not null and structure.hasSwiss() %}
+    {% set hasGroupStage = structure is not null and structure.hasGroupStage() %}
+    {% set hasRoundRobin = structure is not null and structure.hasRoundRobin() %}
     {% set hasElimination = structure is not null and structure.hasElimination() %}
+    {% set hasFirstPhase = hasSwiss or hasGroupStage or hasRoundRobin %}
 
     <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style="background-color: var(--color-primary-100);">
@@ -14,11 +17,19 @@
     </div>
 
     {{ form_start(form, {attr: {id: 'wizard-form', class: 'space-y-8'}}) }}
-        {# Swiss Match Format - only show if structure has Swiss rounds #}
-        <div class="{{ hasSwiss ? '' : 'hidden' }}">
+        {# Swiss/Group Match Format - only show if structure has Swiss rounds or Group Stage #}
+        <div class="{{ hasFirstPhase ? '' : 'hidden' }}">
             <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
-                {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
-                {{ 'tournament.wizard.step5.swiss_rounds'|trans }}
+                {% if hasRoundRobin %}
+                    {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                    {{ 'tournament.wizard.step5.championship_rounds'|trans|default('All Rounds') }}
+                {% elseif hasGroupStage %}
+                    {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                    {{ 'tournament.wizard.step5.group_phase'|trans|default('Phase de groupes') }}
+                {% else %}
+                    {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5 mr-2 text-blue-500'}) }}
+                    {{ 'tournament.wizard.step5.swiss_rounds'|trans }}
+                {% endif %}
             </h3>
             <div class="grid grid-cols-2 gap-4">
                 {% for child in form.swissMatchFormat %}
@@ -52,7 +63,7 @@
         </div>
 
         {# Separator - only show if both sections are visible #}
-        <hr class="{{ (hasSwiss and hasElimination) ? '' : 'hidden' }}" style="border-color: var(--border-default);">
+        <hr class="{{ (hasFirstPhase and hasElimination) ? '' : 'hidden' }}" style="border-color: var(--border-default);">
 
         {# Elimination Match Format - only show if structure has elimination phase #}
         <div class="{{ hasElimination ? '' : 'hidden' }}">

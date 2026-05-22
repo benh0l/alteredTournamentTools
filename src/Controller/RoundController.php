@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTO\AssignByeRequest;
+use App\DTO\PairingSwapRequest;
 use App\Entity\Tournament;
 use App\Enum\BracketSize;
 use App\Enum\PairingMode;
@@ -12,14 +14,20 @@ use App\Event\RoundStartedEvent;
 use App\Exception\InsufficientPlayersException;
 use App\Exception\InvalidTournamentStateException;
 use App\Exception\PairingException;
+use App\Exception\PairingModificationException;
 use App\Exception\RoundNotCompleteException;
 use App\Security\Voter\TournamentVoter;
 use App\Service\BracketService;
+use App\Service\GroupStageService;
+use App\Service\PairingModificationService;
 use App\Service\PairingService;
 use App\Service\TournamentCompletionService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -38,9 +46,13 @@ final class RoundController extends AbstractController
     public function __construct(
         private readonly PairingService $pairingService,
         private readonly BracketService $bracketService,
+        private readonly GroupStageService $groupStageService,
         private readonly TournamentCompletionService $completionService,
+        private readonly PairingModificationService $pairingModificationService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly TranslatorInterface $translator,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -86,16 +98,19 @@ final class RoundController extends AbstractController
 
                 $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);
                 $round->setIsEliminationRound(true);
+            } elseif ($tournament->getStructure() === TournamentStructure::ROUND_ROBIN) {
+                // Use round-robin pairing for championship format
+                $round = $this->pairingService->generateRoundRobinPairings($tournament, 1);
             } else {
                 // Use Swiss pairing for other tournament structures
                 $round = $this->pairingService->generateRound1Pairings($tournament, $mode);
             }
 
-            // Dispatch event for round start notifications (FR66)
-            $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+            // Note: RoundStartedEvent is dispatched when organizer explicitly starts the round
+            // via the startRound endpoint. This allows pairing modifications before round begins.
 
             $this->addFlash('success', sprintf(
-                'Ronde 1 demarree! %d match(s) genere(s).',
+                'Pairings de la ronde 1 générés ! %d match(s). Démarrez la ronde quand vous êtes prêt.',
                 $round->getMatches()->count()
             ));
         } catch (InsufficientPlayersException $e) {
@@ -135,6 +150,29 @@ final class RoundController extends AbstractController
         }
 
         try {
+            // Check if this is a group stage tournament still in group phase
+            $isGroupStagePhase = $tournament->getStructure() === TournamentStructure::GROUP_STAGE_ELIMINATION
+                && $tournament->hasGroups()
+                && !$tournament->isInEliminationPhase();
+
+            if ($isGroupStagePhase) {
+                // Use group stage service for round-robin pairings within groups
+                $existingGroupRounds = $tournament->getRounds()->filter(
+                    fn ($r) => !$r->isEliminationRound()
+                )->count();
+                $nextRoundNumber = $existingGroupRounds + 1;
+
+                $round = $this->groupStageService->generateGroupRound($tournament, $nextRoundNumber);
+
+                $this->addFlash('success', sprintf(
+                    'Pairings de la ronde %d des groupes générés ! %d match(s). Démarrez la ronde quand vous êtes prêt.',
+                    $round->getRoundNumber(),
+                    $round->getMatches()->count()
+                ));
+
+                return $this->redirectToRoute('tournament_dashboard', ['id' => $tournament->getId()]);
+            }
+
             // Check if we're in elimination phase (for any tournament structure with elimination)
             $isEliminationPhase = $tournament->getStructure() === TournamentStructure::SINGLE_ELIMINATION
                 || $tournament->isInEliminationPhase();
@@ -167,6 +205,10 @@ final class RoundController extends AbstractController
 
                 $round = $this->bracketService->generateNextBracketRound($tournament, $previousRound);
                 $round->setIsEliminationRound(true);
+            } elseif ($tournament->getStructure() === TournamentStructure::ROUND_ROBIN) {
+                // Round-robin (championship) format
+                $nextRoundNumber = $tournament->getRoundsCount() + 1;
+                $round = $this->pairingService->generateRoundRobinPairings($tournament, $nextRoundNumber);
             } else {
                 // Swiss phase - check if round limit has been reached
                 if ($tournament->hasReachedSwissRoundLimit()) {
@@ -192,11 +234,11 @@ final class RoundController extends AbstractController
                 $round = $this->pairingService->generateSubsequentRoundPairings($tournament);
             }
 
-            // Dispatch event for round start notifications (FR66)
-            $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+            // Note: RoundStartedEvent is dispatched when organizer explicitly starts the round
+            // via the startRound endpoint. This allows pairing modifications before round begins.
 
             $this->addFlash('success', sprintf(
-                'Ronde %d demarree! %d match(s) genere(s).',
+                'Pairings de la ronde %d générés ! %d match(s). Démarrez la ronde quand vous êtes prêt.',
                 $round->getRoundNumber(),
                 $round->getMatches()->count()
             ));
@@ -280,6 +322,11 @@ final class RoundController extends AbstractController
     #[Route('/standings', name: 'round_standings', methods: ['GET'])]
     public function standings(Tournament $tournament): Response
     {
+        // For group stage tournaments, redirect to the groups page which shows group standings
+        if ($tournament->hasGroupStage() && !$tournament->isInEliminationPhase()) {
+            return $this->redirectToRoute('tournament_groups', ['id' => $tournament->getId()]);
+        }
+
         $standings = $this->pairingService->calculateStandings($tournament);
 
         // Sort by match points (desc), then OMWP (desc)
@@ -293,9 +340,13 @@ final class RoundController extends AbstractController
             return $b->getOpponentMatchWinPercentage() <=> $a->getOpponentMatchWinPercentage();
         });
 
+        // Check if user can manage (organizer) for drop actions
+        $canManage = $this->isGranted(TournamentVoter::MANAGE, $tournament);
+
         return $this->render('round/standings.html.twig', [
             'tournament' => $tournament,
             'standings' => $sortedStandings,
+            'can_manage' => $canManage,
         ]);
     }
 
@@ -350,19 +401,25 @@ final class RoundController extends AbstractController
                 $latestRound->complete();
             }
 
-            // Get the elimination bracket size (default to TOP_8 or calculated from player count)
-            $playerCount = $tournament->getRegistrations()->count();
-            $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+            // Get the elimination bracket size from tournament configuration
+            $topCutSize = $tournament->getTopCutSize();
+            if ($topCutSize !== null) {
+                $bracketSize = BracketSize::from($topCutSize);
+            } else {
+                // Fallback to recommended size based on player count
+                $playerCount = $tournament->getRegistrations()->count();
+                $bracketSize = $this->bracketService->getRecommendedBracketSize($playerCount);
+            }
 
             // Generate first elimination round
             $round = $this->bracketService->generateBracketFirstRound($tournament, $bracketSize);
             $round->setIsEliminationRound(true);
 
-            // Dispatch event for round start notifications
-            $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+            // Note: RoundStartedEvent is dispatched when organizer explicitly starts the round
+            // via the startRound endpoint. This allows pairing modifications before round begins.
 
             $this->addFlash('success', sprintf(
-                'Phase eliminatoire lancee! Top %d, %d match(s) genere(s).',
+                'Phase éliminatoire préparée ! Top %d, %d match(s). Démarrez la ronde quand vous êtes prêt.',
                 $bracketSize->value,
                 $round->getMatches()->count()
             ));
@@ -409,6 +466,350 @@ final class RoundController extends AbstractController
 
             return $this->redirectToTournament($tournament);
         }
+    }
+
+    /**
+     * Start the round timer manually.
+     *
+     * This action allows organizers to start the timer independently
+     * from the round start, giving them control over when time begins.
+     */
+    #[Route('/start-timer', name: 'round_start_timer', methods: ['POST'])]
+    public function startTimer(
+        Request $request,
+        Tournament $tournament
+    ): Response {
+        // Security check - only organizer can start timer
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        // CSRF protection
+        if (!$this->isCsrfTokenValid('start-timer-' . $tournament->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', $this->translator->trans('flash.error.invalid_csrf_token'));
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        $currentRound = $tournament->getCurrentRound();
+
+        if ($currentRound === null) {
+            $this->addFlash('error', 'Aucune ronde en cours.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        if ($currentRound->isTimerStarted()) {
+            $this->addFlash('info', 'Le chronometre est deja lance.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        $currentRound->startTimer();
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Chronometre lance!');
+
+        return $this->redirectToTournament($tournament);
+    }
+
+    /**
+     * Start a pending round.
+     *
+     * This action transitions a PENDING round to ONGOING status,
+     * allowing organizers to modify pairings before officially starting.
+     *
+     * FR32: Organizers manually start each round via button.
+     */
+    #[Route('/{roundNumber}/start', name: 'round_start', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function startRound(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): Response {
+        // Security check - only organizer can start rounds
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        // CSRF protection
+        if (!$this->isCsrfTokenValid('start-round-' . $tournament->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', $this->translator->trans('flash.error.invalid_csrf_token'));
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            $this->addFlash('error', sprintf('Ronde %d non trouvée.', $roundNumber));
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        if (!$round->isPending()) {
+            $this->addFlash('error', 'Cette ronde a déjà été démarrée.');
+
+            return $this->redirectToTournament($tournament);
+        }
+
+        // Complete any pending BYE matches before starting
+        foreach ($round->getMatches() as $match) {
+            if ($match->isByeMatch() && $match->isPending()) {
+                $match->completeBye();
+            }
+        }
+
+        // Start the round
+        $round->start();
+        $this->entityManager->flush();
+
+        // Dispatch event for round start notifications (FR66)
+        $this->eventDispatcher->dispatch(new RoundStartedEvent($round));
+
+        $this->addFlash('success', sprintf(
+            'Ronde %d démarrée !',
+            $round->getRoundNumber()
+        ));
+
+        return $this->redirectToTournament($tournament);
+    }
+
+    /**
+     * Swap two players between their matches.
+     *
+     * API endpoint for manual pairing modification.
+     * Only available for Swiss tournaments with PENDING rounds.
+     */
+    #[Route('/{roundNumber}/swap', name: 'round_swap_players', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function swapPlayers(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can modify pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $swapRequest = PairingSwapRequest::fromArray($data);
+
+            // Validate DTO
+            $errors = $this->validator->validate($swapRequest);
+            if (count($errors) > 0) {
+                $messages = [];
+                foreach ($errors as $error) {
+                    $messages[] = $error->getMessage();
+                }
+
+                return $this->json([
+                    'error' => 'validation_failed',
+                    'message' => implode(' ', $messages),
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $result = $this->pairingModificationService->swapPlayers($round, $swapRequest);
+
+            return $this->json($result->toArray());
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Assign a manual BYE to a player.
+     *
+     * API endpoint for manual pairing modification.
+     * Only available for Swiss tournaments with PENDING rounds.
+     */
+    #[Route('/{roundNumber}/assign-bye', name: 'round_assign_bye', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function assignBye(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can modify pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $byeRequest = AssignByeRequest::fromArray($data);
+
+            // Validate DTO
+            $errors = $this->validator->validate($byeRequest);
+            if (count($errors) > 0) {
+                $messages = [];
+                foreach ($errors as $error) {
+                    $messages[] = $error->getMessage();
+                }
+
+                return $this->json([
+                    'error' => 'validation_failed',
+                    'message' => implode(' ', $messages),
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $previousByePlayerId = $this->pairingModificationService->assignManualBye($round, $byeRequest);
+
+            return $this->json([
+                'success' => true,
+                'previousByePlayer' => $previousByePlayerId,
+            ]);
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Check if swapping two players would create a rematch.
+     *
+     * API endpoint for checking rematches without modifying data.
+     */
+    #[Route('/{roundNumber}/check-rematch', name: 'round_check_rematch', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function checkRematch(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can check pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $player1Id = $data['player1Id'] ?? null;
+            $player2Id = $data['player2Id'] ?? null;
+
+            if ($player1Id === null || $player2Id === null) {
+                return $this->json([
+                    'error' => 'missing_params',
+                    'message' => 'player1Id et player2Id requis.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $rematchInfo = $this->pairingModificationService->checkRematch($tournament, $player1Id, $player2Id);
+
+            return $this->json([
+                'rematchDetected' => $rematchInfo !== null,
+                'rematchDetails' => $rematchInfo,
+            ]);
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Apply multiple pairing changes at once.
+     *
+     * API endpoint for batch pairing modifications.
+     * Applies all swaps and BYE assignments in a single transaction.
+     */
+    #[Route('/{roundNumber}/apply-changes', name: 'round_apply_changes', methods: ['POST'], requirements: ['roundNumber' => '\d+'])]
+    public function applyChanges(
+        Request $request,
+        Tournament $tournament,
+        int $roundNumber
+    ): JsonResponse {
+        // Security check - only organizer can modify pairings
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE, $tournament);
+
+        $round = $this->findRound($tournament, $roundNumber);
+
+        if ($round === null) {
+            return $this->json([
+                'error' => 'round_not_found',
+                'message' => sprintf('Ronde %d non trouvee.', $roundNumber),
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $swaps = $data['swaps'] ?? [];
+            $byes = $data['byes'] ?? [];
+
+            // Apply all swaps
+            foreach ($swaps as $swap) {
+                $swapRequest = PairingSwapRequest::fromArray([
+                    'player1Id' => $swap['player1Id'],
+                    'player2Id' => $swap['player2Id'],
+                    'forceSwap' => true, // Force because user already confirmed rematches
+                ]);
+                $this->pairingModificationService->swapPlayers($round, $swapRequest);
+            }
+
+            // Apply all BYEs
+            foreach ($byes as $playerId) {
+                $byeRequest = AssignByeRequest::fromArray(['playerId' => $playerId]);
+                $this->pairingModificationService->assignManualBye($round, $byeRequest);
+            }
+
+            // Apply all fill BYEs (add player to existing BYE match)
+            $fillByes = $data['fillByes'] ?? [];
+            foreach ($fillByes as $fillBye) {
+                $this->pairingModificationService->fillByeSlot(
+                    $round,
+                    (int) $fillBye['playerId'],
+                    (int) $fillBye['matchId']
+                );
+            }
+
+            return $this->json([
+                'success' => true,
+                'swapsApplied' => count($swaps),
+                'byesApplied' => count($byes),
+                'fillByesApplied' => count($fillByes),
+            ]);
+        } catch (PairingModificationException $e) {
+            return $this->json([
+                'error' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Find a round by its number in a tournament.
+     */
+    private function findRound(Tournament $tournament, int $roundNumber): ?\App\Entity\Round
+    {
+        foreach ($tournament->getRounds() as $round) {
+            if ($round->getRoundNumber() === $roundNumber) {
+                return $round;
+            }
+        }
+
+        return null;
     }
 
     /**

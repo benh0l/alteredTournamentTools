@@ -38,3 +38,11 @@ services:
     App\Service\AvatarUploadService:
         arguments:
             $avatarsDirectory: '%avatars_directory%'
+
+    App\Service\StandingsService:
+        arguments:
+            $standingsCache: '@standings.cache'
+
+    App\Service\OAuth\OAuthFeatureService:
+        arguments:
+            $alteredReunionEnabled: '%env(bool:OAUTH_ALTERED_REUNION_ENABLED)%'

@@ -10,6 +10,8 @@ use App\Enum\TournamentStatus;
 use App\Repository\TournamentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class TournamentService
 {
@@ -17,6 +19,7 @@ final class TournamentService
         private readonly EntityManagerInterface $entityManager,
         private readonly TournamentRepository $tournamentRepository,
         private readonly LoggerInterface $logger,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -31,8 +34,10 @@ final class TournamentService
         $tournament->setStatus(TournamentStatus::DRAFT);
 
         // Auto-grant ROLE_ORGANIZER on first tournament creation
-        if (!$organizer->hasRole('ROLE_ORGANIZER')) {
+        // Skip if user already has ROLE_ADMIN (which includes ROLE_ORGANIZER via hierarchy)
+        if (!$organizer->hasRole('ROLE_ORGANIZER') && !$organizer->hasRole('ROLE_ADMIN')) {
             $organizer->addRole('ROLE_ORGANIZER');
+            $this->refreshSecurityToken($organizer);
             $this->logger->info('Auto-granted ROLE_ORGANIZER to user', [
                 'user_id' => $organizer->getId(),
             ]);
@@ -93,16 +98,22 @@ final class TournamentService
 
     /**
      * Delete a tournament.
-     * Only allowed if tournament is in DRAFT status.
+     * Only allowed if tournament is in DRAFT or PUBLISHED status (not started yet).
      */
     public function deleteTournament(Tournament $tournament): void
     {
-        if ($tournament->getStatus() !== TournamentStatus::DRAFT) {
-            throw new \LogicException('Cannot delete tournament that is not in DRAFT status');
+        if (!$tournament->getStatus()->isDeletable()) {
+            throw new \LogicException('Cannot delete tournament that has already started');
         }
 
         $tournamentId = $tournament->getId();
         $tournamentName = $tournament->getName();
+        $registrationCount = $tournament->getRegistrations()->count();
+
+        // Remove all registrations first (for published tournaments)
+        foreach ($tournament->getRegistrations() as $registration) {
+            $this->entityManager->remove($registration);
+        }
 
         $this->entityManager->remove($tournament);
         $this->entityManager->flush();
@@ -110,6 +121,7 @@ final class TournamentService
         $this->logger->info('Tournament deleted', [
             'tournament_id' => $tournamentId,
             'tournament_name' => $tournamentName,
+            'registrations_removed' => $registrationCount,
         ]);
     }
 
@@ -153,5 +165,25 @@ final class TournamentService
 
         // Cap at reasonable maximum
         return min($baseRounds, 10);
+    }
+
+    /**
+     * Refresh the security token after user roles have been modified.
+     * This prevents session invalidation when roles are added dynamically.
+     */
+    private function refreshSecurityToken(User $user): void
+    {
+        $token = $this->tokenStorage->getToken();
+        if (null === $token) {
+            return;
+        }
+
+        $newToken = new UsernamePasswordToken(
+            $user,
+            'main',
+            $user->getRoles()
+        );
+
+        $this->tokenStorage->setToken($newToken);
     }
 }

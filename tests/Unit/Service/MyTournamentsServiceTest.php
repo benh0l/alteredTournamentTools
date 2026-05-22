@@ -186,7 +186,7 @@ final class MyTournamentsServiceTest extends TestCase
         $tournament->setName('Test Tournament ' . uniqid());
         $tournament->setOrganizer($organizer);
         $tournament->setDate($date ?? new \DateTimeImmutable('+1 week'));
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $tournament->setVisibility(TournamentVisibility::PUBLIC);
         $tournament->setDecklistTransparency(DecklistTransparency::OPEN);

@@ -50,7 +50,6 @@ class MetricsService
     {
         return $this->cache->get('admin.metrics.tournaments', function (ItemInterface $item) {
             $item->expiresAfter(self::CACHE_TTL);
-            $item->tag(['admin_metrics']);
 
             $total = $this->tournamentRepository->countAll();
             $thisMonth = $this->tournamentRepository->countThisMonth();
@@ -80,7 +79,6 @@ class MetricsService
     {
         return $this->cache->get('admin.metrics.players', function (ItemInterface $item) {
             $item->expiresAfter(self::CACHE_TTL);
-            $item->tag(['admin_metrics']);
 
             $total = $this->userRepository->countAll();
             $unique = $this->userRepository->countUniquePlayers();
@@ -113,7 +111,6 @@ class MetricsService
     {
         return $this->cache->get('admin.metrics.organizers', function (ItemInterface $item) {
             $item->expiresAfter(self::CACHE_TTL);
-            $item->tag(['admin_metrics']);
 
             $total = $this->userRepository->countTotalOrganizers();
             $retained = $this->userRepository->countOrganizersWithMultipleTournaments();
@@ -137,7 +134,6 @@ class MetricsService
     {
         return $this->cache->get('admin.metrics.average_size', function (ItemInterface $item) {
             $item->expiresAfter(self::CACHE_TTL);
-            $item->tag(['admin_metrics']);
 
             $average = $this->registrationRepository->getAveragePlayersPerTournament();
 
@@ -157,7 +153,6 @@ class MetricsService
     {
         return $this->cache->get('admin.metrics.charts', function (ItemInterface $item) {
             $item->expiresAfter(self::CACHE_TTL);
-            $item->tag(['admin_metrics']);
 
             return [
                 'monthlyTournaments' => $this->tournamentRepository->getMonthlyTournaments(12),

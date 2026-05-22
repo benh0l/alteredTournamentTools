@@ -62,8 +62,14 @@ class BracketService
         // Get standings to determine seeding
         $standings = $this->pairingService->calculateStandings($tournament);
 
+        // Filter out dropped players - they cannot qualify for top cut
+        $activeStandings = array_filter(
+            $standings,
+            fn (PlayerStandings $standing): bool => !$standing->getRegistration()->isDropped()
+        );
+
         // Sort by standings (match points desc, OMWP desc)
-        $sortedStandings = $this->sortStandings($standings);
+        $sortedStandings = $this->sortStandings($activeStandings);
 
         // Take top X players based on bracket size
         $topPlayers = array_slice($sortedStandings, 0, $bracketSize->value);

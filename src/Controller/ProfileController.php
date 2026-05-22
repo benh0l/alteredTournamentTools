@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Form\ChangePasswordProfileFormType;
 use App\Form\DeleteAccountFormType;
 use App\Form\ProfileEditFormType;
+use App\Form\SetPasswordFormType;
+use App\Repository\UserRepository;
 use App\Service\AccountDeletionService;
 use App\Service\AvatarUploadService;
+use App\Service\OAuth\OAuthFeatureService;
+use App\Service\PlayerStatsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,6 +34,7 @@ final class ProfileController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly AvatarUploadService $avatarUploadService,
         private readonly TranslatorInterface $translator,
+        private readonly OAuthFeatureService $oauthFeatureService,
     ) {
     }
 
@@ -37,6 +43,7 @@ final class ProfileController extends AbstractController
     {
         return $this->render('profile/show.html.twig', [
             'user' => $this->getUser(),
+            'oauth_altered_reunion_enabled' => $this->oauthFeatureService->isAlteredReunionEnabled(),
         ]);
     }
 
@@ -96,6 +103,42 @@ final class ProfileController extends AbstractController
         return $this->render('profile/edit.html.twig', [
             'form' => $form,
             'originalEmail' => $originalEmail,
+        ]);
+    }
+
+    #[Route('/set-password', name: 'app_profile_set_password', methods: ['GET', 'POST'])]
+    public function setPassword(Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        // Only allow if user was created via OAuth and has no local password
+        if (!$user->isCreatedViaOauth() || $user->hasLocalPassword()) {
+            $this->addFlash('info', 'Vous avez deja un mot de passe. Utilisez "Modifier le mot de passe" pour le changer.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $form = $this->createForm(SetPasswordFormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $hashedPassword = $this->passwordHasher->hashPassword(
+                $user,
+                $form->get('newPassword')->getData(),
+            );
+            $user->setPassword($hashedPassword);
+            $user->setUpdatedAt(new \DateTimeImmutable());
+
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Votre mot de passe a ete defini avec succes. Vous pouvez maintenant vous connecter avec votre email et mot de passe.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->render('profile/set_password.html.twig', [
+            'form' => $form,
         ]);
     }
 
@@ -194,5 +237,76 @@ final class ProfileController extends AbstractController
         );
 
         return $response;
+    }
+
+    #[Route('/match-history', name: 'app_profile_match_history', methods: ['GET'])]
+    public function matchHistory(PlayerStatsService $statsService): Response
+    {
+        $user = $this->getUser();
+        $stats = $statsService->getPlayerStats($user);
+
+        return $this->render('profile/match_history.html.twig', [
+            'user' => $user,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/head-to-head/{opponentId}', name: 'app_profile_head_to_head', methods: ['GET'], requirements: ['opponentId' => '\d+'])]
+    public function headToHead(
+        int $opponentId,
+        UserRepository $userRepository,
+        PlayerStatsService $statsService,
+    ): Response {
+        $user = $this->getUser();
+        $opponent = $userRepository->find($opponentId);
+
+        if (!$opponent) {
+            throw $this->createNotFoundException('Joueur non trouvé');
+        }
+
+        // Don't allow viewing H2H against yourself
+        if ($opponent->getId() === $user->getId()) {
+            return $this->redirectToRoute('app_profile_match_history');
+        }
+
+        $stats = $statsService->getHeadToHeadStats($user, $opponent);
+
+        return $this->render('profile/head_to_head.html.twig', [
+            'user' => $user,
+            'opponent' => $opponent,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/search-players', name: 'app_profile_search_players', methods: ['GET'])]
+    public function searchPlayers(
+        Request $request,
+        UserRepository $userRepository,
+    ): JsonResponse {
+        $query = $request->query->get('q', '');
+        $currentUser = $this->getUser();
+
+        if (strlen($query) < 2) {
+            return new JsonResponse([]);
+        }
+
+        $result = $userRepository->searchUsers($query, null, 1, 10);
+        $users = [];
+
+        foreach ($result['users'] as $user) {
+            // Exclude current user and guest accounts from search
+            if ($user->getId() === $currentUser->getId() || $user->isGuest()) {
+                continue;
+            }
+
+            $users[] = [
+                'id' => $user->getId(),
+                'displayName' => $user->getDisplayName(),
+                'pseudo' => $user->getPseudo(),
+                'avatar' => $user->getAvatar(),
+            ];
+        }
+
+        return new JsonResponse($users);
     }
 }

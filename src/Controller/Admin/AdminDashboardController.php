@@ -31,15 +31,18 @@ class AdminDashboardController extends AbstractController
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function dashboard(): Response
     {
-        // Get all active tournaments with player counts
-        $activeTournaments = $this->tournamentRepository->findAllActiveWithDetails();
+        // Get all tournaments grouped by category
+        $groupedTournaments = $this->tournamentRepository->findAllGroupedByCategory();
 
         // Calculate stats
         $ongoingCount = 0;
         $publishedCount = 0;
+        $abandonedCount = count($groupedTournaments['abandoned']);
+        $draftCount = count($groupedTournaments['drafts']);
+        $finishedCount = count($groupedTournaments['finished']);
         $totalPlayers = 0;
 
-        foreach ($activeTournaments as $data) {
+        foreach ($groupedTournaments['active'] as $data) {
             $tournament = $data['tournament'];
             $playerCount = $data['playerCount'];
             $totalPlayers += $playerCount;
@@ -55,11 +58,15 @@ class AdminDashboardController extends AbstractController
         $pendingDisputes = $this->matchRepository->countAllPendingDisputes();
 
         return $this->render('admin/dashboard.html.twig', [
-            'tournaments' => $activeTournaments,
+            'tournaments' => $groupedTournaments,
             'stats' => [
                 'ongoing' => $ongoingCount,
                 'published' => $publishedCount,
-                'totalActive' => count($activeTournaments),
+                'abandoned' => $abandonedCount,
+                'drafts' => $draftCount,
+                'finished' => $finishedCount,
+                'totalActive' => count($groupedTournaments['active']),
+                'totalAll' => count($groupedTournaments['all']),
                 'totalPlayers' => $totalPlayers,
                 'pendingDisputes' => $pendingDisputes,
             ],

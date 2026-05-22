@@ -10,6 +10,7 @@ enum TournamentStructure: string
     case SINGLE_ELIMINATION = 'single_elimination';
     case MIXED = 'mixed';
     case GROUP_STAGE_ELIMINATION = 'group_stage_elimination';
+    case ROUND_ROBIN = 'round_robin';
 
     public function getLabel(): string
     {
@@ -18,6 +19,7 @@ enum TournamentStructure: string
             self::SINGLE_ELIMINATION => 'enum.tournament_structure.single_elimination',
             self::MIXED => 'enum.tournament_structure.mixed',
             self::GROUP_STAGE_ELIMINATION => 'enum.tournament_structure.group_stage_elimination',
+            self::ROUND_ROBIN => 'enum.tournament_structure.round_robin',
         };
     }
 
@@ -28,6 +30,7 @@ enum TournamentStructure: string
             self::SINGLE_ELIMINATION => 'enum.tournament_structure_description.single_elimination',
             self::MIXED => 'enum.tournament_structure_description.mixed',
             self::GROUP_STAGE_ELIMINATION => 'enum.tournament_structure_description.group_stage_elimination',
+            self::ROUND_ROBIN => 'enum.tournament_structure_description.round_robin',
         };
     }
 
@@ -51,5 +54,10 @@ enum TournamentStructure: string
             self::SWISS_ONLY,
             self::MIXED,
         ], true);
+    }
+
+    public function hasRoundRobin(): bool
+    {
+        return $this === self::ROUND_ROBIN;
     }
 }

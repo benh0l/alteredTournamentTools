@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'legal.terms.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    <div class="card p-8">
+        <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">
+            {{ 'legal.terms.title'|trans }}
+        </h1>
+
+        <p class="text-sm mb-8" style="color: var(--text-secondary);">
+            {{ 'legal.privacy.last_updated'|trans }}: {{ 'now'|date('d/m/Y') }}
+        </p>
+
+        <div class="prose max-w-none" style="color: var(--text-primary);">
+
+            {# Section 1: Purpose #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.purpose.title'|trans }}
+                </h2>
+                <p>{{ 'legal.terms.purpose.text'|trans }}</p>
+            </section>
+
+            {# Section 2: Acceptance #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.acceptance.title'|trans }}
+                </h2>
+                <p>{{ 'legal.terms.acceptance.text'|trans }}</p>
+            </section>
+
+            {# Section 3: Registration #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.registration.title'|trans }}
+                </h2>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>{{ 'legal.terms.registration.age'|trans }}</li>
+                    <li>{{ 'legal.terms.registration.accuracy'|trans }}</li>
+                    <li>{{ 'legal.terms.registration.security'|trans }}</li>
+                    <li>{{ 'legal.terms.registration.one_account'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 4: User Obligations #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.obligations.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.terms.obligations.intro'|trans }}</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>{{ 'legal.terms.obligations.respect'|trans }}</li>
+                    <li>{{ 'legal.terms.obligations.fair_play'|trans }}</li>
+                    <li>{{ 'legal.terms.obligations.no_abuse'|trans }}</li>
+                    <li>{{ 'legal.terms.obligations.no_illegal'|trans }}</li>
+                    <li>{{ 'legal.terms.obligations.no_spam'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 5: Organizer Responsibilities #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.organizer.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.terms.organizer.intro'|trans }}</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>{{ 'legal.terms.organizer.accurate_info'|trans }}</li>
+                    <li>{{ 'legal.terms.organizer.manage_event'|trans }}</li>
+                    <li>{{ 'legal.terms.organizer.communicate'|trans }}</li>
+                    <li>{{ 'legal.terms.organizer.fair_results'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 6: Intellectual Property #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.ip.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.terms.ip.platform'|trans }}</p>
+                <p>{{ 'legal.terms.ip.altered'|trans }}</p>
+            </section>
+
+            {# Section 7: Liability #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.liability.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.terms.liability.service'|trans }}</p>
+                <p>{{ 'legal.terms.liability.events'|trans }}</p>
+            </section>
+
+            {# Section 8: Termination #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.termination.title'|trans }}
+                </h2>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>{{ 'legal.terms.termination.user'|trans }}</li>
+                    <li>{{ 'legal.terms.termination.platform'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 9: Modifications #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.modifications.title'|trans }}
+                </h2>
+                <p>{{ 'legal.terms.modifications.text'|trans }}</p>
+            </section>
+
+            {# Section 10: Applicable Law #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.law.title'|trans }}
+                </h2>
+                <p>{{ 'legal.terms.law.text'|trans }}</p>
+            </section>
+
+            {# Section 11: Privacy #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.privacy.title'|trans }}
+                </h2>
+                <p>
+                    {{ 'legal.terms.privacy.text'|trans }}
+                    <a href="{{ path('legal_privacy') }}" class="underline" style="color: var(--color-primary-500);">
+                        {{ 'legal.terms.privacy.link'|trans }}
+                    </a>
+                </p>
+            </section>
+
+            {# Section 12: Contact #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.terms.contact.title'|trans }}
+                </h2>
+                <p>{{ 'legal.terms.contact.text'|trans }}</p>
+            </section>
+
+        </div>
+
+        {# Back button #}
+        <div class="mt-8 pt-6 border-t" style="border-color: var(--border-default);">
+            <a href="{{ path('app_home') }}"
+               class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+               style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'common.back_home'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

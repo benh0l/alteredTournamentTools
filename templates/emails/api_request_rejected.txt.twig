@@ -1,0 +1,16 @@
+Votre demande d'acces API n'a pas ete approuvee
+===============================================
+
+Bonjour {{ user.pseudo }},
+
+Nous sommes desoles de vous informer que votre demande d'acces a l'API pour le projet "{{ request.projectName }}" n'a pas ete approuvee.
+
+{% if request.rejectionReason %}
+Motif :
+{{ request.rejectionReason }}
+
+{% endif %}
+Si vous pensez qu'il s'agit d'une erreur ou si vous souhaitez apporter des clarifications, n'hesitez pas a nous contacter ou a soumettre une nouvelle demande avec des informations supplementaires.
+
+---
+Altered Tournament Tools

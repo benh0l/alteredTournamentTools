@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'error.500.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4" style="background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-accent-50) 100%);">
+    <div class="max-w-lg w-full rounded-2xl p-8 text-center shadow-2xl" style="background-color: var(--card-bg);">
+
+        <div class="relative mb-6">
+            <div class="absolute inset-0 flex items-center justify-center opacity-10">
+                {{ ux_icon('lucide:circle', {class: 'w-40 h-40', style: 'color: var(--color-primary-500);'}) }}
+            </div>
+            <div class="relative text-amber-500 animate-pulse">
+                {{ ux_icon('lucide:server-crash', {class: 'w-24 h-24 mx-auto'}) }}
+            </div>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-2" style="color: var(--text-primary);">
+            {{ 'error.500.title'|trans }}
+        </h1>
+        <h2 class="text-xl font-semibold text-gray-500 mb-4">
+            {{ 'error.500.subtitle'|trans }}
+        </h2>
+
+        <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+            {{ 'error.500.message'|trans }}
+        </p>
+
+        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4 mb-6">
+            <div class="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-400">
+                {{ ux_icon('lucide:lightbulb', {class: 'w-5 h-5'}) }}
+                <span class="font-medium">{{ 'error.500.what_to_do'|trans }}</span>
+            </div>
+            <ul class="text-sm text-amber-600 dark:text-amber-300 mt-2 space-y-1 text-left pl-4">
+                <li>{{ 'error.500.tip_refresh'|trans }}</li>
+                <li>{{ 'error.500.tip_connection'|trans }}</li>
+                <li>{{ 'error.500.tip_contact'|trans }}</li>
+            </ul>
+        </div>
+
+        <div class="space-y-3">
+            <a href="{{ path('app_home') }}"
+               class="block w-full flex items-center justify-center gap-2 px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+               style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                {{ ux_icon('lucide:home', {class: 'w-5 h-5'}) }}
+                {{ 'error.500.back_home'|trans }}
+            </a>
+
+            <button onclick="location.reload()"
+                    class="block w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all"
+                    style="background-color: var(--color-primary-50); color: var(--color-primary-600); border: 2px solid var(--color-primary-200);">
+                {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5'}) }}
+                {{ 'error.500.retry'|trans }}
+            </button>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-400 flex items-center justify-center gap-1">
+                {{ ux_icon('lucide:alert-triangle', {class: 'w-4 h-4'}) }}
+                {{ 'error.500.code'|trans }}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

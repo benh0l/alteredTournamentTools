@@ -96,12 +96,12 @@ class SystemHealthService
         }
 
         try {
-            $entries = $this->logReader->readLogs('error', 100, 0, null, null);
-            $errorCount = count($entries);
+            $result = $this->logReader->readLogs('error', null, null, null, 1, 100);
+            $errorCount = $result['total'];
 
             // Estimate total requests from info logs
-            $infoEntries = $this->logReader->readLogs('info', 1000, 0, null, null);
-            $totalRequests = max(count($infoEntries), 1);
+            $infoResult = $this->logReader->readLogs('info', null, null, null, 1, 1000);
+            $totalRequests = max($infoResult['total'], 1);
 
             if ($totalRequests < 10) {
                 // Not enough data
@@ -223,12 +223,12 @@ class SystemHealthService
 
         try {
             // Search for pairing failure messages in error logs
-            $entries = $this->logReader->readLogs('error', 100, 0, null, null);
+            $result = $this->logReader->readLogs('error', null, null, null, 1, 100);
 
             $pairingFailures = 0;
             $failureDetails = [];
 
-            foreach ($entries as $entry) {
+            foreach ($result['entries'] as $entry) {
                 $message = $entry['message'] ?? '';
                 if (
                     stripos($message, 'pairing') !== false ||

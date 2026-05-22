@@ -1,49 +1,152 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Classement - {{ tournament.name }}{% endblock %}
+{% block title %}{{ 'standings.page_title'|trans({'%tournament%': tournament.name}) }}{% endblock %}
 
 {% block body %}
-<div class="max-w-6xl mx-auto">
-    <div class="mb-6">
-        <a href="{{ path('round_list', {id: tournament.id}) }}" class="hover:underline" style="color: var(--color-primary-600);">
-            &larr; Retour aux rondes
+<div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="mb-4 sm:mb-6">
+        <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}" class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200" style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+            {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 sm:mr-2'}) }}
+            <span class="hidden sm:inline">{{ 'standings.back_to_dashboard'|trans }}</span>
         </a>
     </div>
 
-    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">{{ tournament.name }} - Classement</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6" style="color: var(--text-primary);">
+        <span class="hidden sm:inline">{{ tournament.name }} - </span>{{ 'standings.title'|trans }}
+    </h1>
 
     {% if standings|length == 0 %}
         <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 text-center">
-            <p class="text-yellow-800 dark:text-yellow-400">Aucun classement disponible. Le tournoi n'a pas encore demarre.</p>
+            <p class="text-yellow-800 dark:text-yellow-400">{{ 'standings.no_standings'|trans }}</p>
         </div>
     {% else %}
-        <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
+        {# Mobile view: Cards #}
+        <div class="lg:hidden space-y-3">
+            {% for standing in standings %}
+                <div class="rounded-lg overflow-hidden {% if loop.index <= 8 and not standing.registration.isDropped %}border-l-4 border-l-green-500{% endif %} {% if standing.registration.isDropped %}opacity-60{% endif %}" style="background-color: var(--card-bg); border: 1px solid var(--border-default);">
+                    {# Header: Rank + Points #}
+                    <div class="flex justify-between items-center px-4 py-2" style="background-color: var(--bg-subtle); border-bottom: 1px solid var(--border-default);">
+                        <span class="text-lg font-bold" style="color: var(--text-primary);">
+                            #{{ loop.index }}
+                            {% if loop.index == 1 and not standing.registration.isDropped %}
+                                <span class="ml-1">🥇</span>
+                            {% elseif loop.index == 2 and not standing.registration.isDropped %}
+                                <span class="ml-1">🥈</span>
+                            {% elseif loop.index == 3 and not standing.registration.isDropped %}
+                                <span class="ml-1">🥉</span>
+                            {% endif %}
+                        </span>
+                        <div class="flex items-center gap-2">
+                            {% if standing.registration.isDropped %}
+                                <span class="px-2 py-0.5 bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300 text-xs font-medium rounded">
+                                    {{ 'standings.dropped'|trans|default('DROPPED') }}
+                                </span>
+                            {% endif %}
+                            <span class="text-lg font-bold" style="color: var(--text-primary);">
+                                {{ standing.matchPoints }} <span class="text-sm font-normal" style="color: var(--text-muted);">pts</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    {# Player info: Hero + Name #}
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        {% if standing.registration.hero %}
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 {% if standing.registration.isDropped %}grayscale{% endif %}" style="border-color: {{ standing.registration.faction ? standing.registration.faction.color : 'var(--border-muted)' }};">
+                                <img src="{{ standing.registration.heroImage }}" alt="{{ standing.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-200\'><span class=\'text-xs text-gray-500\'>?</span></div>'">
+                            </div>
+                        {% else %}
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style="background-color: var(--bg-subtle); border: 1px solid var(--border-default);">
+                                <span style="color: var(--text-muted);">?</span>
+                            </div>
+                        {% endif %}
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium truncate" style="color: var(--text-primary);">
+                                {{ standing.registration.player.displayName }}
+                                {% if standing.hasReceivedBye %}
+                                    <span class="text-xs" style="color: var(--text-muted);">(BYE)</span>
+                                {% endif %}
+                            </div>
+                            {% if standing.registration.hero %}
+                                <div class="text-sm" style="color: var(--text-muted);">{{ standing.registration.heroLabel }}</div>
+                            {% endif %}
+                        </div>
+                        {# Organizer drop/undrop action (mobile) #}
+                        {% if can_manage is defined and can_manage and tournament.ongoing %}
+                            <div class="flex-shrink-0">
+                                {% if standing.registration.isDropped %}
+                                    <form action="{{ path('tournament_organizer_undrop', {id: tournament.id, registrationId: standing.registration.id}) }}" method="POST" class="inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('organizer-undrop-' ~ standing.registration.id) }}">
+                                        <button type="submit" class="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg" title="{{ 'standings.action.undrop'|trans|default('Reinstaller') }}">
+                                            {{ ux_icon('lucide:user-plus', {class: 'w-4 h-4'}) }}
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ path('tournament_organizer_drop', {id: tournament.id, registrationId: standing.registration.id}) }}" method="POST" class="inline" onsubmit="return confirm('{{ 'standings.confirm.drop'|trans({'%player%': standing.registration.player.displayName})|default('Confirmer le drop de ' ~ standing.registration.player.displayName ~ ' ?')|e('js') }}')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('organizer-drop-' ~ standing.registration.id) }}">
+                                        <input type="hidden" name="forfeit_match" value="1">
+                                        <button type="submit" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="{{ 'standings.action.drop'|trans|default('Drop') }}">
+                                            {{ ux_icon('lucide:user-minus', {class: 'w-4 h-4'}) }}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Stats row #}
+                    <div class="flex justify-between items-center px-4 py-2 text-sm" style="background-color: var(--bg-subtle); border-top: 1px solid var(--border-default);">
+                        <div>
+                            <span class="text-green-600 font-medium">{{ standing.wins }}{{ 'standings.wins_short'|trans }}</span>
+                            <span style="color: var(--text-muted);">-</span>
+                            <span class="text-amber-600 font-medium">{{ standing.draws }}{{ 'standings.draws_short'|trans }}</span>
+                            <span style="color: var(--text-muted);">-</span>
+                            <span class="text-red-600 font-medium">{{ standing.losses }}{{ 'standings.losses_short'|trans }}</span>
+                        </div>
+                        <div style="color: var(--text-secondary);">
+                            <span class="text-xs" style="color: var(--text-muted);">OMW:</span>
+                            {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Desktop view: Table #}
+        <div class="hidden lg:block rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);">
             <table class="min-w-full" style="border-collapse: separate; border-spacing: 0;">
                 <thead style="background-color: var(--bg-subtle);">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Rang
+                            {{ 'standings.rank'|trans }}
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Joueur
+                            {{ 'common.player'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Heros
+                            {{ 'standings.hero'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            Points
+                            {{ 'standings.points'|trans }}
                         </th>
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            V-N-D
+                            {{ 'standings.wdl'|trans }}
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Opponent Match Win Percentage" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            OMW%
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="{{ 'standings.omw_tooltip'|trans }}" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'standings.omw'|trans }}
                         </th>
+                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                            {{ 'standings.status'|trans|default('Statut') }}
+                        </th>
+                        {% if can_manage is defined and can_manage and tournament.ongoing %}
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                {{ 'common.actions'|trans }}
+                            </th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody style="background-color: var(--card-bg);">
                     {% for standing in standings %}
-                        <tr class="{% if loop.index <= 8 %}bg-green-500/10{% endif %}" style="border-bottom: 1px solid var(--border-default);">
+                        <tr class="{% if loop.index <= 8 and not standing.registration.isDropped %}bg-green-500/10{% endif %} {% if standing.registration.isDropped %}opacity-60 bg-gray-100 dark:bg-gray-800{% endif %}" style="border-bottom: 1px solid var(--border-default);">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: var(--text-primary);">
                                 {{ loop.index }}
                             </td>
@@ -56,7 +159,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                 {% if standing.registration.hero %}
                                     <div class="flex flex-col items-center">
-                                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 mb-1" style="border-color: {{ standing.registration.faction ? standing.registration.faction.color : 'var(--border-muted)' }};">
+                                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 mb-1 {% if standing.registration.isDropped %}grayscale{% endif %}" style="border-color: {{ standing.registration.faction ? standing.registration.faction.color : 'var(--border-muted)' }};">
                                             <img src="{{ standing.registration.heroImage }}" alt="{{ standing.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-200\'><span class=\'text-xs text-gray-500\'>?</span></div>'">
                                         </div>
                                         <span class="text-xs" style="color: var(--text-muted);">{{ standing.registration.heroLabel }}</span>
@@ -74,16 +177,50 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
                                 {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                {% if standing.registration.isDropped %}
+                                    <span class="px-2 py-1 bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300 text-xs font-medium rounded">
+                                        {{ 'standings.dropped'|trans|default('DROPPED') }}
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 text-xs font-medium rounded">
+                                        {{ 'standings.active'|trans|default('Actif') }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            {% if can_manage is defined and can_manage and tournament.ongoing %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    {% if standing.registration.isDropped %}
+                                        <form action="{{ path('tournament_organizer_undrop', {id: tournament.id, registrationId: standing.registration.id}) }}" method="POST" class="inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('organizer-undrop-' ~ standing.registration.id) }}">
+                                            <button type="submit" class="px-3 py-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg text-xs font-medium">
+                                                {{ ux_icon('lucide:user-plus', {class: 'w-4 h-4 inline mr-1'}) }}
+                                                {{ 'standings.action.undrop'|trans|default('Reinstaller') }}
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{{ path('tournament_organizer_drop', {id: tournament.id, registrationId: standing.registration.id}) }}" method="POST" class="inline" onsubmit="return confirm('{{ 'standings.confirm.drop'|trans({'%player%': standing.registration.player.displayName})|default('Confirmer le drop de ' ~ standing.registration.player.displayName ~ ' ?')|e('js') }}')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('organizer-drop-' ~ standing.registration.id) }}">
+                                            <input type="hidden" name="forfeit_match" value="1">
+                                            <button type="submit" class="px-3 py-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-xs font-medium">
+                                                {{ ux_icon('lucide:user-minus', {class: 'w-4 h-4 inline mr-1'}) }}
+                                                {{ 'standings.action.drop'|trans|default('Drop') }}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-4 text-sm" style="color: var(--text-secondary);">
-            <p><strong>Points:</strong> 3 par victoire, 1 par egalite, 0 par defaite</p>
-            <p><strong>V-N-D:</strong> Victoires - Nuls (egalites) - Defaites</p>
-            <p><strong>OMW%:</strong> Pourcentage de victoires moyen des adversaires rencontres (departage)</p>
+        {# Legend #}
+        <div class="mt-4 text-xs sm:text-sm space-y-1" style="color: var(--text-secondary);">
+            <p><strong>{{ 'standings.points'|trans }}:</strong> {{ 'standings.legend.points'|trans }}</p>
+            <p><strong>{{ 'standings.wdl'|trans }}:</strong> {{ 'standings.legend.wdl'|trans }}</p>
+            <p><strong>{{ 'standings.omw'|trans }}:</strong> {{ 'standings.legend.omw'|trans }}</p>
         </div>
     {% endif %}
 </div>

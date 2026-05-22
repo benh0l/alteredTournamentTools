@@ -62,16 +62,78 @@ class TournamentRepository extends ServiceEntityRepository
      */
     public function findPublicTournaments(): array
     {
+        // By default, only show tournaments from 2 days ago onwards
+        $minDate = new \DateTimeImmutable('-2 days');
+        $minDate = $minDate->setTime(0, 0, 0);
+
         return $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
             ->where('t.visibility = :visibility')
             ->andWhere('t.status IN (:statuses)')
+            ->andWhere('t.date >= :minDate')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
+            ->setParameter('minDate', $minDate)
             ->orderBy('t.date', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Find public tournaments with optional filters (without location).
+     *
+     * @return array<int, array{tournament: Tournament, distance: null}>
+     */
+    public function findPublicTournamentsFiltered(
+        ?TournamentFormat $format = null,
+        ?\DateTimeImmutable $dateFrom = null,
+        ?\DateTimeImmutable $dateTo = null,
+        ?bool $isTumult = null,
+        ?bool $isSeasonFinalsQualifier = null
+    ): array {
+        $qb = $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->where('t.visibility = :visibility')
+            ->andWhere('t.status IN (:statuses)')
+            ->setParameter('visibility', TournamentVisibility::PUBLIC)
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED]);
+
+        if ($format !== null) {
+            $qb->andWhere('t.format = :format')
+                ->setParameter('format', $format);
+        }
+
+        if ($dateFrom !== null) {
+            $qb->andWhere('t.date >= :dateFrom')
+                ->setParameter('dateFrom', $dateFrom);
+        }
+
+        if ($dateTo !== null) {
+            $qb->andWhere('t.date <= :dateTo')
+                ->setParameter('dateTo', $dateTo);
+        }
+
+        if ($isTumult === true) {
+            $qb->andWhere('t.isTumult = :isTumult')
+                ->setParameter('isTumult', true);
+        }
+
+        if ($isSeasonFinalsQualifier === true) {
+            $qb->andWhere('t.isSeasonFinalsQualifier = :isSeasonFinalsQualifier')
+                ->setParameter('isSeasonFinalsQualifier', true);
+        }
+
+        $tournaments = $qb->orderBy('t.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Return in same format as findByLocation for template compatibility
+        return array_map(fn (Tournament $t) => [
+            'tournament' => $t,
+            'distance' => null,
+        ], $tournaments);
     }
 
     /**
@@ -116,6 +178,25 @@ class TournamentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find public completed tournaments with published results.
+     *
+     * @return Tournament[]
+     */
+    public function findPublicCompletedTournaments(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->where('t.status = :status')
+            ->andWhere('t.visibility = :visibility')
+            ->setParameter('status', TournamentStatus::COMPLETED)
+            ->setParameter('visibility', TournamentVisibility::PUBLIC)
+            ->orderBy('t.completedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Find tournaments by location using Haversine formula (FR59).
      *
      * Returns tournaments within the specified radius from the given coordinates,
@@ -127,6 +208,8 @@ class TournamentRepository extends ServiceEntityRepository
      * @param TournamentFormat|null $format    Optional format filter
      * @param \DateTimeImmutable|null $dateFrom Optional date range start
      * @param \DateTimeImmutable|null $dateTo   Optional date range end
+     * @param bool|null            $isTumult   Optional tumult filter
+     * @param bool|null            $isSeasonFinalsQualifier Optional qualifier filter
      *
      * @return array<int, array{tournament: Tournament, distance: float}>
      */
@@ -136,7 +219,9 @@ class TournamentRepository extends ServiceEntityRepository
         float $radiusKm = 50.0,
         ?TournamentFormat $format = null,
         ?\DateTimeImmutable $dateFrom = null,
-        ?\DateTimeImmutable $dateTo = null
+        ?\DateTimeImmutable $dateTo = null,
+        ?bool $isTumult = null,
+        ?bool $isSeasonFinalsQualifier = null
     ): array {
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
@@ -146,7 +231,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->andWhere('t.latitude IS NOT NULL')
             ->andWhere('t.longitude IS NOT NULL')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING]);
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED]);
 
         // Format filter
         if ($format !== null) {
@@ -163,6 +248,17 @@ class TournamentRepository extends ServiceEntityRepository
         if ($dateTo !== null) {
             $qb->andWhere('t.date <= :dateTo')
                 ->setParameter('dateTo', $dateTo);
+        }
+
+        // Tournament type filters
+        if ($isTumult === true) {
+            $qb->andWhere('t.isTumult = :isTumult')
+                ->setParameter('isTumult', true);
+        }
+
+        if ($isSeasonFinalsQualifier === true) {
+            $qb->andWhere('t.isSeasonFinalsQualifier = :isSeasonFinalsQualifier')
+                ->setParameter('isSeasonFinalsQualifier', true);
         }
 
         // Get all matching tournaments
@@ -236,7 +332,7 @@ class TournamentRepository extends ServiceEntityRepository
             ->where('t.visibility = :visibility')
             ->andWhere('t.status IN (:statuses)')
             ->setParameter('visibility', TournamentVisibility::PUBLIC)
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->groupBy('t.format')
             ->getQuery()
             ->getResult();
@@ -251,57 +347,96 @@ class TournamentRepository extends ServiceEntityRepository
 
     /**
      * Find all active tournaments (PUBLISHED or ONGOING) with details for admin dashboard.
+     * Optimized to use a single query with aggregation instead of N+1 queries.
      *
      * @return array<int, array{tournament: Tournament, playerCount: int, currentRound: int|null}>
      */
     public function findAllActiveWithDetails(): array
     {
+        // Single query with aggregation - avoids N+1
         $qb = $this->createQueryBuilder('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
+            ->leftJoin('t.registrations', 'reg')
+            ->addSelect('COUNT(DISTINCT reg.id) as playerCount')
+            ->addSelect('MAX(r.roundNumber) as currentRound')
             ->leftJoin('t.rounds', 'r')
-            ->addSelect('r')
             ->where('t.status IN (:statuses)')
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
+            ->groupBy('t.id, o.id')
             ->orderBy('t.status', 'DESC')
             ->addOrderBy('t.date', 'ASC');
 
-        $tournaments = $qb->getQuery()->getResult();
+        $rawResults = $qb->getQuery()->getResult();
 
-        $em = $this->getEntityManager();
         $results = [];
-
-        foreach ($tournaments as $tournament) {
-            // Count registrations for this tournament
-            $playerCount = (int) $em->createQueryBuilder()
-                ->select('COUNT(reg.id)')
-                ->from('App\Entity\Registration', 'reg')
-                ->where('reg.tournament = :tournament')
-                ->setParameter('tournament', $tournament)
-                ->getQuery()
-                ->getSingleScalarResult();
-
-            // Find current round number
-            $currentRound = null;
-            $rounds = $tournament->getRounds();
-            if (!$rounds->isEmpty()) {
-                $maxRound = 0;
-                foreach ($rounds as $round) {
-                    if ($round->getRoundNumber() > $maxRound) {
-                        $maxRound = $round->getRoundNumber();
-                    }
-                }
-                $currentRound = $maxRound;
-            }
-
+        foreach ($rawResults as $row) {
             $results[] = [
-                'tournament' => $tournament,
-                'playerCount' => $playerCount,
-                'currentRound' => $currentRound,
+                'tournament' => $row[0],
+                'playerCount' => (int) $row['playerCount'],
+                'currentRound' => $row['currentRound'] !== null ? (int) $row['currentRound'] : null,
             ];
         }
 
         return $results;
+    }
+
+    /**
+     * Find all tournaments grouped by category for admin dashboard.
+     * Categories: active (published/ongoing/abandoned), abandoned, drafts, finished (completed/cancelled), all
+     * Optimized to use a single query with aggregation instead of N+1 queries.
+     *
+     * @return array{active: array, abandoned: array, drafts: array, finished: array, all: array}
+     */
+    public function findAllGroupedByCategory(): array
+    {
+        // Single query with aggregation - avoids N+1
+        $qb = $this->createQueryBuilder('t')
+            ->leftJoin('t.organizer', 'o')
+            ->addSelect('o')
+            ->leftJoin('t.registrations', 'reg')
+            ->addSelect('COUNT(DISTINCT reg.id) as playerCount')
+            ->addSelect('MAX(r.roundNumber) as currentRound')
+            ->leftJoin('t.rounds', 'r')
+            ->groupBy('t.id, o.id')
+            ->orderBy('t.date', 'DESC');
+
+        $rawResults = $qb->getQuery()->getResult();
+
+        $grouped = [
+            'active' => [],
+            'abandoned' => [],
+            'drafts' => [],
+            'finished' => [],
+            'all' => [],
+        ];
+
+        foreach ($rawResults as $row) {
+            $tournament = $row[0];
+            $data = [
+                'tournament' => $tournament,
+                'playerCount' => (int) $row['playerCount'],
+                'currentRound' => $row['currentRound'] !== null ? (int) $row['currentRound'] : null,
+            ];
+
+            // Add to 'all' category
+            $grouped['all'][] = $data;
+
+            // Categorize by status
+            $status = $tournament->getStatus();
+            if ($status === TournamentStatus::DRAFT) {
+                $grouped['drafts'][] = $data;
+            } elseif ($status === TournamentStatus::ABANDONED) {
+                $grouped['abandoned'][] = $data;
+            } elseif (in_array($status, [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING], true)) {
+                $grouped['active'][] = $data;
+            } else {
+                // COMPLETED or CANCELLED
+                $grouped['finished'][] = $data;
+            }
+        }
+
+        return $grouped;
     }
 
     /**
@@ -312,7 +447,7 @@ class TournamentRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('t')
             ->select('COUNT(t.id)')
             ->where('t.status IN (:statuses)')
-            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING])
+            ->setParameter('statuses', [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED])
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -363,7 +498,7 @@ class TournamentRepository extends ServiceEntityRepository
                 "SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
                     COUNT(*) as count
-                 FROM tournament
+                 FROM tournaments
                  WHERE created_at >= :start
                  GROUP BY TO_CHAR(created_at, 'YYYY-MM')
                  ORDER BY month ASC",
@@ -414,8 +549,8 @@ class TournamentRepository extends ServiceEntityRepository
                     COUNT(*) as count
                  FROM (
                      SELECT t.id, COUNT(r.id) as player_count
-                     FROM tournament t
-                     LEFT JOIN registration r ON r.tournament_id = t.id
+                     FROM tournaments t
+                     LEFT JOIN registrations r ON r.tournament_id = t.id
                      GROUP BY t.id
                  ) sizes
                  GROUP BY size_range
@@ -436,5 +571,62 @@ class TournamentRepository extends ServiceEntityRepository
         }
 
         return $distribution;
+    }
+
+    /**
+     * Find ONGOING tournaments with no activity for the specified number of days.
+     * Activity is defined as the most recent of:
+     * - Tournament's updatedAt timestamp
+     * - Latest match completedAt timestamp
+     *
+     * @param int $inactiveDays Number of days without activity (default: 3)
+     *
+     * @return Tournament[]
+     */
+    public function findInactiveOngoingTournaments(int $inactiveDays = 3): array
+    {
+        $threshold = new \DateTimeImmutable("-{$inactiveDays} days");
+
+        // Use native SQL for the complex aggregation with GREATEST/COALESCE
+        $sql = "
+            SELECT t.id
+            FROM tournaments t
+            LEFT JOIN rounds r ON r.tournament_id = t.id
+            LEFT JOIN matches m ON m.round_id = r.id
+            WHERE t.status = :status
+            GROUP BY t.id, t.updated_at
+            HAVING COALESCE(
+                GREATEST(t.updated_at, MAX(m.completed_at)),
+                t.updated_at
+            ) < :threshold
+        ";
+
+        $conn = $this->getEntityManager()->getConnection();
+        $results = $conn->executeQuery($sql, [
+            'status' => TournamentStatus::ONGOING->value,
+            'threshold' => $threshold->format('Y-m-d H:i:s'),
+        ])->fetchAllAssociative();
+
+        if (empty($results)) {
+            return [];
+        }
+
+        $ids = array_column($results, 'id');
+
+        return $this->createQueryBuilder('t')
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find ABANDONED tournaments (for admin dashboard filtering).
+     *
+     * @return Tournament[]
+     */
+    public function findAbandonedTournaments(): array
+    {
+        return $this->findByStatus(TournamentStatus::ABANDONED);
     }
 }
