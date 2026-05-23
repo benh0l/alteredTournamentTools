@@ -17,6 +17,7 @@ use App\Enum\TournamentVisibility;
 use App\Exception\InvalidSubmissionException;
 use App\Repository\MatchSubmissionRepository;
 use App\Service\ResultSubmissionService;
+use App\Service\StandingsService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -26,15 +27,18 @@ final class ResultSubmissionServiceTest extends TestCase
     private ResultSubmissionService $service;
     private EntityManagerInterface&MockObject $entityManager;
     private MatchSubmissionRepository&MockObject $submissionRepository;
+    private StandingsService&MockObject $standingsService;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->submissionRepository = $this->createMock(MatchSubmissionRepository::class);
+        $this->standingsService = $this->createMock(StandingsService::class);
 
         $this->service = new ResultSubmissionService(
             $this->entityManager,
-            $this->submissionRepository
+            $this->submissionRepository,
+            $this->standingsService
         );
     }
 

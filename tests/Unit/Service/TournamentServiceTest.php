@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class TournamentServiceTest extends TestCase
 {
@@ -20,17 +21,20 @@ final class TournamentServiceTest extends TestCase
     private MockObject $entityManager;
     private MockObject $repository;
     private MockObject $logger;
+    private MockObject $tokenStorage;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->repository = $this->createMock(TournamentRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
 
         $this->service = new TournamentService(
             $this->entityManager,
             $this->repository,
-            $this->logger
+            $this->logger,
+            $this->tokenStorage
         );
     }
 
@@ -46,7 +50,8 @@ final class TournamentServiceTest extends TestCase
 
         $this->entityManager->expects($this->once())->method('persist');
         $this->entityManager->expects($this->once())->method('flush');
-        $this->logger->expects($this->once())->method('info');
+        // Logger may be called multiple times (once for role grant, once for tournament creation)
+        $this->logger->expects($this->atLeastOnce())->method('info');
 
         $result = $this->service->createTournament($tournament, $user);
 
@@ -57,7 +62,13 @@ final class TournamentServiceTest extends TestCase
     public function testUpdateTournamentThrowsExceptionWhenNotDraft(): void
     {
         $tournament = new Tournament();
+        $tournament->setName('Test Tournament');
         $tournament->setStatus(TournamentStatus::PUBLISHED);
+        // Add a round so PUBLISHED tournament is not editable
+        $round = new \App\Entity\Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber(1);
+        $tournament->addRound($round);
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Cannot edit tournament that is not in DRAFT status');

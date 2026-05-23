@@ -21,13 +21,14 @@ final class TournamentEnumsTest extends TestCase
     {
         $cases = TournamentFormat::cases();
 
-        $this->assertCount(7, $cases);
+        $this->assertCount(8, $cases);
         $this->assertSame('constructed_standard', TournamentFormat::CONSTRUCTED_STANDARD->value);
         $this->assertSame('constructed_singleton', TournamentFormat::CONSTRUCTED_SINGLETON->value);
         $this->assertSame('constructed_nuc', TournamentFormat::CONSTRUCTED_NUC->value);
         $this->assertSame('constructed_hero_oof', TournamentFormat::CONSTRUCTED_HERO_OUT_OF_FACTION->value);
         $this->assertSame('constructed_bifaction', TournamentFormat::CONSTRUCTED_BIFACTION->value);
         $this->assertSame('limited', TournamentFormat::LIMITED->value);
+        $this->assertSame('limited_draft', TournamentFormat::LIMITED_DRAFT->value);
         $this->assertSame('fun_expedition_krakn', TournamentFormat::FUN_EXPEDITION_KRAKN->value);
     }
 
@@ -41,11 +42,12 @@ final class TournamentEnumsTest extends TestCase
     {
         $cases = TournamentStructure::cases();
 
-        $this->assertCount(4, $cases);
+        $this->assertCount(5, $cases);
         $this->assertSame('swiss_only', TournamentStructure::SWISS_ONLY->value);
         $this->assertSame('single_elimination', TournamentStructure::SINGLE_ELIMINATION->value);
         $this->assertSame('mixed', TournamentStructure::MIXED->value);
         $this->assertSame('group_stage_elimination', TournamentStructure::GROUP_STAGE_ELIMINATION->value);
+        $this->assertSame('round_robin', TournamentStructure::ROUND_ROBIN->value);
     }
 
     public function testTournamentStructureGetLabel(): void
@@ -53,6 +55,7 @@ final class TournamentEnumsTest extends TestCase
         $this->assertSame('enum.tournament_structure.swiss_only', TournamentStructure::SWISS_ONLY->getLabel());
         $this->assertSame('enum.tournament_structure.single_elimination', TournamentStructure::SINGLE_ELIMINATION->getLabel());
         $this->assertSame('enum.tournament_structure.mixed', TournamentStructure::MIXED->getLabel());
+        $this->assertSame('enum.tournament_structure.round_robin', TournamentStructure::ROUND_ROBIN->getLabel());
     }
 
     public function testTournamentVisibilityHasExpectedCases(): void
@@ -197,8 +200,9 @@ final class TournamentEnumsTest extends TestCase
 
     public function testMatchFormatGetLabel(): void
     {
-        $this->assertSame('Best of 1', MatchFormat::BO1->getLabel());
-        $this->assertSame('Best of 3', MatchFormat::BO3->getLabel());
+        // Labels are translation keys
+        $this->assertSame('enum.match_format.bo1', MatchFormat::BO1->getLabel());
+        $this->assertSame('enum.match_format.bo3', MatchFormat::BO3->getLabel());
     }
 
     public function testEnumsCanBeCreatedFromValue(): void

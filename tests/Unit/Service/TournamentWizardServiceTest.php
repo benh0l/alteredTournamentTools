@@ -123,12 +123,13 @@ final class TournamentWizardServiceTest extends TestCase
         $summary = $this->service->buildSummaryFromWizardData($wizardData);
 
         $this->assertSame('Test Tournament', $summary['name']);
-        $this->assertSame('Construit', $summary['format']);
-        $this->assertSame('Rondes Suisses uniquement', $summary['structure']);
-        $this->assertSame('Best of 3', $summary['swissMatchFormat']);
+        // Labels are now translation keys
+        $this->assertSame('enum.tournament_format.constructed_standard', $summary['format']);
+        $this->assertSame('enum.tournament_structure.swiss_only', $summary['structure']);
+        $this->assertSame('enum.match_format.bo3', $summary['swissMatchFormat']);
         $this->assertSame(16, $summary['expectedPlayers']);
-        $this->assertSame('Public', $summary['visibility']);
-        $this->assertSame('Decklists ouvertes', $summary['decklistTransparency']);
+        $this->assertSame('enum.tournament_visibility.public', $summary['visibility']);
+        $this->assertSame('enum.decklist_transparency.open', $summary['decklistTransparency']);
     }
 
     public function testBuildSummaryAutoSuggestsRounds(): void

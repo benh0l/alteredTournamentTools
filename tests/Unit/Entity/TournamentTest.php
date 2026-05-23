@@ -295,10 +295,25 @@ final class TournamentTest extends TestCase
         $this->assertTrue($tournament->isEditable());
     }
 
-    public function testIsEditableReturnsFalseWhenPublished(): void
+    public function testIsEditableReturnsTrueWhenPublishedWithoutRounds(): void
     {
         $tournament = new Tournament();
         $tournament->setStatus(TournamentStatus::PUBLISHED);
+
+        // PUBLISHED tournament without rounds is still editable
+        $this->assertTrue($tournament->isEditable());
+    }
+
+    public function testIsEditableReturnsFalseWhenPublishedWithRounds(): void
+    {
+        $tournament = new Tournament();
+        $tournament->setStatus(TournamentStatus::PUBLISHED);
+
+        // Add a round to make it non-editable
+        $round = new \App\Entity\Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber(1);
+        $tournament->addRound($round);
 
         $this->assertFalse($tournament->isEditable());
     }

@@ -17,7 +17,8 @@ final class InvalidTournamentStateExceptionTest extends TestCase
             [TournamentStatus::PUBLISHED]
         );
 
-        $this->assertStringContainsString('Brouillon', $exception->getMessage());
+        // Message now contains translation keys
+        $this->assertStringContainsString('enum.tournament_status.draft', $exception->getMessage());
     }
 
     public function testExceptionMessageWithExpectedStatuses(): void
@@ -27,7 +28,7 @@ final class InvalidTournamentStateExceptionTest extends TestCase
             [TournamentStatus::PUBLISHED]
         );
 
-        $this->assertStringContainsString('Publie', $exception->getMessage());
+        $this->assertStringContainsString('enum.tournament_status.published', $exception->getMessage());
     }
 
     public function testExceptionMessageWithOperation(): void
@@ -72,9 +73,9 @@ final class InvalidTournamentStateExceptionTest extends TestCase
         );
 
         $message = $exception->getMessage();
-        $this->assertStringContainsString('Publie', $message);
+        $this->assertStringContainsString('enum.tournament_status.published', $message);
         $this->assertStringContainsString('ou', $message);
-        $this->assertStringContainsString('En cours', $message);
+        $this->assertStringContainsString('enum.tournament_status.ongoing', $message);
     }
 
     public function testExceptionWithEmptyExpectedStatuses(): void
@@ -84,7 +85,7 @@ final class InvalidTournamentStateExceptionTest extends TestCase
             []
         );
 
-        $this->assertStringContainsString('Termine', $exception->getMessage());
+        $this->assertStringContainsString('enum.tournament_status.completed', $exception->getMessage());
     }
 
     public function testIsRuntimeException(): void

@@ -19,9 +19,10 @@ final class RoundStatusTest extends TestCase
 
     public function testGetLabel(): void
     {
-        $this->assertSame('En attente', RoundStatus::PENDING->getLabel());
-        $this->assertSame('En cours', RoundStatus::ONGOING->getLabel());
-        $this->assertSame('Terminee', RoundStatus::COMPLETED->getLabel());
+        // Labels are translation keys
+        $this->assertSame('enum.round_status.pending', RoundStatus::PENDING->getLabel());
+        $this->assertSame('enum.round_status.ongoing', RoundStatus::ONGOING->getLabel());
+        $this->assertSame('enum.round_status.completed', RoundStatus::COMPLETED->getLabel());
     }
 
     public function testGetBadgeClasses(): void
