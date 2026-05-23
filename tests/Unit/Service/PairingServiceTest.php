@@ -93,13 +93,14 @@ final class PairingServiceTest extends TestCase
         }
     }
 
-    public function testGenerateRound1PairingsRoundIsOngoing(): void
+    public function testGenerateRound1PairingsRoundIsPending(): void
     {
         $tournament = $this->createPublishedTournamentWithPlayers(4);
 
         $round = $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
 
-        $this->assertSame(RoundStatus::ONGOING, $round->getStatus());
+        // Rounds start as PENDING to allow pairing modifications before being started
+        $this->assertSame(RoundStatus::PENDING, $round->getStatus());
     }
 
     public function testGenerateRound1PairingsUpdatesTournamentStatus(): void
@@ -164,7 +165,9 @@ final class PairingServiceTest extends TestCase
                 $result = $match->getResult();
                 $this->assertNotNull($result);
                 $this->assertSame($match->getPlayer1()->getId(), $result['winnerId']);
-                $this->assertSame(2, $result['player1Score']);
+                // BYE score depends on match format: BO1=1, BO3=2
+                // Test tournament uses BO1 (SwissMatchFormat::BO1), so score is 1
+                $this->assertSame(1, $result['player1Score']);
                 $this->assertSame(0, $result['player2Score']);
                 $this->assertTrue($result['isBye']);
             }
@@ -246,7 +249,7 @@ final class PairingServiceTest extends TestCase
         $tournament = $this->createTournamentWithStatus(TournamentStatus::DRAFT, 4);
 
         $this->expectException(InvalidTournamentStateException::class);
-        $this->expectExceptionMessage('Brouillon');
+        $this->expectExceptionMessage('draft');
 
         $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
     }
@@ -256,7 +259,7 @@ final class PairingServiceTest extends TestCase
         $tournament = $this->createTournamentWithStatus(TournamentStatus::ONGOING, 4);
 
         $this->expectException(InvalidTournamentStateException::class);
-        $this->expectExceptionMessage('En cours');
+        $this->expectExceptionMessage('ongoing');
 
         $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
     }
@@ -403,13 +406,14 @@ final class PairingServiceTest extends TestCase
         $this->assertCount(2, $round2->getMatches());
     }
 
-    public function testGenerateSubsequentRoundIsOngoing(): void
+    public function testGenerateSubsequentRoundIsPending(): void
     {
         $tournament = $this->createOngoingTournamentWithCompletedRound1(4);
 
         $round2 = $this->service->generateSubsequentRoundPairings($tournament);
 
-        $this->assertSame(RoundStatus::ONGOING, $round2->getStatus());
+        // Rounds start as PENDING to allow pairing modifications before being started
+        $this->assertSame(RoundStatus::PENDING, $round2->getStatus());
     }
 
     public function testGenerateSubsequentRoundCompletesPreviousRound(): void
