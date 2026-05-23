@@ -17,11 +17,37 @@ export default class extends Controller {
         color: { type: String, default: 'blue' }
     };
 
+    chart = null;
+    waitTimeout = null;
+    waitAttempts = 0;
+    maxWaitAttempts = 50; // 5 seconds max wait
+
     connect() {
+        this.waitForChartJs();
+    }
+
+    disconnect() {
+        // Clear any pending timeout
+        if (this.waitTimeout) {
+            clearTimeout(this.waitTimeout);
+            this.waitTimeout = null;
+        }
+        // Destroy chart instance to free memory
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+        }
+    }
+
+    waitForChartJs() {
         // Wait for Chart.js to be loaded from CDN
         if (typeof Chart === 'undefined') {
-            console.warn('Chart.js not loaded yet, waiting...');
-            setTimeout(() => this.connect(), 100);
+            this.waitAttempts++;
+            if (this.waitAttempts >= this.maxWaitAttempts) {
+                console.error('Chart.js failed to load after 5 seconds');
+                return;
+            }
+            this.waitTimeout = setTimeout(() => this.waitForChartJs(), 100);
             return;
         }
 
@@ -31,11 +57,22 @@ export default class extends Controller {
     initChart() {
         const ctx = this.element.getContext('2d');
 
+        // Get theme-aware colors for chart text and grid
+        this.themeColors = this.getThemeColors();
+
         if (this.hasDistributionValue) {
             this.createDistributionChart(ctx);
         } else if (this.hasDataValue) {
             this.createTimeSeriesChart(ctx);
         }
+    }
+
+    getThemeColors() {
+        const computedStyle = getComputedStyle(document.documentElement);
+        return {
+            text: computedStyle.getPropertyValue('--text-secondary').trim() || '#6b7280',
+            grid: computedStyle.getPropertyValue('--border-default').trim() || '#e5e7eb',
+        };
     }
 
     createTimeSeriesChart(ctx) {
@@ -45,7 +82,7 @@ export default class extends Controller {
 
         const colorConfig = this.getColorConfig();
 
-        new Chart(ctx, {
+        this.chart = new Chart(ctx, {
             type: this.typeValue,
             data: {
                 labels: labels,
@@ -70,10 +107,22 @@ export default class extends Controller {
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
                         }
                     }
                 }
@@ -94,7 +143,7 @@ export default class extends Controller {
             'rgba(239, 68, 68, 0.8)',    // red
         ];
 
-        new Chart(ctx, {
+        this.chart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels.map(l => l + ' joueurs'),
@@ -115,10 +164,22 @@ export default class extends Controller {
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: this.themeColors.text
+                        },
+                        grid: {
+                            color: this.themeColors.grid
                         }
                     }
                 }

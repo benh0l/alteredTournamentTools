@@ -138,6 +138,25 @@
                 </div>
             </div>
 
+            {# Tournament type filters #}
+            <div class="flex flex-wrap gap-4 pt-4 border-t" style="border-color: var(--border-muted);">
+                <label class="flex items-center px-4 py-3 rounded-xl cursor-pointer border-2 transition-all hover:border-orange-400" style="background-color: var(--input-bg); border-color: var(--border-default);">
+                    {{ form_widget(form.isTumult, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                    <span class="ml-3 text-sm font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:flame', {class: 'w-4 h-4 inline mr-1 text-orange-500'}) }}
+                        {{ 'tournament.search.is_tumult'|trans }}
+                    </span>
+                </label>
+
+                <label class="flex items-center px-4 py-3 rounded-xl cursor-pointer border-2 transition-all hover:border-yellow-400" style="background-color: var(--input-bg); border-color: var(--border-default);">
+                    {{ form_widget(form.isSeasonFinalsQualifier, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                    <span class="ml-3 text-sm font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:award', {class: 'w-4 h-4 inline mr-1 text-yellow-500'}) }}
+                        {{ 'tournament.search.is_season_finals_qualifier'|trans }}
+                    </span>
+                </label>
+            </div>
+
             {# Buttons #}
             <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t" style="border-color: var(--border-muted);">
                 <a href="{{ path('tournament_list') }}"
@@ -213,11 +232,11 @@
                                 </a>
                             </h2>
                             {% if tournament.ongoing %}
-                                <span class="px-3 py-1 bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30">
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full border border-blue-500/30" style="background-color: rgba(59, 130, 246, 0.2); color: var(--badge-blue-text);">
                                     {{ 'enum.tournament_status.ongoing'|trans }}
                                 </span>
                             {% elseif tournament.completed %}
-                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/30">
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full border border-emerald-500/30" style="background-color: rgba(16, 185, 129, 0.2); color: var(--badge-emerald-text);">
                                     {{ 'enum.tournament_status.completed'|trans }}
                                 </span>
                             {% elseif tournament.published %}
@@ -245,18 +264,18 @@
                                 </span>
                             </div>
                             {% if tournament.location or distance is not null %}
-                                <div class="flex items-center text-sm">
-                                    <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center mr-3">
+                                <div class="flex items-start text-sm">
+                                    <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                                         {{ ux_icon('lucide:map-pin', {class: 'w-4 h-4 text-rose-500'}) }}
                                     </div>
-                                    <div>
+                                    <div class="flex-1 min-w-0">
                                         {% if tournament.location %}
                                             <span style="color: var(--text-secondary);">
-                                                {{ tournament.location|length > 25 ? tournament.location|slice(0, 25) ~ '...' : tournament.location }}
+                                                {{ tournament.location }}
                                             </span>
                                         {% endif %}
                                         {% if distance is not null %}
-                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap" style="background-color: rgba(16, 185, 129, 0.2); color: var(--badge-emerald-text);">
                                                 {{ distance }} km
                                             </span>
                                         {% endif %}
@@ -267,10 +286,25 @@
 
                         {# Tags #}
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                            {% if tournament.isTumult %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border border-orange-500/30" style="background-color: rgba(249, 115, 22, 0.2); color: var(--badge-orange-text, #c2410c);">
+                                    {{ ux_icon('lucide:flame', {class: 'w-3 h-3 mr-1'}) }}
+                                    Tumult
+                                </span>
+                            {% endif %}
+                            {% if tournament.isSeasonFinalsQualifier %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border border-yellow-500/30" style="background-color: rgba(234, 179, 8, 0.2); color: var(--badge-yellow-text, #a16207);">
+                                    {{ ux_icon('lucide:award', {class: 'w-3 h-3 mr-1'}) }}
+                                    Qualifier
+                                </span>
+                            {% endif %}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border border-green-500/30" style="background-color: rgba(34, 197, 94, 0.15); color: var(--badge-green-text, #15803d);">
+                                {{ 'tournament.list.players_badge'|trans({'%count%': tournament.expectedPlayers}) }}
+                            </span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border border-blue-500/30" style="background-color: rgba(59, 130, 246, 0.15); color: var(--badge-blue-text, #1d4ed8);">
                                 {{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}
                             </span>
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border border-purple-500/30" style="background-color: rgba(168, 85, 247, 0.15); color: var(--badge-purple-text, #7e22ce);">
                                 {{ ('enum.tournament_structure.' ~ tournament.structure.value)|trans }}
                             </span>
                             <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border" style="background-color: var(--bg-subtle); color: var(--text-secondary); border-color: var(--border-muted);">

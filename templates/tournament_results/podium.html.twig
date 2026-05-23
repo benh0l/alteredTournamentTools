@@ -43,8 +43,8 @@
     </div>
 
     {# Podium visualization #}
-    <div class="bg-gradient-to-b from-gray-800 via-gray-900 to-gray-950 rounded-2xl p-8 mb-8 shadow-2xl">
-        <div class="flex items-end justify-center space-x-6">
+    <div class="bg-gradient-to-b from-gray-800 via-gray-900 to-gray-950 rounded-2xl p-4 md:p-8 mb-8 shadow-2xl overflow-x-auto">
+        <div class="flex items-end justify-center space-x-2 md:space-x-6 min-w-[320px]">
             {# 2nd place #}
             <div class="text-center">
                 {% if podium[1] is defined %}
@@ -53,7 +53,7 @@
                             <span class="text-3xl font-bold text-gray-700">2</span>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-t from-gray-500 to-gray-400 rounded-t-xl w-32 h-40 flex items-center justify-center shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-t from-gray-500 to-gray-400 rounded-t-xl w-24 md:w-32 h-32 md:h-40 flex items-center justify-center shadow-lg overflow-hidden">
                         <div class="text-center px-2 w-full">
                             <p class="text-white font-bold text-base truncate" title="{{ podium[1].registration.player.displayName }}">{{ podium[1].registration.player.displayName }}</p>
                             <p class="text-gray-200 text-sm">{{ podium[1].matchPoints }} pts</p>
@@ -68,7 +68,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <div class="bg-gray-600 rounded-t-xl w-32 h-32 flex items-center justify-center opacity-50">
+                    <div class="bg-gray-600 rounded-t-xl w-24 md:w-32 h-24 md:h-32 flex items-center justify-center opacity-50">
                         <span class="text-white text-xl">-</span>
                     </div>
                 {% endif %}
@@ -82,7 +82,7 @@
                             {{ ux_icon('lucide:trophy', {class: 'w-14 h-14 text-yellow-700'}) }}
                         </div>
                     </div>
-                    <div class="bg-gradient-to-t from-yellow-600 via-yellow-500 to-amber-400 rounded-t-xl w-40 h-52 flex items-center justify-center shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-t from-yellow-600 via-yellow-500 to-amber-400 rounded-t-xl w-28 md:w-40 h-40 md:h-52 flex items-center justify-center shadow-2xl overflow-hidden">
                         <div class="text-center px-2 w-full">
                             <p class="text-white font-bold text-lg truncate" title="{{ podium[0].registration.player.displayName }}">{{ podium[0].registration.player.displayName }}</p>
                             <p class="text-yellow-100 text-sm font-medium">{{ podium[0].matchPoints }} pts</p>
@@ -98,7 +98,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <div class="bg-yellow-600 rounded-t-xl w-40 h-44 flex items-center justify-center opacity-50">
+                    <div class="bg-yellow-600 rounded-t-xl w-28 md:w-40 h-36 md:h-44 flex items-center justify-center opacity-50">
                         <span class="text-white text-xl">-</span>
                     </div>
                 {% endif %}
@@ -112,7 +112,7 @@
                             <span class="text-2xl font-bold text-white">3</span>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-t from-amber-800 to-amber-600 rounded-t-xl w-28 h-36 flex items-center justify-center shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-t from-amber-800 to-amber-600 rounded-t-xl w-20 md:w-28 h-28 md:h-36 flex items-center justify-center shadow-lg overflow-hidden">
                         <div class="text-center px-2 w-full">
                             <p class="text-white font-bold text-sm truncate" title="{{ podium[2].registration.player.displayName }}">{{ podium[2].registration.player.displayName }}</p>
                             <p class="text-amber-200 text-sm">{{ podium[2].matchPoints }} pts</p>
@@ -127,7 +127,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <div class="bg-amber-700 rounded-t-xl w-28 h-24 flex items-center justify-center opacity-50">
+                    <div class="bg-amber-700 rounded-t-xl w-20 md:w-28 h-20 md:h-24 flex items-center justify-center opacity-50">
                         <span class="text-white text-xl">-</span>
                     </div>
                 {% endif %}
@@ -137,8 +137,8 @@
 
     {# Winner highlight #}
     {% if podium[0] is defined %}
-    <div class="bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-orange-500/10 border-2 border-yellow-400 dark:border-yellow-500/50 rounded-2xl p-6 mb-8 shadow-lg">
-        <div class="flex items-center justify-between">
+    <div class="bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-orange-500/10 border-2 border-yellow-400 dark:border-yellow-500/50 rounded-2xl p-4 md:p-6 mb-8 shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center">
                 <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center mr-4 shadow-lg">
                     {{ ux_icon('lucide:trophy', {class: 'w-8 h-8 text-yellow-800'}) }}
@@ -236,5 +236,8 @@
             {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5 ml-2'}) }}
         </a>
     </div>
+
+    {# Landscape hint for mobile #}
+    {{ include('components/_landscape_hint.html.twig') }}
 </div>
 {% endblock %}

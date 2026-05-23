@@ -259,7 +259,14 @@
 
                 {# Registration button #}
                 <div>
-                    {% if is_registered %}
+                    {% if is_granted('TOURNAMENT_MANAGE', tournament) %}
+                        {# Organizer view - link to tournament management #}
+                        <a href="{{ path('tournament_show', {id: tournament.id}) }}"
+                           class="inline-flex items-center px-4 py-2 bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-lg font-medium hover:bg-purple-500/30 transition-colors">
+                            {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2'}) }}
+                            {{ 'tournament.manage.manage'|trans|default('Gerer le tournoi') }}
+                        </a>
+                    {% elseif is_registered %}
                         <div class="flex items-center space-x-4">
                             <span class="inline-flex items-center px-4 py-2 bg-green-500/20 text-green-600 dark:text-green-400 rounded-lg font-medium">
                                 {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2'}) }}

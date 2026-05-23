@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.privacy.page_title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4 theme-primary-gradient">
+                {{ ux_icon('lucide:shield', {class: 'w-8 h-8 text-white'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'profile.privacy.title'|trans }}</h1>
+            <p class="mt-2" style="color: var(--text-secondary);">{{ 'profile.privacy.subtitle'|trans }}</p>
+        </div>
+
+        <div data-controller="privacy-preferences"
+             data-privacy-preferences-csrf-value="{{ csrf_token('privacy-preferences') }}">
+
+            {# Toast for feedback #}
+            <div data-privacy-preferences-target="toast"
+                 class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity flex items-center">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
+                {{ 'profile.privacy.saved'|trans }}
+            </div>
+
+            {# Visibility Card #}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-6" style="background-color: var(--card-bg);">
+                <div class="p-6 border-b" style="border-color: var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:eye', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'profile.privacy.visibility_title'|trans }}
+                    </h2>
+                    <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.visibility_desc'|trans }}</p>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:user', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.show_real_name'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.show_real_name_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-privacy-preferences-target="checkbox"
+                               data-action="change->privacy-preferences#toggle"
+                               data-key="show_real_name"
+                               {% if preferences.show_real_name %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:trophy', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.show_in_results'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.show_in_results_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-privacy-preferences-target="checkbox"
+                               data-action="change->privacy-preferences#toggle"
+                               data-key="show_in_results"
+                               {% if preferences.show_in_results %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+
+                    <label class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors cursor-pointer" style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:history', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.show_match_history'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.show_match_history_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox"
+                               data-privacy-preferences-target="checkbox"
+                               data-action="change->privacy-preferences#toggle"
+                               data-key="show_match_history"
+                               {% if preferences.show_match_history %}checked{% endif %}
+                               class="h-5 w-5 rounded cursor-pointer"
+                               style="accent-color: var(--color-primary-600);">
+                    </label>
+                </div>
+            </div>
+
+            {# GDPR Rights Info #}
+            <div class="rounded-2xl shadow-xl overflow-hidden mb-6" style="background-color: var(--card-bg);">
+                <div class="p-6 border-b" style="border-color: var(--border-muted);">
+                    <h2 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+                        {{ 'profile.privacy.your_rights_title'|trans }}
+                    </h2>
+                    <p class="mt-1 text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.your_rights_desc'|trans }}</p>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <a href="{{ path('app_profile_export') }}"
+                       class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors"
+                       style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:download', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.export_data'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.export_data_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                    </a>
+
+                    <a href="{{ path('app_profile_delete') }}"
+                       class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors"
+                       style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:trash-2', {class: 'w-5 h-5 mr-3 text-red-500'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.delete_account'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.delete_account_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                    </a>
+
+                    <a href="{{ path('legal_privacy') }}"
+                       class="flex items-center justify-between p-4 rounded-xl hover:opacity-80 transition-colors"
+                       style="background-color: var(--bg-subtle);">
+                        <div class="flex items-center">
+                            {{ ux_icon('lucide:book-open', {class: 'w-5 h-5 mr-3', style: 'color: var(--color-primary-500);'}) }}
+                            <div>
+                                <span class="text-sm font-medium" style="color: var(--text-primary);">{{ 'profile.privacy.privacy_policy'|trans }}</span>
+                                <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.privacy.privacy_policy_desc'|trans }}</p>
+                            </div>
+                        </div>
+                        {{ ux_icon('lucide:chevron-right', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                    </a>
+                </div>
+            </div>
+
+            {# Info Note #}
+            <div class="alert-info">
+                <div class="flex items-center">
+                    {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-3 flex-shrink-0'}) }}
+                    <span class="text-sm">{{ 'profile.privacy.auto_save_note'|trans }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# Back link #}
+        <div class="mt-6 text-center">
+            <a href="{{ path('app_profile') }}" class="inline-flex items-center font-semibold" style="color: var(--color-primary-600);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'profile.back_to_profile'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

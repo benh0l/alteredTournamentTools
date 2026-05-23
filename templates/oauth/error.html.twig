@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur d'authentification{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4" style="background-color: var(--color-danger-100);">
+                {{ ux_icon('lucide:x-circle', {class: 'w-8 h-8', style: 'color: var(--color-danger-600);'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Erreur d'authentification</h1>
+        </div>
+
+        {# Message Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8">
+                <div class="alert-danger mb-6">
+                    <div class="flex">
+                        {{ ux_icon('lucide:alert-circle', {class: 'w-5 h-5 mr-3 flex-shrink-0'}) }}
+                        <div>
+                            <p class="text-sm">{{ error_message|default('Une erreur s\'est produite lors de l\'authentification.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <a href="{{ path('oauth_altered_reunion_connect') }}"
+                       class="w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:refresh-cw', {class: 'w-5 h-5 mr-2'}) }}
+                        Réessayer
+                    </a>
+
+                    <a href="{{ path('app_login') }}"
+                       class="w-full flex items-center justify-center px-6 py-3 font-semibold rounded-xl border transition-all"
+                       style="color: var(--text-primary); border-color: var(--border-color);">
+                        {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5 mr-2'}) }}
+                        Retourner à la connexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

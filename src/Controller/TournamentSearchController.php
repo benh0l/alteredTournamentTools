@@ -44,61 +44,93 @@ final class TournamentSearchController extends AbstractController
         $searchCoordinates = null;
         $errorMessage = null;
 
-        if ($form->isSubmitted()) {
-            $data = $form->getData();
+        // Check if search was performed (form submitted via GET - check for any query params)
+        $hasSearchParams = $request->query->count() > 0;
+
+        if ($hasSearchParams) {
             $searchPerformed = true;
+
+            // Get values directly from request query (more reliable for GET forms)
+            $location = $request->query->get('location', '');
+            $radius = $request->query->get('radius', 50);
+            $formatValue = $request->query->get('format', '');
+            $dateFromStr = $request->query->get('dateFrom', '');
+            $dateToStr = $request->query->get('dateTo', '');
+            $latParam = $request->query->get('lat', '');
+            $lngParam = $request->query->get('lng', '');
+            $isTumult = $request->query->getBoolean('isTumult', false) ?: null;
+            $isSeasonFinalsQualifier = $request->query->getBoolean('isSeasonFinalsQualifier', false) ?: null;
+
+            // Parse date filters
+            $dateFrom = null;
+            $dateTo = null;
+
+            if (!empty($dateFromStr)) {
+                try {
+                    $dateFrom = new \DateTimeImmutable($dateFromStr);
+                } catch (\Exception $e) {
+                    // Invalid date format, ignore
+                }
+            }
+
+            if (!empty($dateToStr)) {
+                try {
+                    $dateTo = new \DateTimeImmutable($dateToStr);
+                } catch (\Exception $e) {
+                    // Invalid date format, ignore
+                }
+            }
+
+            // Get format filter
+            $format = null;
+            if (!empty($formatValue)) {
+                $format = TournamentFormat::tryFrom($formatValue);
+            }
 
             // Get coordinates - from form data or geocoding
             $lat = null;
             $lng = null;
 
-            if (!empty($data['lat']) && !empty($data['lng'])) {
+            if (!empty($latParam) && !empty($lngParam)) {
                 // Use provided coordinates (from previous search)
-                $lat = (float) $data['lat'];
-                $lng = (float) $data['lng'];
-                $searchLocation = $data['location'] ?? '';
-            } elseif (!empty($data['location'])) {
+                $lat = (float) $latParam;
+                $lng = (float) $lngParam;
+                $searchLocation = $location;
+            } elseif (!empty($location)) {
                 // Geocode the location
-                $searchLocation = $data['location'];
+                $searchLocation = $location;
                 $coordinates = $this->geocodingService->geocode($searchLocation);
 
                 if ($coordinates !== null) {
                     $lat = $coordinates['lat'];
                     $lng = $coordinates['lng'];
                 } else {
-                    $errorMessage = 'Lieu non trouve. Verifiez l\'orthographe ou essayez une autre adresse.';
+                    $errorMessage = 'Lieu non trouvé. Vérifiez l\'orthographe ou essayez une autre adresse.';
                 }
             }
 
             if ($lat !== null && $lng !== null) {
+                // Search with location
                 $searchCoordinates = ['lat' => $lat, 'lng' => $lng];
 
-                // Build date range filters
-                $dateFrom = null;
-                $dateTo = null;
-
-                if (!empty($data['dateRange'])) {
-                    [$dateFrom, $dateTo] = $this->calculateDateRange(
-                        $data['dateRange'],
-                        $data['dateFrom'] ?? null,
-                        $data['dateTo'] ?? null
-                    );
-                }
-
-                // Get format filter
-                $format = null;
-                if (!empty($data['format'])) {
-                    $format = TournamentFormat::tryFrom($data['format']);
-                }
-
-                // Search tournaments
                 $results = $this->tournamentRepository->findByLocation(
                     $lat,
                     $lng,
-                    (float) ($data['radius'] ?? 50),
+                    (float) $radius,
                     $format,
                     $dateFrom,
-                    $dateTo
+                    $dateTo,
+                    $isTumult,
+                    $isSeasonFinalsQualifier
+                );
+            } elseif ($errorMessage === null) {
+                // Search without location (all public tournaments with optional filters)
+                $results = $this->tournamentRepository->findPublicTournamentsFiltered(
+                    $format,
+                    $dateFrom,
+                    $dateTo,
+                    $isTumult,
+                    $isSeasonFinalsQualifier
                 );
             }
         }
@@ -121,39 +153,5 @@ final class TournamentSearchController extends AbstractController
             'search_coordinates' => $searchCoordinates,
             'error_message' => $errorMessage,
         ]);
-    }
-
-    /**
-     * Calculate date range from preset or custom dates.
-     *
-     * @return array{0: \DateTimeImmutable|null, 1: \DateTimeImmutable|null}
-     */
-    private function calculateDateRange(
-        string $range,
-        ?\DateTimeInterface $customFrom,
-        ?\DateTimeInterface $customTo
-    ): array {
-        $today = new \DateTimeImmutable('today');
-
-        return match ($range) {
-            'today' => [$today, $today],
-            'week' => [
-                $today->modify('monday this week'),
-                $today->modify('sunday this week'),
-            ],
-            'month' => [
-                $today->modify('first day of this month'),
-                $today->modify('last day of this month'),
-            ],
-            'custom' => [
-                $customFrom instanceof \DateTimeInterface
-                    ? \DateTimeImmutable::createFromInterface($customFrom)
-                    : null,
-                $customTo instanceof \DateTimeInterface
-                    ? \DateTimeImmutable::createFromInterface($customTo)
-                    : null,
-            ],
-            default => [null, null],
-        };
     }
 }

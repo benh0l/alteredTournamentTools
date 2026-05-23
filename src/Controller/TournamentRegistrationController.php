@@ -59,7 +59,9 @@ final class TournamentRegistrationController extends AbstractController
             return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
         }
 
-        $form = $this->createForm(RegistrationType::class);
+        $form = $this->createForm(RegistrationType::class, null, [
+            'tournament_format' => $tournament->getFormat(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -93,7 +95,7 @@ final class TournamentRegistrationController extends AbstractController
         return $this->render('tournament/register.html.twig', [
             'tournament' => $tournament,
             'form' => $form,
-            'heroesData' => Faction::getHeroesGroupedByFaction(),
+            'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
         ]);
     }
 
@@ -154,6 +156,7 @@ final class TournamentRegistrationController extends AbstractController
             'initial_faction2' => $registration->getFaction2()?->value,
             'initial_hero' => $registration->getHero(),
             'initial_decklist_url' => $registration->getDecklistUrl(),
+            'tournament_format' => $tournament->getFormat(),
         ]);
         $form->handleRequest($request);
 
@@ -186,7 +189,7 @@ final class TournamentRegistrationController extends AbstractController
             'tournament' => $tournament,
             'registration' => $registration,
             'form' => $form,
-            'heroesData' => Faction::getHeroesGroupedByFaction(),
+            'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
         ]);
     }
 

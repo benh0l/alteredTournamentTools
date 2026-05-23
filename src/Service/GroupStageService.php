@@ -246,33 +246,8 @@ class GroupStageService
             }
         }
 
-        // Sort standings
-        $sortedStandings = array_values($standings);
-        usort($sortedStandings, function (GroupStandings $a, GroupStandings $b): int {
-            // 1. Match points (descending)
-            $pointsDiff = $b->getMatchPoints() <=> $a->getMatchPoints();
-            if ($pointsDiff !== 0) {
-                return $pointsDiff;
-            }
-
-            // 2. Head-to-head (only if exactly 2 players tied)
-            $h2h = $a->hasWonAgainst($b->getRegistration()->getId());
-            if ($h2h === true) {
-                return -1; // A won against B
-            }
-            if ($h2h === false) {
-                return 1;  // A lost to B
-            }
-
-            // 3. Point differential (descending)
-            $diffDiff = $b->getPointDifferential() <=> $a->getPointDifferential();
-            if ($diffDiff !== 0) {
-                return $diffDiff;
-            }
-
-            // 4. Total games won (descending)
-            return $b->getGamesWon() <=> $a->getGamesWon();
-        });
+        // Sort standings with proper head-to-head tiebreaker
+        $sortedStandings = $this->sortStandingsWithHeadToHead(array_values($standings));
 
         return $sortedStandings;
     }
@@ -370,25 +345,129 @@ class GroupStageService
     }
 
     /**
-     * Order players according to formation method.
+     * Sort standings with proper head-to-head tiebreaker for multi-way ties.
+     *
+     * Tiebreaker order:
+     * 1. Match points (descending)
+     * 2. Head-to-head among tied players only
+     * 3. Point differential (descending)
+     * 4. Games won (descending)
+     *
+     * @param GroupStandings[] $standings
+     * @return GroupStandings[]
+     */
+    private function sortStandingsWithHeadToHead(array $standings): array
+    {
+        if (count($standings) <= 1) {
+            return $standings;
+        }
+
+        // First, sort by match points
+        usort($standings, fn ($a, $b) => $b->getMatchPoints() <=> $a->getMatchPoints());
+
+        // Group players by points
+        $groups = [];
+        foreach ($standings as $standing) {
+            $points = $standing->getMatchPoints();
+            if (!isset($groups[$points])) {
+                $groups[$points] = [];
+            }
+            $groups[$points][] = $standing;
+        }
+
+        // Sort each tied group by head-to-head
+        $result = [];
+        foreach ($groups as $points => $tiedPlayers) {
+            if (count($tiedPlayers) === 1) {
+                $result[] = $tiedPlayers[0];
+            } else {
+                // Calculate head-to-head mini-table for tied players
+                $sortedTied = $this->sortTiedPlayersByHeadToHead($tiedPlayers);
+                foreach ($sortedTied as $player) {
+                    $result[] = $player;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Sort tied players by head-to-head results among themselves.
+     *
+     * @param GroupStandings[] $tiedPlayers
+     * @return GroupStandings[]
+     */
+    private function sortTiedPlayersByHeadToHead(array $tiedPlayers): array
+    {
+        // Get IDs of tied players
+        $tiedIds = array_map(fn ($p) => $p->getRegistration()->getId(), $tiedPlayers);
+
+        // Calculate head-to-head points for each player (only counting matches against other tied players)
+        $h2hPoints = [];
+        $h2hDifferential = [];
+
+        foreach ($tiedPlayers as $player) {
+            $playerId = $player->getRegistration()->getId();
+            $h2hPoints[$playerId] = 0;
+            $h2hDifferential[$playerId] = 0;
+
+            $headToHead = $player->getHeadToHead();
+            foreach ($tiedIds as $opponentId) {
+                if ($opponentId === $playerId) {
+                    continue;
+                }
+
+                if (isset($headToHead[$opponentId])) {
+                    if ($headToHead[$opponentId] === true) {
+                        $h2hPoints[$playerId] += 3; // Win
+                    } elseif ($headToHead[$opponentId] === null) {
+                        $h2hPoints[$playerId] += 1; // Draw
+                    }
+                    // Loss = 0 points
+                }
+            }
+        }
+
+        // Sort by: h2h points DESC, then overall point differential DESC, then games won DESC
+        usort($tiedPlayers, function (GroupStandings $a, GroupStandings $b) use ($h2hPoints): int {
+            $aId = $a->getRegistration()->getId();
+            $bId = $b->getRegistration()->getId();
+
+            // 1. Head-to-head points among tied players
+            $h2hDiff = ($h2hPoints[$bId] ?? 0) <=> ($h2hPoints[$aId] ?? 0);
+            if ($h2hDiff !== 0) {
+                return $h2hDiff;
+            }
+
+            // 2. Point differential (overall)
+            $diffDiff = $b->getPointDifferential() <=> $a->getPointDifferential();
+            if ($diffDiff !== 0) {
+                return $diffDiff;
+            }
+
+            // 3. Games won (overall)
+            return $b->getGamesWon() <=> $a->getGamesWon();
+        });
+
+        return $tiedPlayers;
+    }
+
+    /**
+     * Shuffle players randomly using Fisher-Yates algorithm.
      *
      * @param Registration[] $registrations
      * @return Registration[]
      */
     private function orderPlayersForGroups(array $registrations, GroupFormationMethod $method): array
     {
-        if ($method === GroupFormationMethod::RANDOM) {
-            // Fisher-Yates shuffle
-            $count = count($registrations);
-            for ($i = $count - 1; $i > 0; $i--) {
-                $j = random_int(0, $i);
-                [$registrations[$i], $registrations[$j]] = [$registrations[$j], $registrations[$i]];
-            }
-            return $registrations;
+        // Fisher-Yates shuffle
+        $count = count($registrations);
+        for ($i = $count - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            [$registrations[$i], $registrations[$j]] = [$registrations[$j], $registrations[$i]];
         }
 
-        // SERPENTINE: assume registrations are already in seed order
-        // Just return as-is; distribution will handle serpentine pattern
         return $registrations;
     }
 
@@ -418,33 +497,10 @@ class GroupStageService
             $groups[$i] = $group;
         }
 
-        $method = $tournament->getGroupFormationMethod() ?? GroupFormationMethod::RANDOM;
-
-        if ($method === GroupFormationMethod::SERPENTINE) {
-            // Serpentine distribution
-            $direction = 1;
-            $groupIndex = 0;
-
-            foreach ($players as $player) {
-                $groups[$groupIndex]->addPlayer($player);
-
-                $groupIndex += $direction;
-
-                // Reverse at boundaries
-                if ($groupIndex >= $groupCount) {
-                    $groupIndex = $groupCount - 1;
-                    $direction = -1;
-                } elseif ($groupIndex < 0) {
-                    $groupIndex = 0;
-                    $direction = 1;
-                }
-            }
-        } else {
-            // Random: simple round-robin distribution
-            foreach ($players as $index => $player) {
-                $groupIndex = $index % $groupCount;
-                $groups[$groupIndex]->addPlayer($player);
-            }
+        // Round-robin distribution of shuffled players
+        foreach ($players as $index => $player) {
+            $groupIndex = $index % $groupCount;
+            $groups[$groupIndex]->addPlayer($player);
         }
 
         return $groups;

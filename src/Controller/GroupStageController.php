@@ -75,6 +75,20 @@ final class GroupStageController extends AbstractController
 
         $allMatchesComplete = $groupsFormed && $totalMatches > 0 && $completedMatches === $totalMatches;
 
+        // Check if group phase is complete (all round-robin rounds played)
+        $groupPhaseComplete = false;
+        if ($groupsFormed && $allMatchesComplete) {
+            // Get the number of group rounds played
+            $groupRoundsPlayed = $tournament->getRounds()->filter(
+                fn ($r) => !$r->isEliminationRound()
+            )->count();
+
+            // Get the required rounds (use first group as reference - all groups should have same player count)
+            $requiredRounds = $groups[0]->getRequiredRounds();
+
+            $groupPhaseComplete = $groupRoundsPlayed >= $requiredRounds;
+        }
+
         return $this->render('tournament/group_standings.html.twig', [
             'tournament' => $tournament,
             'groups' => $groups,
@@ -84,6 +98,8 @@ final class GroupStageController extends AbstractController
             'completedMatches' => $completedMatches,
             'totalMatches' => $totalMatches,
             'allMatchesComplete' => $allMatchesComplete,
+            'groupPhaseComplete' => $groupPhaseComplete,
+            'isInEliminationPhase' => $tournament->isInEliminationPhase(),
         ]);
     }
 
@@ -118,7 +134,7 @@ final class GroupStageController extends AbstractController
             $groups = $this->groupStageService->formGroups($tournament);
 
             $this->addFlash('success', sprintf(
-                '%d poules formees avec succes!',
+                '%d groupes formés avec succès !',
                 count($groups)
             ));
         } catch (InsufficientPlayersException $e) {
@@ -157,13 +173,21 @@ final class GroupStageController extends AbstractController
         }
 
         try {
-            $round = $this->groupStageService->generateGroupRound($tournament);
+            // Calculate next round number (count existing group rounds + 1)
+            $existingGroupRounds = $tournament->getRounds()->filter(
+                fn ($r) => !$r->isEliminationRound()
+            )->count();
+            $nextRoundNumber = $existingGroupRounds + 1;
+
+            $round = $this->groupStageService->generateGroupRound($tournament, $nextRoundNumber);
 
             $this->addFlash('success', sprintf(
-                'Ronde %d des poules demarree! %d match(s) genere(s).',
+                'Ronde %d des groupes démarrée ! %d match(s) généré(s).',
                 $round->getRoundNumber(),
                 $round->getMatches()->count()
             ));
+
+            return $this->redirectToRoute('tournament_dashboard', ['id' => $tournament->getId()]);
         } catch (InvalidTournamentStateException $e) {
             $this->addFlash('error', $e->getMessage());
         }

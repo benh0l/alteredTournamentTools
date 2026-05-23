@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Compte existant{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        {# Header #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg mb-4" style="background-color: var(--color-warning-100);">
+                {{ ux_icon('lucide:alert-triangle', {class: 'w-8 h-8', style: 'color: var(--color-warning-600);'}) }}
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Compte existant</h1>
+        </div>
+
+        {# Message Card #}
+        <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="p-8">
+                <div class="alert-warning mb-6">
+                    <div class="flex">
+                        {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-3 flex-shrink-0'}) }}
+                        <div>
+                            <p class="text-sm">
+                                Un compte existe déjà avec l'adresse email <strong>{{ email }}</strong>.
+                            </p>
+                            <p class="text-sm mt-2">
+                                Connectez-vous d'abord avec votre mot de passe, puis liez votre compte
+                                Altered Re:Union depuis votre profil.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <a href="{{ path('app_login') }}"
+                       class="w-full flex items-center justify-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
+                       style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                        {{ ux_icon('lucide:log-in', {class: 'w-5 h-5 mr-2'}) }}
+                        Se connecter
+                    </a>
+
+                    <a href="{{ path('app_forgot_password_request') }}"
+                       class="w-full flex items-center justify-center px-6 py-3 font-semibold rounded-xl border transition-all"
+                       style="color: var(--text-primary); border-color: var(--border-color);">
+                        {{ ux_icon('lucide:key', {class: 'w-5 h-5 mr-2'}) }}
+                        Mot de passe oublié ?
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

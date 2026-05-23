@@ -1,0 +1,41 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Nouvelle demande d'acces API{% endblock %}
+
+{% block content %}
+<h1 style="color: #1a56db; margin-bottom: 20px;">Nouvelle demande d'acces API</h1>
+
+<p>Bonjour,</p>
+
+<p>Un utilisateur a soumis une nouvelle demande d'acces a l'API.</p>
+
+<div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #333;">Details de la demande</h3>
+    <p style="margin-bottom: 8px;"><strong>Utilisateur :</strong> {{ request.user.pseudo }} ({{ request.user.email }})</p>
+    <p style="margin-bottom: 8px;"><strong>Projet :</strong> {{ request.projectName }}</p>
+    <p style="margin-bottom: 8px;"><strong>Date :</strong> {{ request.createdAt|date('d/m/Y H:i') }}</p>
+    {% if request.websiteUrl %}
+        <p style="margin-bottom: 8px;"><strong>Site web :</strong> <a href="{{ request.websiteUrl }}" style="color: #1a56db;">{{ request.websiteUrl }}</a></p>
+    {% endif %}
+    {% if request.discordUsername %}
+        <p style="margin-bottom: 8px;"><strong>Discord :</strong> {{ request.discordUsername }}</p>
+    {% endif %}
+</div>
+
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+    <strong>Usage prevu :</strong>
+    <p style="margin: 10px 0 0 0; white-space: pre-wrap;">{{ request.intendedUse }}</p>
+</div>
+
+<p style="text-align: center; margin: 30px 0;">
+    <a href="{{ adminUrl }}" style="background-color: #1a56db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+        Examiner la demande
+    </a>
+</p>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+<p style="color: #999; font-size: 12px;">
+    Cet email a ete envoye automatiquement car vous avez le role administrateur sur Altered Tournament Tools.
+</p>
+{% endblock %}

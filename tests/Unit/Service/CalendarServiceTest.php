@@ -36,7 +36,7 @@ final class CalendarServiceTest extends TestCase
         $this->tournament->setDate(new \DateTimeImmutable('2026-02-15'));
         $this->tournament->setTime(new \DateTimeImmutable('14:00'));
         $this->tournament->setLocation('Game Store Paris, 10 Rue du Test, 75001 Paris');
-        $this->tournament->setFormat(TournamentFormat::CONSTRUCTED);
+        $this->tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
         $this->tournament->setStructure(TournamentStructure::SWISS_ONLY);
         $this->tournament->setVisibility(TournamentVisibility::PUBLIC);
         $this->tournament->setEntryFee('5 EUR');

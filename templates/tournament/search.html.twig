@@ -1,18 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Rechercher un tournoi{% endblock %}
+{% block title %}{{ 'tournament.search.page_title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="max-w-6xl mx-auto">
     {# Header #}
     <div class="mb-6">
-        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">Trouver un tournoi</h1>
-        <p style="color: var(--text-secondary);">Recherchez des tournois Altered pres de chez vous</p>
+        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'tournament.search.title'|trans }}</h1>
+        <p style="color: var(--text-secondary);">{{ 'tournament.search.subtitle'|trans }}</p>
     </div>
 
     {# Search Form #}
     <div class="border rounded-lg p-6 mb-6" style="background-color: var(--card-bg); border-color: var(--border-default);" data-controller="filter">
-        {{ form_start(form, {'attr': {'class': 'space-y-4', 'data-filter-target': 'form', 'data-action': 'submit->filter#search'}}) }}
+        {{ form_start(form, {'action': path('tournament_search'), 'attr': {'class': 'space-y-4', 'data-filter-target': 'form', 'data-action': 'submit->filter#search'}}) }}
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {# Location #}
@@ -35,18 +35,13 @@
         </div>
 
         {# Date filters #}
-        <div class="grid md:grid-cols-3 gap-4">
+        <div class="grid md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateRange) }}</label>
-                {{ form_widget(form.dateRange, {'attr': {'class': 'form-input w-full', 'data-filter-target': 'dateRange'}}) }}
-            </div>
-
-            <div data-filter-target="customDates" class="hidden">
                 <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateFrom) }}</label>
                 {{ form_widget(form.dateFrom, {'attr': {'class': 'form-input w-full'}}) }}
             </div>
 
-            <div data-filter-target="customDates" class="hidden">
+            <div>
                 <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary);">{{ form_label(form.dateTo) }}</label>
                 {{ form_widget(form.dateTo, {'attr': {'class': 'form-input w-full'}}) }}
             </div>
@@ -56,18 +51,35 @@
         {{ form_widget(form.lat) }}
         {{ form_widget(form.lng) }}
 
+        {# Tournament type filters #}
+        <div class="flex flex-wrap gap-4 py-4 mt-2" style="border-top: 1px solid var(--border-default);">
+            <label class="flex items-center px-4 py-3 rounded-xl cursor-pointer border transition-all hover:border-orange-400" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                {{ form_widget(form.isTumult, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                <span class="ml-3 text-sm font-medium" style="color: var(--text-primary);">
+                    {{ 'tournament.search.is_tumult'|trans }}
+                </span>
+            </label>
+
+            <label class="flex items-center px-4 py-3 rounded-xl cursor-pointer border transition-all hover:border-yellow-400" style="background-color: var(--card-bg); border-color: var(--border-default);">
+                {{ form_widget(form.isSeasonFinalsQualifier, {'attr': {'class': 'h-5 w-5 rounded', 'style': 'accent-color: var(--color-primary-600);'}}) }}
+                <span class="ml-3 text-sm font-medium" style="color: var(--text-primary);">
+                    {{ 'tournament.search.is_season_finals_qualifier'|trans }}
+                </span>
+            </label>
+        </div>
+
         {# Submit button #}
         <div class="flex items-center justify-between">
             <button type="submit"
                     class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
                     style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
                 {{ ux_icon('lucide:search', {class: 'w-5 h-5 inline-block mr-2'}) }}
-                Rechercher
+                {{ 'action.search'|trans }}
             </button>
 
             {% if search_performed %}
             <a href="{{ path('tournament_search') }}" class="hover:opacity-80" style="color: var(--text-secondary);">
-                Effacer les filtres
+                {{ 'tournament.search.clear_filters'|trans }}
             </a>
             {% endif %}
         </div>
@@ -89,8 +101,8 @@
     {% if search_performed and results|length > 0 %}
     <div class="flex items-center justify-between mb-4" data-controller="view-toggle">
         <p style="color: var(--text-secondary);">
-            {{ results|length }} tournoi{% if results|length > 1 %}s{% endif %} trouve{% if results|length > 1 %}s{% endif %}
-            {% if search_location %}pres de <strong>{{ search_location }}</strong>{% endif %}
+            {{ 'tournament.search.results_count'|trans({'%count%': results|length}) }}
+            {% if search_location %}{{ 'tournament.search.near_location'|trans({'%location%': search_location}) }}{% endif %}
         </p>
 
         <div class="flex items-center space-x-2">
@@ -99,14 +111,14 @@
                     data-view-toggle-target="listBtn"
                     data-action="click->view-toggle#showList">
                 {{ ux_icon('lucide:list', {class: 'w-5 h-5 inline-block mr-1'}) }}
-                Liste
+                {{ 'tournament.search.view_list'|trans }}
             </button>
             <button type="button"
                     class="view-toggle-btn px-4 py-2 rounded-lg font-medium transition-colors"
                     data-view-toggle-target="mapBtn"
                     data-action="click->view-toggle#showMap">
                 {{ ux_icon('lucide:map', {class: 'w-5 h-5 inline-block mr-1'}) }}
-                Carte
+                {{ 'tournament.search.view_map'|trans }}
             </button>
         </div>
     </div>
@@ -175,22 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (preference === 'map') {
             mapBtn.click();
         }
-    }
-
-    // Custom date toggle
-    const dateRangeSelect = document.querySelector('[data-filter-target="dateRange"]');
-    const customDateFields = document.querySelectorAll('[data-filter-target="customDates"]');
-
-    if (dateRangeSelect && customDateFields.length) {
-        function toggleCustomDates() {
-            const show = dateRangeSelect.value === 'custom';
-            customDateFields.forEach(field => {
-                field.classList.toggle('hidden', !show);
-            });
-        }
-
-        dateRangeSelect.addEventListener('change', toggleCustomDates);
-        toggleCustomDates();
     }
 });
 </script>

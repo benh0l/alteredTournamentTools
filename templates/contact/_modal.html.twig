@@ -1,0 +1,138 @@
+{# Contact Report Modal - Include in base.html.twig #}
+{% if app.user %}
+<div data-controller="contact-modal">
+    {# Trigger Button - Will be placed in footer #}
+    <button
+        type="button"
+        data-action="click->contact-modal#open"
+        class="text-sm text-white dark:text-gray-900 hover:text-gray-200 dark:hover:text-gray-700 transition-colors duration-200 flex items-center gap-1 font-medium"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+        {{ 'contact.button.label'|trans }}
+    </button>
+
+    {# Modal Backdrop #}
+    <div
+        data-contact-modal-target="modal"
+        data-action="click->contact-modal#closeOnBackdrop"
+        class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+    >
+        {# Modal Content #}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto" @click.stop>
+            {# Header #}
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ 'contact.modal.title'|trans }}
+                </h3>
+                <button
+                    type="button"
+                    data-action="click->contact-modal#close"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {# Body #}
+            <div class="p-4">
+                {# Error Message #}
+                <div
+                    data-contact-modal-target="error"
+                    class="hidden mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm"
+                ></div>
+
+                {# Success Message #}
+                <div
+                    data-contact-modal-target="success"
+                    class="hidden text-center py-8"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-green-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-lg font-medium text-gray-900 dark:text-white">
+                        {{ 'contact.success.title'|trans }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        {{ 'contact.success.message'|trans }}
+                    </p>
+                </div>
+
+                {# Form #}
+                <form
+                    data-contact-modal-target="form"
+                    data-action="submit->contact-modal#submit"
+                    action="{{ path('app_contact_submit') }}"
+                    method="post"
+                    class="space-y-4"
+                >
+                    <input type="hidden" name="contact_report[_token]" value="{{ csrf_token('contact_report') }}">
+                    <input
+                        type="hidden"
+                        name="contact_report[pageUrl]"
+                        data-contact-modal-target="pageUrl"
+                        value=""
+                    >
+
+                    {# Subject #}
+                    <div>
+                        <label for="contact_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ 'contact.form.subject'|trans }}
+                        </label>
+                        <select
+                            id="contact_subject"
+                            name="contact_report[subject]"
+                            class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500"
+                            required
+                        >
+                            <option value="bug">{{ 'contact.subject.bug'|trans }}</option>
+                            <option value="contact">{{ 'contact.subject.contact'|trans }}</option>
+                        </select>
+                    </div>
+
+                    {# Message #}
+                    <div>
+                        <label for="contact_message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {{ 'contact.form.message'|trans }}
+                        </label>
+                        <textarea
+                            id="contact_message"
+                            name="contact_report[message]"
+                            rows="5"
+                            class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500"
+                            placeholder="{{ 'contact.form.message_placeholder'|trans }}"
+                            required
+                            minlength="10"
+                            maxlength="2000"
+                        ></textarea>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {{ 'contact.form.message_hint'|trans }}
+                        </p>
+                    </div>
+
+                    {# Submit Button #}
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            data-action="click->contact-modal#close"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                            {{ 'contact.form.cancel'|trans }}
+                        </button>
+                        <button
+                            type="submit"
+                            data-contact-modal-target="submitButton"
+                            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+                        >
+                            {{ 'contact.form.submit'|trans }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -23,14 +23,14 @@ class AdminMessage
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'sender_id', nullable: false)]
-    private User $sender;
+    #[ORM\JoinColumn(name: 'sender_id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $sender = null;
 
     #[ORM\Column(name: 'recipient_type', type: Types::STRING, length: 20)]
     private string $recipientType; // 'individual' or 'all_organizers'
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'recipient_user_id', nullable: true)]
+    #[ORM\JoinColumn(name: 'recipient_user_id', nullable: true, onDelete: 'SET NULL')]
     private ?User $recipientUser = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
@@ -55,12 +55,12 @@ class AdminMessage
         return $this->id;
     }
 
-    public function getSender(): User
+    public function getSender(): ?User
     {
         return $this->sender;
     }
 
-    public function setSender(User $sender): self
+    public function setSender(?User $sender): self
     {
         $this->sender = $sender;
 

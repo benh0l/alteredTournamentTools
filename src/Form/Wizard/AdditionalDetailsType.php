@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Wizard;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -56,6 +57,39 @@ final class AdditionalDetailsType extends AbstractType
                 'constraints' => [
                     new Assert\Url(message: 'L\'URL n\'est pas valide'),
                 ],
+            ])
+            ->add('isTumult', CheckboxType::class, [
+                'label' => 'Tournoi Tumult',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'Cochez si ce tournoi est un evenement Tumult',
+            ])
+            ->add('isSeasonFinalsQualifier', CheckboxType::class, [
+                'label' => 'Qualifier Season Finals',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'Cochez si ce tournoi qualifie pour les Season Finals',
+            ])
+            ->add('checkInEnabled', CheckboxType::class, [
+                'label' => 'tournament.wizard.step9.check_in_enabled',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'tournament.wizard.step9.check_in_enabled_help',
             ]);
     }
 

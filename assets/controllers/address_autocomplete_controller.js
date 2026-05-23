@@ -69,8 +69,8 @@ export default class extends Controller {
         this.suggestionsContainer = document.createElement('ul');
         this.suggestionsContainer.className = 'address-suggestions rounded-xl shadow-2xl overflow-hidden';
         this.suggestionsContainer.style.cssText = `
-            background-color: var(--card-bg, #ffffff);
-            border: 1px solid var(--border-default, #e5e7eb);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-default);
             display: none;
             z-index: 99999;
             position: fixed;
@@ -192,10 +192,10 @@ export default class extends Controller {
 
             return `
                 <li class="suggestion-item px-4 py-3 cursor-pointer transition-colors"
-                    style="border-bottom: 1px solid var(--border-default, #e5e7eb); background-color: var(--card-bg, #ffffff);"
+                    style="border-bottom: 1px solid var(--border-default); background-color: var(--card-bg);"
                     data-index="${index}">
-                    <div class="font-medium" style="color: var(--text-primary, #1f2937);">${this.escapeHtml(label)}</div>
-                    ${sublabel ? `<div class="text-sm" style="color: var(--text-muted, #6b7280);">${this.escapeHtml(sublabel)}</div>` : ''}
+                    <div class="font-medium" style="color: var(--text-primary);">${this.escapeHtml(label)}</div>
+                    ${sublabel ? `<div class="text-sm" style="color: var(--text-muted);">${this.escapeHtml(sublabel)}</div>` : ''}
                 </li>
             `;
         }).join('');
@@ -251,9 +251,9 @@ export default class extends Controller {
         const items = this.suggestionsContainer.querySelectorAll('.suggestion-item');
         items.forEach((item, index) => {
             if (index === this.selectedIndex) {
-                item.style.backgroundColor = 'var(--color-primary-100, #fef3c7)';
+                item.style.backgroundColor = 'var(--color-primary-100)';
             } else {
-                item.style.backgroundColor = 'var(--card-bg, #ffffff)';
+                item.style.backgroundColor = 'var(--card-bg)';
             }
         });
     }

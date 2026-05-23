@@ -19,7 +19,7 @@
 
     {# Navigation tabs #}
     <div class="mb-6 border-b" style="border-color: var(--border-default);">
-        <nav class="flex space-x-8">
+        <nav class="flex space-x-4 md:space-x-8 overflow-x-auto pb-2">
             <a href="{{ path('tournament_pairings', {id: tournament.id}) }}"
                class="py-2 px-1 border-b-2 border-transparent hover:border-gray-300" style="color: var(--text-muted);">
                 Pairings
@@ -53,8 +53,9 @@
 
     {# Standings table #}
     <div class="rounded-lg shadow overflow-hidden" style="background-color: var(--card-bg);" id="standings-table">
-        <table class="min-w-full divide-y" style="--tw-divide-opacity: 1; border-color: var(--border-default);">
-            <thead style="background-color: var(--bg-subtle);">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y" style="--tw-divide-opacity: 1; border-color: var(--border-default);">
+                <thead style="background-color: var(--bg-subtle);">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Rang</th>
                     <th class="px-4 py-3 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Joueur</th>
@@ -119,8 +120,9 @@
                         </td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     {# Legend #}
@@ -134,38 +136,62 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tournamentId = {{ tournament.id }};
+        (function() {
+            let pollingInterval = null;
+            const abortController = new AbortController();
 
-            // Try SSE first, fall back to polling
-            let usePolling = false;
-            let eventSource = null;
+            function init() {
+                const tournamentId = {{ tournament.id }};
 
-            function updateLastUpdate() {
-                const el = document.getElementById('last-update');
-                if (el) {
-                    const now = new Date();
-                    el.textContent = 'Mis a jour: ' +
-                        String(now.getHours()).padStart(2, '0') + ':' +
-                        String(now.getMinutes()).padStart(2, '0') + ':' +
-                        String(now.getSeconds()).padStart(2, '0');
+                function updateLastUpdate() {
+                    const el = document.getElementById('last-update');
+                    if (el) {
+                        const now = new Date();
+                        el.textContent = 'Mis a jour: ' +
+                            String(now.getHours()).padStart(2, '0') + ':' +
+                            String(now.getMinutes()).padStart(2, '0') + ':' +
+                            String(now.getSeconds()).padStart(2, '0');
+                    }
                 }
+
+                function pollForUpdates() {
+                    fetch('/api/dashboard/' + tournamentId + '/state')
+                        .then(response => response.json())
+                        .then(data => {
+                            updateLastUpdate();
+                        })
+                        .catch(error => console.error('Polling error:', error));
+                }
+
+                // Clear any existing interval before starting new one
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+
+                // Start polling every 30 seconds for live standings
+                pollingInterval = setInterval(pollForUpdates, 30000);
             }
 
-            function pollForUpdates() {
-                fetch('/api/dashboard/' + tournamentId + '/state')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Reload page to get updated standings
-                        // In a more sophisticated version, we'd update the DOM directly
-                        updateLastUpdate();
-                    })
-                    .catch(error => console.error('Polling error:', error));
+            function cleanup() {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+                abortController.abort();
             }
 
-            // Start polling every 30 seconds for live standings
-            setInterval(pollForUpdates, 30000);
-        });
+            // Cleanup on Turbo navigation - AbortController removes listeners automatically
+            document.addEventListener('turbo:before-visit', cleanup, { signal: abortController.signal });
+            document.addEventListener('turbo:before-render', cleanup, { signal: abortController.signal });
+            window.addEventListener('beforeunload', cleanup, { signal: abortController.signal });
+
+            // Initialize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { signal: abortController.signal });
+            } else {
+                init();
+            }
+        })();
     </script>
 {% endblock %}
 {% endif %}

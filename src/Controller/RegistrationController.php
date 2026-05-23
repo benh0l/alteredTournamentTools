@@ -6,7 +6,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Repository\UserRepository;
 use App\Service\AvatarUploadService;
+use App\Service\OAuth\OAuthFeatureService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -24,6 +26,8 @@ final class RegistrationController extends AbstractController
         private readonly Security $security,
         private readonly AvatarUploadService $avatarUploadService,
         private readonly TranslatorInterface $translator,
+        private readonly UserRepository $userRepository,
+        private readonly OAuthFeatureService $oauthFeatureService,
     ) {
     }
 
@@ -40,7 +44,48 @@ final class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Hash password with Argon2id (configured in security.yaml)
+            $email = $user->getEmail();
+
+            // Check if a guest account exists with this email
+            $existingUser = $this->userRepository->findByEmail($email);
+
+            if ($existingUser !== null && $existingUser->isGuest()) {
+                // Convert guest account to real account
+                $hashedPassword = $this->passwordHasher->hashPassword(
+                    $existingUser,
+                    $form->get('plainPassword')->getData(),
+                );
+
+                $existingUser->setPseudo($user->getPseudo());
+                $existingUser->setPassword($hashedPassword);
+                $existingUser->setIsGuest(false);
+                $existingUser->setClaimToken(null);
+                $existingUser->setClaimTokenExpiresAt(null);
+                $existingUser->setUpdatedAt(new \DateTimeImmutable());
+
+                // Handle avatar upload if provided
+                $avatarFile = $form->get('avatarFile')->getData();
+                if ($avatarFile) {
+                    $avatarFilename = $this->avatarUploadService->upload($avatarFile);
+                    $existingUser->setAvatar($avatarFilename);
+                }
+
+                // Transfer name if provided
+                if ($user->getName() !== null) {
+                    $existingUser->setName($user->getName());
+                }
+
+                $this->entityManager->flush();
+
+                // Auto-login with the existing user
+                $this->security->login($existingUser, 'form_login', 'main');
+
+                $this->addFlash('success', $this->translator->trans('flash.success.account_claimed'));
+
+                return $this->redirectToRoute('app_home');
+            }
+
+            // Normal registration flow for new users
             $hashedPassword = $this->passwordHasher->hashPassword(
                 $user,
                 $form->get('plainPassword')->getData(),
@@ -67,6 +112,7 @@ final class RegistrationController extends AbstractController
 
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,
+            'oauth_altered_reunion_enabled' => $this->oauthFeatureService->isAlteredReunionEnabled(),
         ]);
     }
 }

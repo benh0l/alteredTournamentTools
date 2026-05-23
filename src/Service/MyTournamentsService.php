@@ -37,7 +37,7 @@ final class MyTournamentsService
 
             if ($status === TournamentStatus::PUBLISHED) {
                 $grouped['upcoming'][] = $registration;
-            } elseif ($status === TournamentStatus::ONGOING) {
+            } elseif ($status === TournamentStatus::ONGOING || $status === TournamentStatus::ABANDONED) {
                 $grouped['ongoing'][] = $registration;
             } elseif ($status === TournamentStatus::COMPLETED) {
                 $grouped['completed'][] = $registration;

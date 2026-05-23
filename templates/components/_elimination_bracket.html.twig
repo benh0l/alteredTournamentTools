@@ -1,0 +1,131 @@
+{#
+    Elimination Bracket Component
+
+    Displays a single elimination bracket with matches organized by rounds.
+
+    Parameters:
+    - elimination_rounds: array of Round entities (elimination rounds only, sorted by round number)
+#}
+
+{% if elimination_rounds|length > 0 %}
+<div class="mb-8">
+    <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+        {{ ux_icon('lucide:trophy', {class: 'w-6 h-6 mr-2', style: 'color: var(--color-primary-500);'}) }}
+        Phase d'elimination directe
+    </h2>
+
+    <div class="rounded-xl shadow-lg overflow-hidden" style="background-color: var(--card-bg); border: 1px solid var(--border-default);">
+        <div class="overflow-x-auto">
+            <div class="flex min-w-max p-4 gap-2">
+                {% for round in elimination_rounds %}
+                    {% set round_index = loop.index0 %}
+                    {% set total_rounds = elimination_rounds|length %}
+                    {% set matches = round.matches|filter(m => not m.isByeMatch) %}
+
+                    {# Round column #}
+                    <div class="flex flex-col flex-shrink-0" style="width: 220px;">
+                        {# Round header #}
+                        <div class="text-center mb-3 pb-2" style="border-bottom: 2px solid var(--color-primary-500);">
+                            <span class="text-sm font-bold uppercase tracking-wide" style="color: var(--color-primary-600);">
+                                {% if loop.last and matches|length == 1 %}
+                                    Finale
+                                {% elseif loop.last and matches|length == 2 %}
+                                    Demi-finales
+                                {% elseif matches|length == 2 %}
+                                    Demi-finales
+                                {% elseif matches|length == 4 %}
+                                    Quarts de finale
+                                {% elseif matches|length == 8 %}
+                                    Huitiemes
+                                {% else %}
+                                    Ronde {{ round.roundNumber }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {# Matches in this round #}
+                        <div class="flex flex-col justify-around flex-1 gap-2">
+                            {% for match in matches %}
+                                <div class="relative">
+                                    {# Match card #}
+                                    <div class="rounded-lg overflow-hidden shadow-sm" style="background-color: var(--bg-subtle); border: 1px solid var(--border-default);">
+                                        {# Player 1 #}
+                                        <div class="flex items-center justify-between px-3 py-2 {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}bg-green-500/20{% endif %}"
+                                             style="border-bottom: 1px solid var(--border-muted);">
+                                            <div class="flex items-center min-w-0 flex-1">
+                                                {% if match.player1 %}
+                                                    <span class="text-sm font-medium truncate" style="color: var(--text-primary);">
+                                                        {{ match.player1.player.displayName }}
+                                                    </span>
+                                                    {% if match.completed and match.winner and match.winner.id == match.player1.id %}
+                                                        {{ ux_icon('lucide:trophy', {class: 'w-3 h-3 ml-1 text-yellow-500 flex-shrink-0'}) }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-sm italic" style="color: var(--text-muted);">TBD</span>
+                                                {% endif %}
+                                            </div>
+                                            <span class="ml-2 text-sm font-bold flex-shrink-0" style="color: var(--text-primary);">
+                                                {% if match.completed %}{{ match.player1Score ?? 0 }}{% else %}-{% endif %}
+                                            </span>
+                                        </div>
+
+                                        {# Player 2 #}
+                                        <div class="flex items-center justify-between px-3 py-2 {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}bg-green-500/20{% endif %}">
+                                            <div class="flex items-center min-w-0 flex-1">
+                                                {% if match.player2 %}
+                                                    <span class="text-sm font-medium truncate" style="color: var(--text-primary);">
+                                                        {{ match.player2.player.displayName }}
+                                                    </span>
+                                                    {% if match.completed and match.winner and match.winner.id == match.player2.id %}
+                                                        {{ ux_icon('lucide:trophy', {class: 'w-3 h-3 ml-1 text-yellow-500 flex-shrink-0'}) }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-sm italic" style="color: var(--text-muted);">TBD</span>
+                                                {% endif %}
+                                            </div>
+                                            <span class="ml-2 text-sm font-bold flex-shrink-0" style="color: var(--text-primary);">
+                                                {% if match.completed %}{{ match.player2Score ?? 0 }}{% else %}-{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {# Connector line to next round (except for final) #}
+                                    {% if not loop.parent.loop.last %}
+                                        <div class="absolute top-1/2 -right-2 w-2 h-px" style="background-color: var(--border-default);"></div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# Connector between rounds #}
+                    {% if not loop.last %}
+                        <div class="flex items-center justify-center flex-shrink-0" style="width: 20px;">
+                            <div class="w-px h-full" style="background-color: var(--border-muted);"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {# Winner display (after final) #}
+                {% set final_round = elimination_rounds|last %}
+                {% set final_match = final_round.matches|first %}
+                {% if final_match and final_match.completed and final_match.winner %}
+                    <div class="flex flex-col flex-shrink-0 justify-center" style="width: 180px;">
+                        <div class="text-center mb-3 pb-2" style="border-bottom: 2px solid var(--color-amber-500);">
+                            <span class="text-sm font-bold uppercase tracking-wide text-amber-600">
+                                Champion
+                            </span>
+                        </div>
+                        <div class="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-yellow-400/20 to-amber-500/20" style="border: 2px solid var(--color-amber-400);">
+                            {{ ux_icon('lucide:crown', {class: 'w-8 h-8 text-yellow-500 mb-2'}) }}
+                            <span class="text-sm font-bold text-center" style="color: var(--text-primary);">
+                                {{ final_match.winner.player.displayName }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

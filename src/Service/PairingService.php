@@ -112,8 +112,8 @@ class PairingService
         $tournament->setStatus(TournamentStatus::ONGOING);
         $tournament->setStartedAt(new \DateTimeImmutable());
 
-        // Start the round
-        $round->start();
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
@@ -163,6 +163,13 @@ class PairingService
         // Calculate current standings
         $standings = $this->calculateStandings($tournament);
 
+        // Filter out dropped players from pairing
+        // Dropped players should not participate in future rounds
+        $activeStandings = array_filter(
+            $standings,
+            fn (PlayerStandings $standing): bool => !$standing->getRegistration()->isDropped()
+        );
+
         // Create the new round
         $newRoundNumber = $previousRound->getRoundNumber() + 1;
         $round = new Round();
@@ -170,8 +177,8 @@ class PairingService
         $round->setRoundNumber($newRoundNumber);
         $tournament->addRound($round);
 
-        // Generate pairings using Swiss algorithm
-        $pairings = $this->generateSwissPairings($standings);
+        // Generate pairings using Swiss algorithm (only active players)
+        $pairings = $this->generateSwissPairings($activeStandings);
 
         // Create matches
         $tableNumber = 1;
@@ -186,8 +193,8 @@ class PairingService
             $tableNumber++;
         }
 
-        // Start the round
-        $round->start();
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
@@ -787,6 +794,7 @@ class PairingService
         $tournament->addRound($round);
 
         // Generate pairings using circle method
+        // Round k (1-indexed): rotate all players except the first one
         $pairings = $this->generateCircleMethodPairings($registrations, $roundNumber);
 
         // Create matches
@@ -812,6 +820,9 @@ class PairingService
             $tournament->setStatus(TournamentStatus::ONGOING);
             $tournament->setStartedAt(new \DateTimeImmutable());
         }
+
+        // Round stays PENDING - organizer must explicitly start it
+        // This allows pairing modifications before round begins
 
         $this->entityManager->persist($round);
         $this->entityManager->flush();
@@ -939,11 +950,12 @@ class PairingService
         }
 
         // For round-robin, max rounds = players - 1 (or players if odd for BYE rounds)
+        // Use total registrations count (not filtered) to maintain consistent round count
         $playerCount = $tournament->getRegistrations()->count();
 
         $maxRounds = $playerCount - 1;
         if ($playerCount % 2 !== 0) {
-            $maxRounds = $playerCount;
+            $maxRounds = $playerCount; // Need extra round for BYE rotation
         }
 
         $currentRounds = $tournament->getRoundsCount();

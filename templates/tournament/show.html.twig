@@ -74,6 +74,12 @@
                         </form>
                     {% endif %}
 
+                    <a href="{{ path('tournament_copy', {id: tournament.id}) }}"
+                       class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all shadow-sm" style="background-color: var(--card-bg); border-color: var(--border-muted); color: var(--text-secondary);">
+                        {{ ux_icon('lucide:copy', {class: 'w-4 h-4 mr-2'}) }}
+                        {{ 'tournament.manage.copy'|trans }}
+                    </a>
+
                     {% if not tournament.draft and is_granted('TOURNAMENT_MANAGE_REGISTRATIONS', tournament) %}
                         <a href="{{ path('tournament_registrations', {id: tournament.id}) }}"
                            class="inline-flex items-center px-4 py-2 border-2 border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl font-medium hover:bg-amber-500/10 hover:border-amber-500/50 transition-all shadow-sm" style="background-color: var(--card-bg);">
@@ -112,13 +118,21 @@
                         {% endif %}
                     {% endif %}
 
-                    {# Dashboard link for ongoing tournaments #}
+                    {# Dashboard and Groups links for ongoing tournaments #}
                     {% if tournament.status.value == 'ongoing' %}
                         <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}"
                            class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all shadow-md">
                             {{ ux_icon('lucide:bar-chart-3', {class: 'w-5 h-5 mr-2'}) }}
                             {{ 'dashboard.title'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all shadow-sm"
+                               style="background-color: var(--card-bg); border-color: var(--color-primary-200); color: var(--color-primary-600);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     {% endif %}
 
                     {% if tournament.hasRounds %}
@@ -169,6 +183,13 @@
                             {{ ux_icon('lucide:layout-dashboard', {class: 'w-4 h-4 mr-2'}) }}
                             {{ 'dashboard.title'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 rounded-xl font-medium transition-all" style="background-color: var(--card-bg); border-color: var(--border-default); color: var(--text-secondary);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-4 h-4 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -195,15 +216,22 @@
                             {{ ux_icon('lucide:layout-dashboard', {class: 'w-5 h-5 mr-2'}) }}
                             {{ 'tournament.ongoing.view_dashboard'|trans }}
                         </a>
+                        {% if tournament.hasGroupStage %}
+                            <a href="{{ path('tournament_groups', {id: tournament.id}) }}"
+                               class="inline-flex items-center px-4 py-2 border-2 border-blue-300 rounded-xl font-medium transition-all hover:bg-blue-50 dark:hover:bg-blue-900/20" style="background-color: var(--card-bg); color: var(--text-secondary);">
+                                {{ ux_icon('lucide:layout-grid', {class: 'w-5 h-5 mr-2'}) }}
+                                {{ 'groups.title'|trans }}
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     {% endif %}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="space-y-6">
         {# Main content #}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="space-y-6">
             {# Basic Info Card #}
             <div class="rounded-xl shadow-lg border-l-4 overflow-hidden" style="background-color: var(--card-bg); border-color: var(--color-primary-400);">
                 <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, var(--color-primary-500) / 0.1, transparent); border-color: var(--border-muted);">
@@ -289,16 +317,14 @@
             </div>
         </div>
 
-        {# Sidebar #}
-        <div class="space-y-6">
-            {# Tournament Configuration Card #}
-            <div class="rounded-xl shadow-lg border-l-4 border-amber-400 overflow-hidden" style="background-color: var(--card-bg);">
-                <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, rgb(245 158 11 / 0.1), transparent); border-color: var(--border-muted);">
-                    <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
-                        {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
-                        {{ 'tournament.show.configuration'|trans }}
-                    </h2>
-                </div>
+        {# Tournament Configuration Card #}
+        <div class="rounded-xl shadow-lg border-l-4 border-amber-400 overflow-hidden" style="background-color: var(--card-bg);">
+            <div class="px-6 py-4 border-b" style="background: linear-gradient(to right, rgb(245 158 11 / 0.1), transparent); border-color: var(--border-muted);">
+                <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
+                    {{ ux_icon('lucide:settings', {class: 'w-5 h-5 mr-2 text-amber-500'}) }}
+                    {{ 'tournament.show.configuration'|trans }}
+                </h2>
+            </div>
                 <div class="p-6">
                     <dl class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
@@ -327,6 +353,12 @@
                                 <dd class="text-sm font-semibold" style="color: var(--text-primary);">Top {{ tournament.topCutSize }}</dd>
                             </div>
                         {% endif %}
+                        {% if tournament.hasElimination and tournament.eliminationMatchFormat %}
+                            <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
+                                <dt class="text-sm" style="color: var(--text-muted);">{{ 'form.tournament.elimination_match_format'|trans }}</dt>
+                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ ('enum.match_format.' ~ tournament.eliminationMatchFormat.value)|trans }}</dd>
+                            </div>
+                        {% endif %}
                         {% if tournament.hasGroupStage %}
                             <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
                                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step4.group_count'|trans }}</dt>
@@ -334,7 +366,7 @@
                             </div>
                             <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
                                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.wizard.step4.qualifiers_per_group'|trans }}</dt>
-                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ tournament.qualifiersPerGroup }}/{{ 'tournament.group'|trans|default('poule') }} ({{ tournament.totalQualifiers }} total)</dd>
+                                <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ tournament.qualifiersPerGroup }}/{{ 'tournament.group'|trans }} ({{ tournament.totalQualifiers }} total)</dd>
                             </div>
                         {% endif %}
                         <div class="flex justify-between items-center py-2">
@@ -358,6 +390,53 @@
                                     {{ ux_icon('lucide:check-circle', {class: 'w-6 h-6'}) }}
                                     <span class="font-semibold">{{ 'tournament.show.registered'|trans }}</span>
                                 </div>
+
+                                {# Check-in Section #}
+                                {% if tournament.checkInEnabled %}
+                                    <div class="mb-4 p-4 rounded-lg border" style="border-color: var(--border-default); background-color: var(--bg-subtle);">
+                                        <h3 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--text-secondary);">
+                                            {{ ux_icon('lucide:user-check', {class: 'w-4 h-4 mr-2'}) }}
+                                            {{ 'tournament.checkin.title'|trans }}
+                                        </h3>
+
+                                        {% if registration.isCheckedIn %}
+                                            {# Already checked in #}
+                                            <div class="flex items-center space-x-3 text-emerald-600 dark:text-emerald-400 p-3 bg-emerald-500/20 rounded-lg">
+                                                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5'}) }}
+                                                <div>
+                                                    <span class="font-semibold">{{ 'tournament.checkin.confirmed'|trans }}</span>
+                                                    {% if registration.checkedInAt %}
+                                                        <span class="text-sm ml-1" style="color: var(--text-muted);">
+                                                            ({{ registration.checkedInAt|date('H:i') }})
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% elseif tournament.checkInOpen %}
+                                            {# Check-in is open, show button #}
+                                            <div class="flex items-center space-x-3 text-amber-600 dark:text-amber-400 p-3 bg-amber-500/20 rounded-lg mb-3">
+                                                {{ ux_icon('lucide:clock', {class: 'w-5 h-5'}) }}
+                                                <span>{{ 'tournament.checkin.open_message'|trans }}</span>
+                                            </div>
+                                            <form action="{{ path('tournament_checkin', {id: tournament.id}) }}" method="POST">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('checkin-' ~ tournament.id) }}">
+                                                <button type="submit"
+                                                        class="w-full inline-flex items-center justify-center px-4 py-3 text-white rounded-xl font-semibold transition-all shadow-md"
+                                                        style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
+                                                    {{ ux_icon('lucide:user-check', {class: 'w-5 h-5 mr-2'}) }}
+                                                    {{ 'tournament.checkin.button'|trans }}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            {# Check-in enabled but not open yet #}
+                                            <div class="flex items-center space-x-3 p-3 rounded-lg" style="color: var(--text-muted); background-color: var(--bg-subtle);">
+                                                {{ ux_icon('lucide:clock', {class: 'w-5 h-5'}) }}
+                                                <span>{{ 'tournament.checkin.not_open_yet'|trans }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
                                 <div class="flex items-center justify-between">
                                     <a href="{{ path('tournament_registration_edit', {'id': tournament.id}) }}"
                                        class="inline-flex items-center text-sm font-medium hover:opacity-80"
@@ -436,7 +515,6 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
     </div>
 
     {# Back link #}

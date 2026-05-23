@@ -155,8 +155,8 @@ final class TournamentTest extends TestCase
     {
         $tournament = new Tournament();
 
-        $tournament->setFormat(TournamentFormat::CONSTRUCTED);
-        $this->assertSame(TournamentFormat::CONSTRUCTED, $tournament->getFormat());
+        $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD);
+        $this->assertSame(TournamentFormat::CONSTRUCTED_STANDARD, $tournament->getFormat());
 
         $tournament->setFormat(TournamentFormat::LIMITED);
         $this->assertSame(TournamentFormat::LIMITED, $tournament->getFormat());
@@ -384,7 +384,7 @@ final class TournamentTest extends TestCase
         $this->assertSame($tournament, $tournament->setEntryFee('10 EUR'));
         $this->assertSame($tournament, $tournament->setPrizes('Prizes'));
         $this->assertSame($tournament, $tournament->setAlteredGgLink('https://altered.gg'));
-        $this->assertSame($tournament, $tournament->setFormat(TournamentFormat::CONSTRUCTED));
+        $this->assertSame($tournament, $tournament->setFormat(TournamentFormat::CONSTRUCTED_STANDARD));
         $this->assertSame($tournament, $tournament->setStructure(TournamentStructure::SWISS_ONLY));
         $this->assertSame($tournament, $tournament->setVisibility(TournamentVisibility::PUBLIC));
         $this->assertSame($tournament, $tournament->setDecklistTransparency(DecklistTransparency::OPEN));

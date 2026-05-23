@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\MatchFormat;
 use App\Enum\MatchStatus;
 use App\Repository\TournamentMatchRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -28,11 +29,11 @@ class TournamentMatch
     private Round $round;
 
     #[ORM\ManyToOne(targetEntity: Registration::class)]
-    #[ORM\JoinColumn(name: 'player1_id', nullable: false)]
-    private Registration $player1;
+    #[ORM\JoinColumn(name: 'player1_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Registration $player1 = null;
 
     #[ORM\ManyToOne(targetEntity: Registration::class)]
-    #[ORM\JoinColumn(name: 'player2_id', nullable: true)]
+    #[ORM\JoinColumn(name: 'player2_id', nullable: true, onDelete: 'SET NULL')]
     private ?Registration $player2 = null;
 
     #[ORM\Column(name: 'table_number', type: 'integer')]
@@ -120,12 +121,12 @@ class TournamentMatch
         return $this->group !== null;
     }
 
-    public function getPlayer1(): Registration
+    public function getPlayer1(): ?Registration
     {
         return $this->player1;
     }
 
-    public function setPlayer1(Registration $player1): self
+    public function setPlayer1(?Registration $player1): self
     {
         $this->player1 = $player1;
 
@@ -347,6 +348,7 @@ class TournamentMatch
 
     /**
      * Assign a BYE to player1 (auto-win).
+     * Score is 1-0 for BO1, 2-0 for BO3.
      */
     public function assignBye(): self
     {
@@ -354,9 +356,55 @@ class TournamentMatch
         $this->player2 = null;
         $this->status = MatchStatus::COMPLETED;
         $this->completedAt = new \DateTimeImmutable();
+
+        $format = $this->round->getTournament()->getMatchFormatForRound($this->round);
+        $byeScore = $format === MatchFormat::BO1 ? 1 : 2;
+
         $this->result = [
             'winnerId' => $this->player1->getId(),
-            'player1Score' => 2,
+            'player1Score' => $byeScore,
+            'player2Score' => 0,
+            'isBye' => true,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Prepare a BYE match without completing it.
+     *
+     * Used when the round is still PENDING. The BYE will be
+     * completed when the round starts.
+     */
+    public function prepareBye(): self
+    {
+        $this->isBye = true;
+        $this->player2 = null;
+        // Keep status as PENDING - will be completed when round starts
+
+        return $this;
+    }
+
+    /**
+     * Complete a prepared BYE match.
+     *
+     * Called when the round starts to finalize BYE results.
+     */
+    public function completeBye(): self
+    {
+        if (!$this->isBye) {
+            return $this;
+        }
+
+        $this->status = MatchStatus::COMPLETED;
+        $this->completedAt = new \DateTimeImmutable();
+
+        $format = $this->round->getTournament()->getMatchFormatForRound($this->round);
+        $byeScore = $format === MatchFormat::BO1 ? 1 : 2;
+
+        $this->result = [
+            'winnerId' => $this->player1->getId(),
+            'player1Score' => $byeScore,
             'player2Score' => 0,
             'isBye' => true,
         ];

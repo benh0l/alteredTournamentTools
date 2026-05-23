@@ -21,8 +21,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/tournaments')]
@@ -35,6 +37,7 @@ final class TournamentRegistrationsController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
+        private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly ?MessageBusInterface $messageBus = null,
     ) {
     }
@@ -65,7 +68,7 @@ final class TournamentRegistrationsController extends AbstractController
             'registrations' => $registrations,
             'sort_field' => $sortField,
             'sort_direction' => $sortDirection,
-            'heroesData' => Faction::getHeroesGroupedByFaction(),
+            'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
             'factionChoices' => Faction::getChoices(),
         ]);
     }
@@ -288,6 +291,143 @@ final class TournamentRegistrationsController extends AbstractController
         }
 
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/registrations/add-guest', name: 'tournament_registrations_add_guest', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function addGuestPlayer(Request $request, Tournament $tournament): Response
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if (!$this->isCsrfTokenValid('add_guest' . $tournament->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $guestName = trim($request->request->getString('guest_name', ''));
+        $decklistUrl = $request->request->getString('decklist_url', '');
+        $factionValue = $request->request->getString('faction', '');
+        $faction2Value = $request->request->getString('faction2', '');
+        $hero = $request->request->getString('hero', '');
+
+        if ($guestName === '') {
+            $this->addFlash('error', $this->translator->trans('flash.error.guest_name_required'));
+
+            return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+        }
+
+        // Create guest user with unique pseudo and fake email
+        $uuid = Uuid::v4()->toRfc4122();
+        $guestPseudo = 'guest_' . substr($uuid, 0, 8);
+        $guestEmail = 'guest-' . $uuid . '@tournament.local';
+
+        $guestUser = new User();
+        $guestUser->setEmail($guestEmail);
+        $guestUser->setPseudo($guestPseudo);
+        $guestUser->setName($guestName);
+        // Set unusable password (random UUID hashed) - prevents login while maintaining security
+        $guestUser->setPassword($this->passwordHasher->hashPassword($guestUser, Uuid::v4()->toRfc4122()));
+        $guestUser->setIsGuest(true);
+        $guestUser->setIsVerified(false);
+
+        $this->entityManager->persist($guestUser);
+        $this->entityManager->flush(); // Flush to get the user ID before registration
+
+        // Convert faction strings to Faction enum
+        $faction = $factionValue !== '' ? Faction::tryFrom($factionValue) : null;
+        $faction2 = $faction2Value !== '' ? Faction::tryFrom($faction2Value) : null;
+
+        try {
+            $this->registrationService->registerPlayerByOrganizer(
+                $guestUser,
+                $tournament,
+                $decklistUrl ?: null,
+                $faction,
+                $hero ?: null,
+                $faction2
+            );
+
+            $this->addFlash('success', sprintf($this->translator->trans('flash.success.guest_added'), $guestName));
+            $this->logger->info('Guest player added to tournament', [
+                'guest_name' => $guestName,
+                'guest_user_id' => $guestUser->getId(),
+                'tournament_id' => $tournament->getId(),
+                'organizer_id' => $this->getUser()->getId(),
+            ]);
+        } catch (AlreadyRegisteredException) {
+            $this->addFlash('error', $this->translator->trans('flash.error.player_already_registered'));
+        } catch (TournamentNotOpenException) {
+            $this->addFlash('error', $this->translator->trans('flash.error.registrations_not_accepted'));
+        }
+
+        return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/registrations/{registrationId}/edit', name: 'organizer_registration_edit', methods: ['POST'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
+    public function editRegistration(
+        Request $request,
+        Tournament $tournament,
+        int $registrationId
+    ): Response {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if (!$this->isCsrfTokenValid('edit_registration' . $registrationId, $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $registration = $this->registrationRepository->find($registrationId);
+
+        if ($registration === null || $registration->getTournament()->getId() !== $tournament->getId()) {
+            $this->addFlash('error', $this->translator->trans('flash.error.registration_not_found'));
+
+            return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+        }
+
+        $factionValue = $request->request->getString('faction', '');
+        $faction2Value = $request->request->getString('faction2', '');
+        $hero = $request->request->getString('hero', '');
+        $decklistUrl = $request->request->getString('decklist_url', '');
+
+        // Update registration fields
+        $registration->setFaction($factionValue !== '' ? Faction::tryFrom($factionValue) : null);
+        $registration->setFaction2($faction2Value !== '' ? Faction::tryFrom($faction2Value) : null);
+        $registration->setHero($hero !== '' ? $hero : null);
+        $registration->setDecklistUrl($decklistUrl !== '' ? $decklistUrl : null);
+
+        $this->entityManager->flush();
+
+        $this->addFlash('success', sprintf(
+            $this->translator->trans('flash.success.player_registration_updated'),
+            $registration->getPlayer()->getPseudo()
+        ));
+
+        $this->logger->info('Registration updated by organizer', [
+            'registration_id' => $registrationId,
+            'player_pseudo' => $registration->getPlayer()->getPseudo(),
+            'tournament_id' => $tournament->getId(),
+            'organizer_id' => $this->getUser()->getId(),
+        ]);
+
+        return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+    }
+
+    #[Route('/{id}/registrations/{registrationId}/data', name: 'tournament_registration_data', methods: ['GET'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
+    public function getRegistrationData(Tournament $tournament, int $registrationId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        $registration = $this->registrationRepository->find($registrationId);
+
+        if ($registration === null || $registration->getTournament()->getId() !== $tournament->getId()) {
+            return new JsonResponse(['error' => 'Registration not found'], 404);
+        }
+
+        return new JsonResponse([
+            'id' => $registration->getId(),
+            'playerPseudo' => $registration->getPlayer()->getPseudo(),
+            'faction' => $registration->getFaction()?->value,
+            'faction2' => $registration->getFaction2()?->value,
+            'hero' => $registration->getHero(),
+            'decklistUrl' => $registration->getDecklistUrl(),
+        ]);
     }
 
     private function escapeCsv(string $value): string

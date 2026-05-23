@@ -38,6 +38,9 @@ class Round
     #[ORM\Column(name: 'completed_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $completedAt = null;
 
+    #[ORM\Column(name: 'timer_started_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $timerStartedAt = null;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -130,6 +133,36 @@ class Round
         $this->completedAt = $completedAt;
 
         return $this;
+    }
+
+    public function getTimerStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->timerStartedAt;
+    }
+
+    public function setTimerStartedAt(?\DateTimeImmutable $timerStartedAt): self
+    {
+        $this->timerStartedAt = $timerStartedAt;
+
+        return $this;
+    }
+
+    /**
+     * Start the round timer.
+     */
+    public function startTimer(): self
+    {
+        $this->timerStartedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    /**
+     * Check if the timer has been started.
+     */
+    public function isTimerStarted(): bool
+    {
+        return $this->timerStartedAt !== null;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

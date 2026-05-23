@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Enum\TournamentFormat;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -23,17 +24,17 @@ class TournamentSearchType extends AbstractType
     {
         $builder
             ->add('location', TextType::class, [
-                'label' => 'Ville ou code postal',
+                'label' => 'tournament.search.location',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Ex: Paris, 75001, Lyon...',
+                    'placeholder' => 'tournament.search.location_placeholder',
                     'class' => 'form-input',
                     'data-address-autocomplete-target' => 'input',
                     'autocomplete' => 'off',
                 ],
             ])
             ->add('radius', NumberType::class, [
-                'label' => 'Rayon (km)',
+                'label' => 'tournament.search.radius',
                 'required' => false,
                 'data' => 50,
                 'attr' => [
@@ -44,23 +45,23 @@ class TournamentSearchType extends AbstractType
                 ],
             ])
             ->add('format', ChoiceType::class, [
-                'label' => 'Format',
+                'label' => 'tournament.search.format',
                 'required' => false,
-                'placeholder' => 'Tous les formats',
+                'placeholder' => 'tournament.search.all_formats',
                 'choices' => [
-                    'Construit Standard' => TournamentFormat::CONSTRUCTED_STANDARD->value,
-                    'Construit Singleton' => TournamentFormat::CONSTRUCTED_SINGLETON->value,
-                    'Construit NUC' => TournamentFormat::CONSTRUCTED_NUC->value,
-                    '(Fun) Heros Out of Faction' => TournamentFormat::CONSTRUCTED_HERO_OUT_OF_FACTION->value,
-                    '(Fun) Bifaction' => TournamentFormat::CONSTRUCTED_BIFACTION->value,
-                    'Limite' => TournamentFormat::LIMITED->value,
+                    'enum.tournament_format.constructed_standard' => TournamentFormat::CONSTRUCTED_STANDARD->value,
+                    'enum.tournament_format.constructed_singleton' => TournamentFormat::CONSTRUCTED_SINGLETON->value,
+                    'enum.tournament_format.constructed_nuc' => TournamentFormat::CONSTRUCTED_NUC->value,
+                    'enum.tournament_format.constructed_hero_oof' => TournamentFormat::CONSTRUCTED_HERO_OUT_OF_FACTION->value,
+                    'enum.tournament_format.constructed_bifaction' => TournamentFormat::CONSTRUCTED_BIFACTION->value,
+                    'enum.tournament_format.limited' => TournamentFormat::LIMITED->value,
                 ],
                 'attr' => [
                     'class' => 'form-select',
                 ],
             ])
             ->add('dateFrom', DateType::class, [
-                'label' => 'Du',
+                'label' => 'tournament.search.date_from',
                 'required' => false,
                 'widget' => 'single_text',
                 'attr' => [
@@ -68,11 +69,26 @@ class TournamentSearchType extends AbstractType
                 ],
             ])
             ->add('dateTo', DateType::class, [
-                'label' => 'Au',
+                'label' => 'tournament.search.date_to',
                 'required' => false,
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-input',
+                ],
+            ])
+            // Tournament type filters
+            ->add('isTumult', CheckboxType::class, [
+                'label' => 'tournament.search.is_tumult',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+            ])
+            ->add('isSeasonFinalsQualifier', CheckboxType::class, [
+                'label' => 'tournament.search.is_season_finals_qualifier',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
                 ],
             ])
             // Hidden fields for coordinates (set by JavaScript/geocoding)

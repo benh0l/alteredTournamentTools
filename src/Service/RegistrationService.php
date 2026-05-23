@@ -105,6 +105,8 @@ final class RegistrationService
     /**
      * Register a player to a tournament by the organizer.
      * This bypasses the "registrations closed" check but still prevents duplicates.
+     *
+     * @param bool $skipEmail If true, don't send confirmation email (useful for bulk import)
      */
     public function registerPlayerByOrganizer(
         User $player,
@@ -112,10 +114,11 @@ final class RegistrationService
         ?string $decklistUrl = null,
         ?Faction $faction = null,
         ?string $hero = null,
-        ?Faction $faction2 = null
+        ?Faction $faction2 = null,
+        bool $skipEmail = false
     ): Registration {
-        // Check tournament status allows registration (PUBLISHED or ONGOING for late additions)
-        if (!in_array($tournament->getStatus(), [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING], true)) {
+        // Check tournament status allows registration (PUBLISHED, ONGOING or ABANDONED for late additions)
+        if (!in_array($tournament->getStatus(), [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED], true)) {
             throw new TournamentNotOpenException();
         }
 
@@ -152,8 +155,8 @@ final class RegistrationService
             'tournament_name' => $tournament->getName(),
         ]);
 
-        // Send confirmation email
-        if ($this->messageBus !== null && $registration->getId() !== null) {
+        // Send confirmation email (unless skipped for bulk import)
+        if (!$skipEmail && $this->messageBus !== null && $registration->getId() !== null) {
             $this->messageBus->dispatch(new SendRegistrationConfirmationMessage($registration->getId()));
         }
 

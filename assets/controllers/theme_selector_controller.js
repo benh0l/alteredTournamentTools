@@ -59,11 +59,13 @@ export default class extends Controller {
     toggleMenu(event) {
         event.preventDefault();
         event.stopPropagation();
-        this.menuTarget.classList.toggle('hidden');
+        if (this.hasMenuTarget) {
+            this.menuTarget.classList.toggle('hidden');
+        }
     }
 
     closeOnClickOutside(event) {
-        if (!this.element.contains(event.target) && !this.menuTarget.classList.contains('hidden')) {
+        if (this.hasMenuTarget && !this.element.contains(event.target) && !this.menuTarget.classList.contains('hidden')) {
             this.menuTarget.classList.add('hidden');
         }
     }
@@ -111,7 +113,9 @@ export default class extends Controller {
         }
 
         // Close menu after selection
-        this.menuTarget.classList.add('hidden');
+        if (this.hasMenuTarget) {
+            this.menuTarget.classList.add('hidden');
+        }
     }
 
     updateUI() {

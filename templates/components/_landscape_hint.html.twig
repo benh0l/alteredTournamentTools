@@ -1,0 +1,67 @@
+{#
+    Landscape Hint Banner
+    Shows a suggestion to rotate device to landscape mode on mobile portrait.
+    Auto-hides in landscape orientation.
+
+    Usage: {{ include('components/_landscape_hint.html.twig') }}
+#}
+<div id="landscape-hint"
+     class="md:hidden fixed bottom-4 left-4 right-4 z-40 rounded-xl shadow-lg p-4 flex items-center justify-between transition-all duration-300"
+     style="background-color: var(--card-bg); border: 1px solid var(--border-default);">
+    <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0" style="background-color: var(--color-primary-100);">
+            {{ ux_icon('lucide:smartphone', {class: 'w-5 h-5 rotate-90', style: 'color: var(--color-primary-600);'}) }}
+        </div>
+        <div>
+            <p class="text-sm font-medium" style="color: var(--text-primary);">
+                {% if app.request.locale == 'fr' %}
+                    Pivotez votre ecran
+                {% else %}
+                    Rotate your screen
+                {% endif %}
+            </p>
+            <p class="text-xs" style="color: var(--text-muted);">
+                {% if app.request.locale == 'fr' %}
+                    Mode paysage pour une meilleure lecture
+                {% else %}
+                    Landscape mode for better viewing
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <button type="button"
+            onclick="document.getElementById('landscape-hint').style.display='none'; sessionStorage.setItem('landscape-hint-dismissed', '1');"
+            class="p-2 rounded-lg hover:opacity-70 transition-opacity flex-shrink-0"
+            style="color: var(--text-muted);"
+            aria-label="{% if app.request.locale == 'fr' %}Fermer{% else %}Close{% endif %}">
+        {{ ux_icon('lucide:x', {class: 'w-5 h-5'}) }}
+    </button>
+</div>
+
+<script>
+(function() {
+    const hint = document.getElementById('landscape-hint');
+    if (!hint) return;
+
+    // Hide if already dismissed this session
+    if (sessionStorage.getItem('landscape-hint-dismissed') === '1') {
+        hint.style.display = 'none';
+        return;
+    }
+
+    // Hide in landscape orientation
+    function checkOrientation() {
+        if (window.innerWidth > window.innerHeight) {
+            hint.style.opacity = '0';
+            hint.style.pointerEvents = 'none';
+        } else {
+            hint.style.opacity = '1';
+            hint.style.pointerEvents = 'auto';
+        }
+    }
+
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+})();
+</script>

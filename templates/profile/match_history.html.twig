@@ -1,0 +1,322 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'profile.match_history.title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+        {# Header #}
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_profile') }}" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" style="color: var(--text-muted);">
+                    {{ ux_icon('lucide:arrow-left', {class: 'w-5 h-5'}) }}
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold" style="color: var(--text-primary);">{{ 'profile.match_history.title'|trans }}</h1>
+                    <p class="text-sm" style="color: var(--text-muted);">{{ 'profile.match_history.subtitle'|trans({'%name%': user.pseudo}) }}</p>
+                </div>
+            </div>
+        </div>
+
+        {# Stats Overview Cards #}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {# Total Matches #}
+            <div class="rounded-xl p-5 shadow-sm" style="background-color: var(--card-bg);">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                        {{ ux_icon('lucide:swords', {class: 'w-5 h-5'}) }}
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ stats.totalMatches }}</p>
+                        <p class="text-xs" style="color: var(--text-muted);">{{ 'profile.match_history.total_matches'|trans }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Winrate #}
+            <div class="rounded-xl p-5 shadow-sm" style="background-color: var(--card-bg);">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-green-100 text-green-600">
+                        {{ ux_icon('lucide:percent', {class: 'w-5 h-5'}) }}
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ stats.winrate }}%</p>
+                        <p class="text-xs" style="color: var(--text-muted);">{{ 'profile.match_history.winrate'|trans }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Win/Loss Record #}
+            <div class="rounded-xl p-5 shadow-sm" style="background-color: var(--card-bg);">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-purple-100 text-purple-600">
+                        {{ ux_icon('lucide:trophy', {class: 'w-5 h-5'}) }}
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold" style="color: var(--text-primary);">
+                            <span class="text-green-600">{{ stats.wins }}</span>
+                            <span style="color: var(--text-muted);">/</span>
+                            <span class="text-red-600">{{ stats.losses }}</span>
+                            {% if stats.draws > 0 %}
+                                <span style="color: var(--text-muted);">/</span>
+                                <span style="color: var(--text-muted);">{{ stats.draws }}</span>
+                            {% endif %}
+                        </p>
+                        <p class="text-xs" style="color: var(--text-muted);">{{ 'profile.match_history.record'|trans }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Tournaments Played #}
+            <div class="rounded-xl p-5 shadow-sm" style="background-color: var(--card-bg);">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-lg bg-orange-100 text-orange-600">
+                        {{ ux_icon('lucide:calendar', {class: 'w-5 h-5'}) }}
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ stats.tournamentsPlayed }}</p>
+                        <p class="text-xs" style="color: var(--text-muted);">{{ 'profile.match_history.tournaments'|trans }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {# Main Content - Recent Matches #}
+            <div class="lg:col-span-2 space-y-6">
+                {# Best Result #}
+                {% if stats.bestResult %}
+                <div class="rounded-xl p-5 shadow-sm border-l-4 border-yellow-500" style="background-color: var(--card-bg);">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-lg bg-yellow-100 text-yellow-600">
+                            {{ ux_icon('lucide:medal', {class: 'w-6 h-6'}) }}
+                        </div>
+                        <div>
+                            <p class="font-semibold" style="color: var(--text-primary);">{{ 'profile.match_history.best_result'|trans }}</p>
+                            <p class="text-sm" style="color: var(--text-muted);">
+                                <span class="font-bold" style="color: var(--color-primary-600);">
+                                    {% if stats.bestResult.position == 1 %}
+                                        {{ 'profile.match_history.position_1'|trans }}
+                                    {% elseif stats.bestResult.position == 2 %}
+                                        {{ 'profile.match_history.position_2'|trans }}
+                                    {% elseif stats.bestResult.position == 3 %}
+                                        {{ 'profile.match_history.position_3'|trans }}
+                                    {% else %}
+                                        {{ 'profile.match_history.position_n'|trans({'%n%': stats.bestResult.position}) }}
+                                    {% endif %}
+                                </span>
+                                - <a href="{{ path('tournament_show', {id: stats.bestResult.tournamentId}) }}" class="hover:underline">{{ stats.bestResult.tournament }}</a>
+                                ({{ stats.bestResult.date|date('d/m/Y') }})
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# Recent Matches Table #}
+                <div class="rounded-xl shadow-sm overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="px-5 py-4 border-b" style="border-color: var(--border-default);">
+                        <h2 class="font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                            {{ ux_icon('lucide:history', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            {{ 'profile.match_history.recent_matches'|trans }}
+                        </h2>
+                    </div>
+
+                    {% if stats.recentMatches is empty %}
+                        <div class="px-5 py-12 text-center" style="color: var(--text-muted);">
+                            {{ ux_icon('lucide:inbox', {class: 'w-12 h-12 mx-auto mb-3 opacity-50'}) }}
+                            <p>{{ 'profile.match_history.no_matches'|trans }}</p>
+                        </div>
+                    {% else %}
+                        <div class="divide-y" style="border-color: var(--border-default);">
+                            {% for matchData in stats.recentMatches %}
+                                <div class="px-5 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        {# User hero portrait #}
+                                        <div class="relative flex-shrink-0">
+                                            <div class="w-10 h-10 rounded-full overflow-hidden border-2"
+                                                 style="border-color: {{ matchData.factionColor ?? 'var(--border-default)' }};">
+                                                {% if matchData.heroImage %}
+                                                    <img src="{{ matchData.heroImage }}" alt="{{ matchData.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span style=\'color: var(--text-muted);\'>?</span></div>'">
+                                                {% else %}
+                                                    <div class="w-full h-full flex items-center justify-center" style="background-color: var(--bg-subtle);">
+                                                        <span style="color: var(--text-muted);">?</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {# VS indicator #}
+                                        <div class="flex-shrink-0 text-xs font-bold" style="color: var(--text-muted);">vs</div>
+
+                                        {# Opponent hero portrait #}
+                                        <div class="relative flex-shrink-0">
+                                            {% if matchData.isBye %}
+                                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-500 text-xs font-bold">
+                                                    BYE
+                                                </div>
+                                            {% else %}
+                                                <div class="w-10 h-10 rounded-full overflow-hidden border-2"
+                                                     style="border-color: {{ matchData.opponentFactionColor ?? 'var(--border-default)' }};">
+                                                    {% if matchData.opponentHeroImage %}
+                                                        <img src="{{ matchData.opponentHeroImage }}" alt="{{ matchData.opponentHeroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span style=\'color: var(--text-muted);\'>?</span></div>'">
+                                                    {% else %}
+                                                        <div class="w-full h-full flex items-center justify-center" style="background-color: var(--bg-subtle);">
+                                                            <span style="color: var(--text-muted);">?</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {# Match info #}
+                                        <div class="min-w-0">
+                                            <p class="font-medium truncate" style="color: var(--text-primary);">
+                                                {% if matchData.isBye %}
+                                                    <span style="color: var(--text-muted);">{{ 'profile.match_history.bye'|trans }}</span>
+                                                {% elseif matchData.opponent %}
+                                                    <span style="color: var(--text-primary);">{{ matchData.opponent }}</span>
+                                                {% else %}
+                                                    <span style="color: var(--text-muted);">{{ 'profile.match_history.unknown_opponent'|trans }}</span>
+                                                {% endif %}
+                                            </p>
+                                            <p class="text-sm truncate" style="color: var(--text-muted);">
+                                                <a href="{{ path('tournament_show', {id: matchData.tournamentId}) }}" class="hover:underline">{{ matchData.tournament }}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-3 flex-shrink-0">
+                                        {# Result badge #}
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white
+                                            {% if matchData.isBye %}bg-gray-400{% elseif matchData.won %}bg-green-500{% else %}bg-red-500{% endif %}">
+                                            {% if matchData.isBye %}
+                                                B
+                                            {% elseif matchData.won %}
+                                                W
+                                            {% else %}
+                                                L
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="text-right">
+                                            <p class="font-mono font-semibold" style="color: var(--text-primary);">{{ matchData.score }}</p>
+                                            <p class="text-xs" style="color: var(--text-muted);">
+                                                {% if matchData.date %}
+                                                    {{ matchData.date|date('d/m/Y') }}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Sidebar #}
+            <div class="space-y-6">
+                {# Faction Stats #}
+                {% if stats.factionStats is not empty %}
+                <div class="rounded-xl shadow-sm overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="px-5 py-4 border-b" style="border-color: var(--border-default);">
+                        <h2 class="font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                            {{ ux_icon('lucide:shield', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            {{ 'profile.match_history.faction_stats'|trans }}
+                        </h2>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        {% for factionKey, factionData in stats.factionStats %}
+                            {% set factionColor = {
+                                'axiom': '#7a4d25',
+                                'bravos': '#ef4444',
+                                'lyra': '#e394da',
+                                'muna': '#22c55e',
+                                'ordis': '#3b82f6',
+                                'yzmir': '#a855f7'
+                            }[factionKey] ?? '#6b7280' %}
+
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-medium capitalize" style="color: {{ factionColor }};">{{ factionKey }}</span>
+                                    <span class="text-sm" style="color: var(--text-muted);">
+                                        {{ factionData.wins }}/{{ factionData.played }} ({{ factionData.winrate }}%)
+                                    </span>
+                                </div>
+                                <div class="h-2 rounded-full overflow-hidden" style="background-color: var(--bg-muted);">
+                                    <div class="h-full rounded-full transition-all duration-300" style="width: {{ factionData.winrate }}%; background-color: {{ factionColor }};"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# Head-to-Head Search #}
+                <div class="rounded-xl shadow-sm" style="background-color: var(--card-bg);">
+                    <div class="px-5 py-4 border-b rounded-t-xl" style="border-color: var(--border-default);">
+                        <h2 class="font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                            {{ ux_icon('lucide:search', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            {{ 'profile.match_history.head_to_head'|trans }}
+                        </h2>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="relative" data-controller="player-search" data-player-search-url-value="{{ path('app_profile_search_players') }}">
+                            <input type="text"
+                                   placeholder="{{ 'profile.match_history.search_player'|trans }}"
+                                   class="w-full px-4 py-2 rounded-lg border text-sm"
+                                   style="background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);"
+                                   data-player-search-target="input"
+                                   data-action="input->player-search#search focus->player-search#search"
+                                   autocomplete="off">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                {{ ux_icon('lucide:search', {class: 'w-4 h-4', style: 'color: var(--text-muted);'}) }}
+                            </div>
+                            {# Dropdown results #}
+                            <div class="absolute z-50 w-full mt-1 rounded-lg shadow-xl overflow-hidden"
+                                 style="background-color: var(--card-bg); border: 1px solid var(--border-default); display: none;"
+                                 data-player-search-target="results">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Frequent Opponents #}
+                {% if stats.frequentOpponents is not empty %}
+                <div class="rounded-xl shadow-sm overflow-hidden" style="background-color: var(--card-bg);">
+                    <div class="px-5 py-4 border-b" style="border-color: var(--border-default);">
+                        <h2 class="font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                            {{ ux_icon('lucide:users', {class: 'w-5 h-5', style: 'color: var(--text-muted);'}) }}
+                            {{ 'profile.match_history.frequent_opponents'|trans }}
+                        </h2>
+                    </div>
+
+                    <div class="divide-y" style="border-color: var(--border-default);">
+                        {% for opponent in stats.frequentOpponents %}
+                            <a href="{{ path('app_profile_head_to_head', {opponentId: opponent.user.id}) }}"
+                               class="px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors block">
+                                <span class="font-medium" style="color: var(--text-primary);">
+                                    {{ opponent.user.displayName }}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-sm">
+                                        <span class="text-green-600 font-medium">{{ opponent.wins }}W</span>
+                                        <span style="color: var(--text-muted);">-</span>
+                                        <span class="text-red-600 font-medium">{{ opponent.losses }}L</span>
+                                        <span class="ml-1" style="color: var(--text-muted);">({{ opponent.matches }})</span>
+                                    </div>
+                                    {{ ux_icon('lucide:chevron-right', {class: 'w-4 h-4', style: 'color: var(--text-muted);'}) }}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

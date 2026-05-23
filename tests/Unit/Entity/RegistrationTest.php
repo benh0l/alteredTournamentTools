@@ -111,4 +111,118 @@ final class RegistrationTest extends TestCase
 
         $this->assertNotEquals($registration1->getUnregisterToken(), $registration2->getUnregisterToken());
     }
+
+    public function testIsDroppedReturnsFalseByDefault(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+
+        $this->assertFalse($registration->isDropped());
+        $this->assertNull($registration->getDroppedAt());
+    }
+
+    public function testDropSetsDroppedAtTimestamp(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $before = new \DateTimeImmutable();
+        $registration = new Registration($tournament, $player);
+        $registration->drop();
+        $after = new \DateTimeImmutable();
+
+        $this->assertTrue($registration->isDropped());
+        $this->assertInstanceOf(\DateTimeImmutable::class, $registration->getDroppedAt());
+        $this->assertGreaterThanOrEqual($before, $registration->getDroppedAt());
+        $this->assertLessThanOrEqual($after, $registration->getDroppedAt());
+    }
+
+    public function testDropReturnsSelf(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+        $result = $registration->drop();
+
+        $this->assertSame($registration, $result);
+    }
+
+    public function testDropDoesNotUpdateTimestampIfAlreadyDropped(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+        $registration->drop();
+        $firstDroppedAt = $registration->getDroppedAt();
+
+        // Small delay to ensure different timestamp
+        usleep(1000);
+        $registration->drop();
+
+        $this->assertSame($firstDroppedAt, $registration->getDroppedAt());
+    }
+
+    public function testUndropClearsDroppedAtTimestamp(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+        $registration->drop();
+        $this->assertTrue($registration->isDropped());
+
+        $registration->undrop();
+
+        $this->assertFalse($registration->isDropped());
+        $this->assertNull($registration->getDroppedAt());
+    }
+
+    public function testUndropReturnsSelf(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+        $registration->drop();
+        $result = $registration->undrop();
+
+        $this->assertSame($registration, $result);
+    }
+
+    public function testUndropWorksOnNonDroppedRegistration(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+        $registration->undrop();
+
+        $this->assertFalse($registration->isDropped());
+        $this->assertNull($registration->getDroppedAt());
+    }
+
+    public function testDropCanBeCalledAfterUndrop(): void
+    {
+        $tournament = $this->createMock(Tournament::class);
+        $player = $this->createMock(User::class);
+
+        $registration = new Registration($tournament, $player);
+
+        // First drop
+        $registration->drop();
+        $this->assertTrue($registration->isDropped());
+
+        // Undrop
+        $registration->undrop();
+        $this->assertFalse($registration->isDropped());
+
+        // Drop again
+        $registration->drop();
+        $this->assertTrue($registration->isDropped());
+        $this->assertNotNull($registration->getDroppedAt());
+    }
 }

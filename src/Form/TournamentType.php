@@ -11,6 +11,7 @@ use App\Enum\TournamentFormat;
 use App\Enum\TournamentStructure;
 use App\Enum\TournamentVisibility;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -145,7 +146,7 @@ final class TournamentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'min' => 4,
-                    'max' => 128,
+                    'max' => 256,
                     'placeholder' => 'form.tournament.expected_players_placeholder',
                     'class' => 'form-input',
                     'data-tournament-form-target' => 'expectedPlayers',
@@ -154,7 +155,7 @@ final class TournamentType extends AbstractType
                 'constraints' => [
                     new Range([
                         'min' => 4,
-                        'max' => 128,
+                        'max' => 256,
                         'notInRangeMessage' => 'validation.tournament.players_range',
                     ]),
                 ],
@@ -189,6 +190,62 @@ final class TournamentType extends AbstractType
                 'attr' => [
                     'class' => 'form-select',
                     'data-tournament-form-target' => 'topCutSize',
+                ],
+            ])
+
+            // Group Stage Configuration (for GROUP_STAGE_ELIMINATION)
+            ->add('groupCount', IntegerType::class, [
+                'label' => 'form.tournament.group_count',
+                'required' => false,
+                'attr' => [
+                    'min' => 2,
+                    'max' => 16,
+                    'placeholder' => 'form.tournament.group_count_placeholder',
+                    'class' => 'form-input',
+                    'data-tournament-form-target' => 'groupCount',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
+                ],
+                'constraints' => [
+                    new Range([
+                        'min' => 2,
+                        'max' => 16,
+                        'notInRangeMessage' => 'validation.tournament.group_count_range',
+                    ]),
+                ],
+            ])
+            ->add('playersPerGroup', IntegerType::class, [
+                'label' => 'form.tournament.players_per_group',
+                'required' => false,
+                'attr' => [
+                    'min' => 3,
+                    'max' => 16,
+                    'placeholder' => 'form.tournament.players_per_group_placeholder',
+                    'class' => 'form-input',
+                    'data-tournament-form-target' => 'playersPerGroup',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
+                ],
+                'constraints' => [
+                    new Range([
+                        'min' => 3,
+                        'max' => 16,
+                        'notInRangeMessage' => 'validation.tournament.players_per_group_range',
+                    ]),
+                ],
+            ])
+            ->add('qualifiersPerGroup', ChoiceType::class, [
+                'label' => 'form.tournament.qualifiers_per_group',
+                'required' => false,
+                'placeholder' => 'form.common.select',
+                'choices' => [
+                    '1' => 1,
+                    '2' => 2,
+                    '3' => 3,
+                    '4' => 4,
+                ],
+                'attr' => [
+                    'class' => 'form-select',
+                    'data-tournament-form-target' => 'qualifiersPerGroup',
+                    'data-action' => 'change->tournament-form#updateGroupSummary',
                 ],
             ])
 
@@ -253,6 +310,41 @@ final class TournamentType extends AbstractType
                 'constraints' => [
                     new Url(['message' => 'validation.url_invalid']),
                 ],
+            ])
+
+            // Tournament Type Flags
+            ->add('isTumult', CheckboxType::class, [
+                'label' => 'form.tournament.is_tumult',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.is_tumult_help',
+            ])
+            ->add('isSeasonFinalsQualifier', CheckboxType::class, [
+                'label' => 'form.tournament.is_season_finals_qualifier',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.is_season_finals_qualifier_help',
+            ])
+            ->add('checkInEnabled', CheckboxType::class, [
+                'label' => 'form.tournament.check_in_enabled',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-checkbox',
+                ],
+                'label_attr' => [
+                    'class' => 'form-checkbox-label',
+                ],
+                'help' => 'form.tournament.check_in_enabled_help',
             ]);
     }
 

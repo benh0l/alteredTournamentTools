@@ -155,6 +155,15 @@ class RegistrationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Whitelist of allowed sort fields for security.
+     */
+    private const ALLOWED_SORT_FIELDS = [
+        'registeredAt',
+        'checkedInAt',
+        'player.pseudo',
+    ];
+
+    /**
      * Find all registrations for a tournament with player data eagerly loaded.
      * Supports sorting by registration date or player pseudo.
      *
@@ -165,6 +174,14 @@ class RegistrationRepository extends ServiceEntityRepository
         string $sortField = 'registeredAt',
         string $sortDirection = 'ASC'
     ): array {
+        // Validate sort field against whitelist to prevent SQL injection
+        if (!\in_array($sortField, self::ALLOWED_SORT_FIELDS, true)) {
+            $sortField = 'registeredAt';
+        }
+
+        // Validate sort direction
+        $sortDirection = strtoupper($sortDirection) === 'DESC' ? 'DESC' : 'ASC';
+
         $qb = $this->createQueryBuilder('r')
             ->leftJoin('r.player', 'p')
             ->addSelect('p')
@@ -191,8 +208,8 @@ class RegistrationRepository extends ServiceEntityRepository
             ->executeQuery(
                 "SELECT AVG(player_count) as avg_count FROM (
                     SELECT COUNT(r.id) as player_count
-                    FROM tournament t
-                    LEFT JOIN registration r ON r.tournament_id = t.id
+                    FROM tournaments t
+                    LEFT JOIN registrations r ON r.tournament_id = t.id
                     GROUP BY t.id
                     HAVING COUNT(r.id) > 0
                 ) counts"

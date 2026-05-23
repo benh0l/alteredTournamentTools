@@ -28,12 +28,23 @@ export default class extends Controller {
     eventSource = null;
     attempts = 0;
     pollingIntervalId = null;
+    reconnectTimeoutId = null;
+    isDisconnected = false;
 
     connect() {
+        this.isDisconnected = false;
         this.startConnection();
     }
 
     disconnect() {
+        this.isDisconnected = true;
+
+        // Clear reconnect timeout if pending
+        if (this.reconnectTimeoutId) {
+            clearTimeout(this.reconnectTimeoutId);
+            this.reconnectTimeoutId = null;
+        }
+
         // CRITICAL: Always close EventSource on disconnect (from project-context.md)
         if (this.eventSource) {
             this.eventSource.close();
@@ -88,10 +99,17 @@ export default class extends Controller {
     }
 
     handleReconnect() {
+        if (this.isDisconnected) return;
+
         if (this.attempts < this.reconnectAttemptsValue) {
             this.attempts++;
             this.updateStatus('reconnecting', `Reconnexion (${this.attempts}/${this.reconnectAttemptsValue})...`);
-            setTimeout(() => this.startConnection(), this.reconnectDelayValue);
+            this.reconnectTimeoutId = setTimeout(() => {
+                this.reconnectTimeoutId = null;
+                if (!this.isDisconnected) {
+                    this.startConnection();
+                }
+            }, this.reconnectDelayValue);
         } else {
             this.updateStatus('failed', 'Connexion échouée - Mode polling activé');
             // Fallback to polling (NFR24)

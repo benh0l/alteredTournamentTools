@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'dashboard.timer.fullscreen_title'|trans({'%tournament%': tournament.name}) }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('logo/alteredTT_logo.png') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .timer-display {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(8rem, 25vw, 20rem);
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
+            transition: color 0.5s ease;
+        }
+
+        .timer-green { color: #10b981; }
+        .timer-orange { color: #f97316; }
+        .timer-red { color: #ef4444; }
+
+        .round-info {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .tournament-name {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            bottom: 2rem;
+            text-align: center;
+        }
+
+        .waiting-message {
+            font-size: clamp(2rem, 6vw, 4rem);
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    {% if current_round and current_round.timerStartedAt %}
+        <div class="round-info">
+            {{ 'dashboard.timer.fullscreen_round'|trans({'%number%': current_round.roundNumber}) }}
+        </div>
+
+        <div id="timer-display"
+             class="timer-display timer-green"
+             data-started-at="{{ current_round.timerStartedAt.format('c') }}"
+             data-round-duration="50"
+             data-max-timer-minutes="90">
+            --:--
+        </div>
+
+        <div class="tournament-name">
+            {{ tournament.name }}
+        </div>
+
+        <script>
+            const timerElement = document.getElementById('timer-display');
+            const roundDuration = parseInt(timerElement.dataset.roundDuration);
+            const maxTimerMinutes = parseInt(timerElement.dataset.maxTimerMinutes);
+            let timerStartTime = new Date(timerElement.dataset.startedAt);
+
+            function updateTimer() {
+                const now = new Date();
+                let elapsed = Math.floor((now - timerStartTime) / 1000);
+
+                // Cap at max minutes
+                const maxSeconds = maxTimerMinutes * 60;
+                if (elapsed > maxSeconds) {
+                    elapsed = maxSeconds;
+                }
+
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+
+                timerElement.textContent =
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+
+                // Update color
+                timerElement.classList.remove('timer-green', 'timer-orange', 'timer-red');
+
+                if (minutes < 35) {
+                    timerElement.classList.add('timer-green');
+                } else if (minutes < roundDuration) {
+                    timerElement.classList.add('timer-orange');
+                } else {
+                    timerElement.classList.add('timer-red');
+                }
+            }
+
+            // Initial update and start interval
+            updateTimer();
+            setInterval(updateTimer, 1000);
+
+            // Poll for timer updates every 10 seconds
+            const tournamentId = {{ tournament.id }};
+            setInterval(async function() {
+                try {
+                    const response = await fetch('/api/dashboard/' + tournamentId + '/stats');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.timer && data.timer.started_at) {
+                            const newStartTime = new Date(data.timer.started_at);
+                            if (newStartTime.getTime() !== timerStartTime.getTime()) {
+                                timerStartTime = newStartTime;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors, timer continues with local time
+                }
+            }, 10000);
+        </script>
+    {% elseif current_round %}
+        <div class="round-info">
+            {{ 'dashboard.timer.fullscreen_round'|trans({'%number%': current_round.roundNumber}) }}
+        </div>
+
+        <div class="waiting-message pulse">
+            {{ 'dashboard.timer.fullscreen_waiting'|trans }}
+        </div>
+
+        <div class="tournament-name">
+            {{ tournament.name }}
+        </div>
+
+        <script>
+            // Poll to check if timer has started
+            const tournamentId = {{ tournament.id }};
+            setInterval(async function() {
+                try {
+                    const response = await fetch('/api/dashboard/' + tournamentId + '/stats');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.timer && data.timer.started_at) {
+                            // Timer started, reload page
+                            window.location.reload();
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
+            }, 3000);
+        </script>
+    {% else %}
+        <div class="waiting-message">
+            {{ 'dashboard.timer.fullscreen_no_round'|trans }}
+        </div>
+
+        <div class="tournament-name">
+            {{ tournament.name }}
+        </div>
+
+        <script>
+            // Poll to check if a round has started
+            setInterval(function() {
+                window.location.reload();
+            }, 10000);
+        </script>
+    {% endif %}
+</body>
+</html>

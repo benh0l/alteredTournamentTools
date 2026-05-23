@@ -8,6 +8,7 @@ use App\Entity\Registration;
 use App\Entity\Round;
 use App\Entity\Tournament;
 use App\Entity\TournamentMatch;
+use App\Entity\User;
 use App\Enum\MatchStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -406,6 +407,101 @@ class TournamentMatchRepository extends ServiceEntityRepository
             ->addSelect('p2')
             ->where('m.group = :group')
             ->setParameter('group', $group)
+            ->orderBy('r.roundNumber', 'ASC')
+            ->addOrderBy('m.tableNumber', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find all completed matches for a user across all tournaments.
+     * Returns matches ordered by completion date (most recent first).
+     *
+     * @return TournamentMatch[]
+     */
+    public function findAllByUser(User $user, ?int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->leftJoin('m.round', 'r')
+            ->addSelect('r')
+            ->leftJoin('r.tournament', 't')
+            ->addSelect('t')
+            ->leftJoin('m.player1', 'p1')
+            ->addSelect('p1')
+            ->leftJoin('p1.player', 'u1')
+            ->addSelect('u1')
+            ->leftJoin('m.player2', 'p2')
+            ->addSelect('p2')
+            ->leftJoin('p2.player', 'u2')
+            ->addSelect('u2')
+            ->where('u1 = :user OR u2 = :user')
+            ->andWhere('m.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', MatchStatus::COMPLETED)
+            ->orderBy('m.completedAt', 'DESC');
+
+        if ($limit !== null) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Count total completed matches for a user.
+     */
+    public function countByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->leftJoin('m.player1', 'p1')
+            ->leftJoin('p1.player', 'u1')
+            ->leftJoin('m.player2', 'p2')
+            ->leftJoin('p2.player', 'u2')
+            ->where('u1 = :user OR u2 = :user')
+            ->andWhere('m.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', MatchStatus::COMPLETED)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Find an active (PENDING or ONGOING) match for a registration.
+     * Returns null if no active match exists.
+     */
+    public function findActiveMatchForRegistration(Registration $registration): ?TournamentMatch
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.round', 'r')
+            ->where('r.tournament = :tournament')
+            ->andWhere('(m.player1 = :registration OR m.player2 = :registration)')
+            ->andWhere('m.status IN (:statuses)')
+            ->setParameter('tournament', $registration->getTournament())
+            ->setParameter('registration', $registration)
+            ->setParameter('statuses', [MatchStatus::PENDING, MatchStatus::ONGOING])
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Find all matches for a tournament in a single query.
+     * Used for batch loading to avoid N+1 queries in standings calculation.
+     *
+     * @return TournamentMatch[]
+     */
+    public function findAllByTournament(Tournament $tournament): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.round', 'r')
+            ->addSelect('r')
+            ->leftJoin('m.player1', 'p1')
+            ->addSelect('p1')
+            ->leftJoin('m.player2', 'p2')
+            ->addSelect('p2')
+            ->where('r.tournament = :tournament')
+            ->setParameter('tournament', $tournament)
             ->orderBy('r.roundNumber', 'ASC')
             ->addOrderBy('m.tableNumber', 'ASC')
             ->getQuery()

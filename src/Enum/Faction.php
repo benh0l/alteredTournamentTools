@@ -83,13 +83,54 @@ enum Faction: string
     }
 
     /**
+     * Get expedition heroes for the Krak'N format.
+     * Returns only the specific heroes allowed in this format.
+     */
+    public function getExpeditionHeroes(): array
+    {
+        return match ($this) {
+            self::AXIOM => [
+                'jamie-phils-s-redder' => 'Jamie-Phils & S-Redder',
+            ],
+            self::BRAVOS => [
+                'krenen-huits-vents' => 'Krenen & les Huits vents',
+            ],
+            self::LYRA => [
+                'hileon-gwirp' => 'Hiléon & Gwirp',
+            ],
+            self::MUNA => [
+                'leanne-nounou' => 'Léanne & Nounou',
+            ],
+            self::ORDIS => [
+                'occirea-hushgulan' => 'Occiréa & Hushgulan',
+            ],
+            self::YZMIR => [
+                'roboutchou-giz' => 'Roboutchou & Giz',
+            ],
+        };
+    }
+
+    /**
+     * Get heroes for a specific tournament format.
+     * Returns standard heroes for most formats, expedition heroes for Krak'N format.
+     */
+    public function getHeroesForFormat(?TournamentFormat $format = null): array
+    {
+        if ($format !== null && $format->isExpeditionKrakn()) {
+            return $this->getExpeditionHeroes();
+        }
+
+        return $this->getHeroes();
+    }
+
+    /**
      * Get all heroes across all factions as a flat array
      */
-    public static function getAllHeroes(): array
+    public static function getAllHeroes(?TournamentFormat $format = null): array
     {
         $heroes = [];
         foreach (self::cases() as $faction) {
-            foreach ($faction->getHeroes() as $key => $label) {
+            foreach ($faction->getHeroesForFormat($format) as $key => $label) {
                 $heroes[$key] = $label;
             }
         }
@@ -97,14 +138,20 @@ enum Faction: string
     }
 
     /**
-     * Get hero label by key
+     * Get hero label by key (searches both standard and expedition heroes)
      */
     public static function getHeroLabel(string $heroKey): ?string
     {
         foreach (self::cases() as $faction) {
+            // Check standard heroes
             $heroes = $faction->getHeroes();
             if (isset($heroes[$heroKey])) {
                 return $heroes[$heroKey];
+            }
+            // Check expedition heroes
+            $expeditionHeroes = $faction->getExpeditionHeroes();
+            if (isset($expeditionHeroes[$heroKey])) {
+                return $expeditionHeroes[$heroKey];
             }
         }
         return null;
@@ -120,12 +167,15 @@ enum Faction: string
     }
 
     /**
-     * Get faction by hero key
+     * Get faction by hero key (searches both standard and expedition heroes)
      */
     public static function getFactionByHero(string $heroKey): ?self
     {
         foreach (self::cases() as $faction) {
             if (array_key_exists($heroKey, $faction->getHeroes())) {
+                return $faction;
+            }
+            if (array_key_exists($heroKey, $faction->getExpeditionHeroes())) {
                 return $faction;
             }
         }
@@ -147,12 +197,21 @@ enum Faction: string
     /**
      * Get all heroes grouped by faction for JavaScript
      */
-    public static function getHeroesGroupedByFaction(): array
+    public static function getHeroesGroupedByFaction(?TournamentFormat $format = null): array
     {
         $grouped = [];
         foreach (self::cases() as $faction) {
-            $grouped[$faction->value] = $faction->getHeroes();
+            $grouped[$faction->value] = $faction->getHeroesForFormat($format);
         }
         return $grouped;
+    }
+
+    /**
+     * Check if a hero key is valid for a given format.
+     */
+    public static function isHeroValidForFormat(string $heroKey, ?TournamentFormat $format = null): bool
+    {
+        $allHeroes = self::getAllHeroes($format);
+        return isset($allHeroes[$heroKey]);
     }
 }

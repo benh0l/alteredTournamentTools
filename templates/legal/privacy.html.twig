@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'legal.privacy.title'|trans }} - Altered Tournament Tools{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    <div class="card p-8">
+        <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">
+            {{ 'legal.privacy.title'|trans }}
+        </h1>
+
+        <p class="text-sm mb-8" style="color: var(--text-secondary);">
+            {{ 'legal.privacy.last_updated'|trans }}: {{ 'now'|date('d/m/Y') }}
+        </p>
+
+        <div class="prose max-w-none" style="color: var(--text-primary);">
+
+            {# Section 1: Data Controller #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.controller.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.privacy.controller.text'|trans }}</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>{{ 'legal.privacy.controller.name_label'|trans }}:</strong> Altered Tournament Tools</li>
+                    <li><strong>{{ 'legal.privacy.controller.contact_label'|trans }}:</strong> {{ 'legal.privacy.controller.contact'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 2: Data Collected #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.collected.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.privacy.collected.intro'|trans }}</p>
+
+                <h3 class="text-lg font-medium mb-2">{{ 'legal.privacy.collected.registration.title'|trans }}</h3>
+                <ul class="list-disc pl-6 space-y-1 mb-4">
+                    <li>{{ 'legal.privacy.collected.registration.email'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.registration.pseudo'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.registration.name'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.registration.avatar'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.registration.password'|trans }}</li>
+                </ul>
+
+                <h3 class="text-lg font-medium mb-2">{{ 'legal.privacy.collected.tournament.title'|trans }}</h3>
+                <ul class="list-disc pl-6 space-y-1 mb-4">
+                    <li>{{ 'legal.privacy.collected.tournament.registrations'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.tournament.results'|trans }}</li>
+                    <li>{{ 'legal.privacy.collected.tournament.decklist'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 3: Purpose and Legal Basis #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.purpose.title'|trans }}
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse mb-4">
+                        <thead>
+                            <tr style="background-color: var(--bg-muted);">
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.purpose_col'|trans }}</th>
+                                <th class="border p-3 text-left" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.basis_col'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.account'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.basis_contract'|trans }}</td>
+                            </tr>
+                            <tr>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.tournament'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.basis_contract'|trans }}</td>
+                            </tr>
+                            <tr>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.notifications'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.basis_consent'|trans }}</td>
+                            </tr>
+                            <tr>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.security'|trans }}</td>
+                                <td class="border p-3" style="border-color: var(--border-default);">{{ 'legal.privacy.purpose.basis_legitimate'|trans }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {# Section 4: Data Retention #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.retention.title'|trans }}
+                </h2>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li>{{ 'legal.privacy.retention.account'|trans }}</li>
+                    <li>{{ 'legal.privacy.retention.tournament'|trans }}</li>
+                    <li>{{ 'legal.privacy.retention.logs'|trans }}</li>
+                </ul>
+            </section>
+
+            {# Section 5: Data Sharing #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.sharing.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.privacy.sharing.intro'|trans }}</p>
+
+                <h3 class="text-lg font-medium mb-3 mt-4">{{ 'legal.privacy.sharing.processors_title'|trans }}</h3>
+                <div class="p-4 rounded-lg mb-4" style="background-color: var(--bg-muted);">
+                    <h4 class="font-semibold mb-2">{{ 'legal.privacy.sharing.nominatim_title'|trans }}</h4>
+                    <ul class="list-disc pl-6 space-y-1 text-sm">
+                        <li><strong>{{ 'legal.privacy.purpose.purpose_col'|trans }}:</strong> {{ 'legal.privacy.sharing.nominatim_purpose'|trans }}</li>
+                        <li><strong>{{ 'legal.privacy.collected.title'|trans|replace({'2. ': ''})|trim }}:</strong> {{ 'legal.privacy.sharing.nominatim_data'|trans }}</li>
+                        <li><strong>{{ 'common.location'|trans }}:</strong> {{ 'legal.privacy.sharing.nominatim_location'|trans }}</li>
+                        <li>{{ 'legal.privacy.sharing.nominatim_policy'|trans }}</li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                    <p class="flex items-center">
+                        {{ ux_icon('lucide:shield-check', {class: 'w-5 h-5 mr-2', style: 'color: var(--color-success-500);'}) }}
+                        {{ 'legal.privacy.sharing.no_analytics'|trans }}
+                    </p>
+                    <p class="flex items-center">
+                        {{ ux_icon('lucide:shield-check', {class: 'w-5 h-5 mr-2', style: 'color: var(--color-success-500);'}) }}
+                        {{ 'legal.privacy.sharing.no_advertising'|trans }}
+                    </p>
+                    <p class="flex items-center">
+                        {{ ux_icon('lucide:shield-check', {class: 'w-5 h-5 mr-2', style: 'color: var(--color-success-500);'}) }}
+                        {{ 'legal.privacy.sharing.no_sale'|trans }}
+                    </p>
+                </div>
+            </section>
+
+            {# Section 6: Your Rights #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.rights.title'|trans }}
+                </h2>
+                <p class="mb-4">{{ 'legal.privacy.rights.intro'|trans }}</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>{{ 'legal.privacy.rights.access.title'|trans }}:</strong> {{ 'legal.privacy.rights.access.text'|trans }}</li>
+                    <li><strong>{{ 'legal.privacy.rights.rectification.title'|trans }}:</strong> {{ 'legal.privacy.rights.rectification.text'|trans }}</li>
+                    <li><strong>{{ 'legal.privacy.rights.erasure.title'|trans }}:</strong> {{ 'legal.privacy.rights.erasure.text'|trans }}</li>
+                    <li><strong>{{ 'legal.privacy.rights.portability.title'|trans }}:</strong> {{ 'legal.privacy.rights.portability.text'|trans }}</li>
+                    <li><strong>{{ 'legal.privacy.rights.objection.title'|trans }}:</strong> {{ 'legal.privacy.rights.objection.text'|trans }}</li>
+                </ul>
+                <p class="mt-4">{{ 'legal.privacy.rights.exercise'|trans }}</p>
+            </section>
+
+            {# Section 7: Complaint #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.complaint.title'|trans }}
+                </h2>
+                <p>{{ 'legal.privacy.complaint.text'|trans }}</p>
+            </section>
+
+            {# Section 8: Cookies #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.cookies.title'|trans }}
+                </h2>
+                <p>
+                    {{ 'legal.privacy.cookies.text'|trans }}
+                    <a href="{{ path('legal_cookies') }}" class="underline" style="color: var(--color-primary-500);">
+                        {{ 'legal.privacy.cookies.link'|trans }}
+                    </a>
+                </p>
+            </section>
+
+            {# Section 9: Changes #}
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--color-primary-500);">
+                    {{ 'legal.privacy.changes.title'|trans }}
+                </h2>
+                <p>{{ 'legal.privacy.changes.text'|trans }}</p>
+            </section>
+
+        </div>
+
+        {# Back button #}
+        <div class="mt-8 pt-6 border-t" style="border-color: var(--border-default);">
+            <a href="{{ path('app_home') }}"
+               class="inline-flex items-center px-4 py-2 font-medium rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200"
+               style="background-color: var(--card-bg); color: var(--color-primary-600); border-color: var(--color-primary-200);">
+                {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
+                {{ 'common.back_home'|trans }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
