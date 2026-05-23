@@ -36,9 +36,18 @@
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
                             V-N-D
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Opponent Match Win Percentage" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            OMW%
-                        </th>
+                        {% if is_round_robin|default(false) %}
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Differentiel de parties (gagnees - perdues)" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                Diff
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Parties gagnees" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                PG
+                            </th>
+                        {% else %}
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Opponent Match Win Percentage" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                OMW%
+                            </th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody style="background-color: var(--card-bg);">
@@ -71,9 +80,18 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
                                 <span class="text-green-600">{{ standing.wins }}</span>-<span class="text-amber-600">{{ standing.draws }}</span>-<span class="text-red-600">{{ standing.losses }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
-                                {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
-                            </td>
+                            {% if is_round_robin|default(false) %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium" style="color: {% if standing.gameDifferential > 0 %}var(--color-success-600){% elseif standing.gameDifferential < 0 %}var(--color-error-600){% else %}var(--text-secondary){% endif %};">
+                                    {% if standing.gameDifferential > 0 %}+{% endif %}{{ standing.gameDifferential }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
+                                    {{ standing.gamesWon }}
+                                </td>
+                            {% else %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
+                                    {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -83,7 +101,13 @@
         <div class="mt-4 text-sm" style="color: var(--text-secondary);">
             <p><strong>Points:</strong> 3 par victoire, 1 par egalite, 0 par defaite</p>
             <p><strong>V-N-D:</strong> Victoires - Nuls (egalites) - Defaites</p>
-            <p><strong>OMW%:</strong> Pourcentage de victoires moyen des adversaires rencontres (departage)</p>
+            {% if is_round_robin|default(false) %}
+                <p><strong>Diff:</strong> Differentiel de parties (gagnees - perdues)</p>
+                <p><strong>PG:</strong> Parties gagnees</p>
+                <p class="mt-2"><strong>Ordre de departage:</strong> Points > Differentiel > Parties gagnees > Confrontation directe</p>
+            {% else %}
+                <p><strong>OMW%:</strong> Pourcentage de victoires moyen des adversaires rencontres (departage)</p>
+            {% endif %}
         </div>
     {% endif %}
 </div>

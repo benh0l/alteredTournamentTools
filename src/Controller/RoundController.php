@@ -276,26 +276,33 @@ final class RoundController extends AbstractController
 
     /**
      * Get the current standings for a tournament.
+     *
+     * Uses appropriate tiebreakers based on tournament structure:
+     * - Swiss: Match points, then OMWP
+     * - Round-Robin: Match points, game differential, games won, head-to-head
      */
     #[Route('/standings', name: 'round_standings', methods: ['GET'])]
     public function standings(Tournament $tournament): Response
     {
-        $standings = $this->pairingService->calculateStandings($tournament);
+        // For group stage tournaments, redirect to the groups page which shows group standings
+        if ($tournament->hasGroupStage() && !$tournament->isInEliminationPhase()) {
+            return $this->redirectToRoute('tournament_groups', ['id' => $tournament->getId()]);
+        }
 
-        // Sort by match points (desc), then OMWP (desc)
-        $sortedStandings = array_values($standings);
-        usort($sortedStandings, function ($a, $b): int {
-            $pointsDiff = $b->getMatchPoints() <=> $a->getMatchPoints();
-            if ($pointsDiff !== 0) {
-                return $pointsDiff;
-            }
+        // Use calculateSortedStandings which applies correct tiebreakers per structure
+        $sortedStandings = $this->pairingService->calculateSortedStandings($tournament);
 
-            return $b->getOpponentMatchWinPercentage() <=> $a->getOpponentMatchWinPercentage();
-        });
+        // Check if user can manage (organizer) for drop actions
+        $canManage = $this->isGranted(TournamentVoter::MANAGE, $tournament);
+
+        // Determine if this is a Round-Robin tournament for template display
+        $isRoundRobin = $tournament->getStructure()?->hasRoundRobin() ?? false;
 
         return $this->render('round/standings.html.twig', [
             'tournament' => $tournament,
             'standings' => $sortedStandings,
+            'can_manage' => $canManage,
+            'is_round_robin' => $isRoundRobin,
         ]);
     }
 
