@@ -3,14 +3,32 @@
 {% block title %}{{ tournament.name }} - Tournoi Altered{% endblock %}
 
 {% block og_title %}{{ tournament.name }}{% endblock %}
-{% block og_description %}Tournoi {{ tournament.format.label|trans }} le {{ tournament.date|date('d/m/Y') }}{% if tournament.location %} a {{ tournament.location }}{% endif %}{% endblock %}
+{% block og_description %}{{ tournament.format.label|trans }} - {{ tournament.date|date('d/m/Y') }}{% if tournament.location %} - {{ tournament.location }}{% endif %}{% endblock %}
 
 {% block meta %}
-    {{ parent() }}
+    {# Tournament-specific Open Graph tags #}
+    <meta property="og:title" content="{{ tournament.name }}">
+    <meta property="og:description" content="{{ tournament.format.label|trans }} - {{ tournament.date|date('d/m/Y') }}{% if tournament.location %} - {{ tournament.location }}{% endif %}">
     <meta property="og:type" content="event">
+    <meta property="og:site_name" content="Altered Tournament Tools">
     <meta property="og:url" content="{{ url('tournament_public_details', {id: tournament.id}) }}">
+    <meta property="og:image" content="{{ absolute_url(asset('images/social/og-default.png')) }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ tournament.name }}">
+    <meta property="og:locale" content="{{ app.request.locale == 'fr' ? 'fr_FR' : 'en_US' }}">
+    {# Event-specific tags #}
+    <meta property="event:start_time" content="{{ tournament.date|date('c') }}">
+    {% if tournament.location %}
+    <meta property="event:location" content="{{ tournament.location }}">
+    {% endif %}
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ tournament.name }}">
-    <meta name="twitter:description" content="Tournoi {{ tournament.format.label|trans }} - {{ tournament.date|date('d/m/Y') }}">
+    <meta name="twitter:description" content="{{ tournament.format.label|trans }} - {{ tournament.date|date('d/m/Y') }}">
+    <meta name="twitter:image" content="{{ absolute_url(asset('images/social/og-default.png')) }}">
+    {# Discord theme color - uses tournament primary color #}
+    <meta name="theme-color" content="#f97316">
 {% endblock %}
 
 {% block body %}

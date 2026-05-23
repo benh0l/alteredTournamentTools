@@ -76,3 +76,4 @@ nul
 /public/uploads/avatars/*
 !/public/uploads/avatars/.gitkeep
 ###< Uploads ###
+node_modules/
