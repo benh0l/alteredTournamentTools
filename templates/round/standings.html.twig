@@ -131,9 +131,18 @@
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
                             {{ 'standings.wdl'|trans }}
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="{{ 'standings.omw_tooltip'|trans }}" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
-                            {{ 'standings.omw'|trans }}
-                        </th>
+                        {% if is_round_robin|default(false) %}
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Differentiel de parties (gagnees - perdues)" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                Diff
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="Parties gagnees" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                PG
+                            </th>
+                        {% else %}
+                            <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" title="{{ 'standings.omw_tooltip'|trans }}" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
+                                {{ 'standings.omw'|trans }}
+                            </th>
+                        {% endif %}
                         <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); border-bottom: 1px solid var(--border-default);">
                             {{ 'standings.status'|trans|default('Statut') }}
                         </th>
@@ -174,9 +183,18 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
                                 <span class="text-green-600">{{ standing.wins }}</span>-<span class="text-amber-600">{{ standing.draws }}</span>-<span class="text-red-600">{{ standing.losses }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
-                                {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
-                            </td>
+                            {% if is_round_robin|default(false) %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium" style="color: {% if standing.gameDifferential > 0 %}var(--color-success-600){% elseif standing.gameDifferential < 0 %}var(--color-error-600){% else %}var(--text-secondary){% endif %};">
+                                    {% if standing.gameDifferential > 0 %}+{% endif %}{{ standing.gameDifferential }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
+                                    {{ standing.gamesWon }}
+                                </td>
+                            {% else %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center" style="color: var(--text-secondary);">
+                                    {{ (standing.opponentMatchWinPercentage * 100)|number_format(1) }}%
+                                </td>
+                            {% endif %}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                 {% if standing.registration.isDropped %}
                                     <span class="px-2 py-1 bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300 text-xs font-medium rounded">
@@ -220,7 +238,13 @@
         <div class="mt-4 text-xs sm:text-sm space-y-1" style="color: var(--text-secondary);">
             <p><strong>{{ 'standings.points'|trans }}:</strong> {{ 'standings.legend.points'|trans }}</p>
             <p><strong>{{ 'standings.wdl'|trans }}:</strong> {{ 'standings.legend.wdl'|trans }}</p>
-            <p><strong>{{ 'standings.omw'|trans }}:</strong> {{ 'standings.legend.omw'|trans }}</p>
+            {% if is_round_robin|default(false) %}
+                <p><strong>Diff:</strong> Differentiel de parties (gagnees - perdues)</p>
+                <p><strong>PG:</strong> Parties gagnees</p>
+                <p class="mt-2"><strong>Ordre de departage:</strong> Points > Differentiel > Parties gagnees > Confrontation directe</p>
+            {% else %}
+                <p><strong>{{ 'standings.omw'|trans }}:</strong> {{ 'standings.legend.omw'|trans }}</p>
+            {% endif %}
         </div>
     {% endif %}
 </div>

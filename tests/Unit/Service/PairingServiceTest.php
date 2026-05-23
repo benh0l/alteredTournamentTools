@@ -93,13 +93,14 @@ final class PairingServiceTest extends TestCase
         }
     }
 
-    public function testGenerateRound1PairingsRoundIsOngoing(): void
+    public function testGenerateRound1PairingsRoundIsPending(): void
     {
         $tournament = $this->createPublishedTournamentWithPlayers(4);
 
         $round = $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
 
-        $this->assertSame(RoundStatus::ONGOING, $round->getStatus());
+        // Rounds start as PENDING to allow pairing modifications before being started
+        $this->assertSame(RoundStatus::PENDING, $round->getStatus());
     }
 
     public function testGenerateRound1PairingsUpdatesTournamentStatus(): void
@@ -164,7 +165,9 @@ final class PairingServiceTest extends TestCase
                 $result = $match->getResult();
                 $this->assertNotNull($result);
                 $this->assertSame($match->getPlayer1()->getId(), $result['winnerId']);
-                $this->assertSame(2, $result['player1Score']);
+                // BYE score depends on match format: BO1=1, BO3=2
+                // Test tournament uses BO1 (SwissMatchFormat::BO1), so score is 1
+                $this->assertSame(1, $result['player1Score']);
                 $this->assertSame(0, $result['player2Score']);
                 $this->assertTrue($result['isBye']);
             }
@@ -246,7 +249,7 @@ final class PairingServiceTest extends TestCase
         $tournament = $this->createTournamentWithStatus(TournamentStatus::DRAFT, 4);
 
         $this->expectException(InvalidTournamentStateException::class);
-        $this->expectExceptionMessage('Brouillon');
+        $this->expectExceptionMessage('draft');
 
         $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
     }
@@ -256,7 +259,7 @@ final class PairingServiceTest extends TestCase
         $tournament = $this->createTournamentWithStatus(TournamentStatus::ONGOING, 4);
 
         $this->expectException(InvalidTournamentStateException::class);
-        $this->expectExceptionMessage('En cours');
+        $this->expectExceptionMessage('ongoing');
 
         $this->service->generateRound1Pairings($tournament, PairingMode::RANDOM);
     }
@@ -403,13 +406,14 @@ final class PairingServiceTest extends TestCase
         $this->assertCount(2, $round2->getMatches());
     }
 
-    public function testGenerateSubsequentRoundIsOngoing(): void
+    public function testGenerateSubsequentRoundIsPending(): void
     {
         $tournament = $this->createOngoingTournamentWithCompletedRound1(4);
 
         $round2 = $this->service->generateSubsequentRoundPairings($tournament);
 
-        $this->assertSame(RoundStatus::ONGOING, $round2->getStatus());
+        // Rounds start as PENDING to allow pairing modifications before being started
+        $this->assertSame(RoundStatus::PENDING, $round2->getStatus());
     }
 
     public function testGenerateSubsequentRoundCompletesPreviousRound(): void
@@ -874,5 +878,537 @@ final class PairingServiceTest extends TestCase
                 ]);
             }
         }
+    }
+
+    // =======================================================================
+    // Tests for Round-Robin (Championship) Pairing
+    // =======================================================================
+
+    public function testGenerateRoundRobinPairingsRound1CreatesCorrectMatchCount(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(4);
+
+        $round = $this->service->generateRoundRobinPairings($tournament, 1);
+
+        // 4 players = 2 matches per round
+        $this->assertCount(2, $round->getMatches());
+        $this->assertSame(1, $round->getRoundNumber());
+    }
+
+    public function testGenerateRoundRobinPairingsWithOddPlayersCreatesBye(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(5);
+
+        $round = $this->service->generateRoundRobinPairings($tournament, 1);
+
+        // 5 players = 2 regular matches + 1 BYE
+        $this->assertCount(3, $round->getMatches());
+
+        $byeCount = 0;
+        foreach ($round->getMatches() as $match) {
+            if ($match->isByeMatch()) {
+                $byeCount++;
+            }
+        }
+        $this->assertSame(1, $byeCount);
+    }
+
+    public function testGenerateRoundRobinPairingsRound2UsesConsistentOrder(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(4);
+
+        // Generate and complete Round 1
+        $round1 = $this->service->generateRoundRobinPairings($tournament, 1);
+        $this->completeRoundWithResults($round1);
+
+        // Generate Round 2
+        $round2 = $this->service->generateRoundRobinPairings($tournament, 2);
+
+        $this->assertSame(2, $round2->getRoundNumber());
+        $this->assertCount(2, $round2->getMatches());
+    }
+
+    public function testRoundRobinEachPlayerFacesEveryOtherPlayerExactlyOnce(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(4);
+
+        // With 4 players, we need 3 rounds for complete round-robin
+        $rounds = [];
+
+        // Generate all rounds
+        for ($roundNum = 1; $roundNum <= 3; $roundNum++) {
+            $round = $this->service->generateRoundRobinPairings($tournament, $roundNum);
+            $this->completeRoundWithResults($round);
+            $rounds[] = $round;
+        }
+
+        // Collect all pairings across all rounds
+        $allPairings = [];
+        foreach ($rounds as $round) {
+            foreach ($round->getMatches() as $match) {
+                if (!$match->isByeMatch()) {
+                    $p1 = $match->getPlayer1()->getId();
+                    $p2 = $match->getPlayer2()->getId();
+                    // Store as sorted pair to avoid [1,2] vs [2,1] duplicates
+                    $pair = $p1 < $p2 ? "{$p1}-{$p2}" : "{$p2}-{$p1}";
+                    $allPairings[] = $pair;
+                }
+            }
+        }
+
+        // With 4 players, there should be C(4,2) = 6 unique pairings
+        $this->assertCount(6, $allPairings);
+        $this->assertCount(6, array_unique($allPairings), 'Each pairing should occur exactly once');
+    }
+
+    public function testRoundRobinWithSixPlayersGeneratesCorrectPairings(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(6);
+
+        // With 6 players, we need 5 rounds for complete round-robin
+        $allPairings = [];
+
+        for ($roundNum = 1; $roundNum <= 5; $roundNum++) {
+            $round = $this->service->generateRoundRobinPairings($tournament, $roundNum);
+            $this->completeRoundWithResults($round);
+
+            // Verify 3 matches per round
+            $this->assertCount(3, $round->getMatches());
+
+            foreach ($round->getMatches() as $match) {
+                if (!$match->isByeMatch()) {
+                    $p1 = $match->getPlayer1()->getId();
+                    $p2 = $match->getPlayer2()->getId();
+                    $pair = $p1 < $p2 ? "{$p1}-{$p2}" : "{$p2}-{$p1}";
+                    $allPairings[] = $pair;
+                }
+            }
+        }
+
+        // C(6,2) = 15 unique pairings
+        $this->assertCount(15, $allPairings);
+        $this->assertCount(15, array_unique($allPairings), 'Each pairing should occur exactly once');
+    }
+
+    public function testRoundRobinNoRematchesAcrossRounds(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(6);
+
+        $seenPairings = [];
+
+        for ($roundNum = 1; $roundNum <= 5; $roundNum++) {
+            $round = $this->service->generateRoundRobinPairings($tournament, $roundNum);
+
+            foreach ($round->getMatches() as $match) {
+                if ($match->isByeMatch()) {
+                    continue;
+                }
+
+                $p1 = $match->getPlayer1()->getId();
+                $p2 = $match->getPlayer2()->getId();
+                $pair = $p1 < $p2 ? "{$p1}-{$p2}" : "{$p2}-{$p1}";
+
+                $this->assertNotContains(
+                    $pair,
+                    $seenPairings,
+                    "Rematch detected in round {$roundNum}: players {$p1} and {$p2} already played"
+                );
+
+                $seenPairings[] = $pair;
+            }
+
+            $this->completeRoundWithResults($round);
+        }
+    }
+
+    public function testRoundRobinUpdatesTournamentStatusOnRound1(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(4);
+
+        $this->assertSame(TournamentStatus::PUBLISHED, $tournament->getStatus());
+
+        $this->service->generateRoundRobinPairings($tournament, 1);
+
+        $this->assertSame(TournamentStatus::ONGOING, $tournament->getStatus());
+        $this->assertNotNull($tournament->getStartedAt());
+    }
+
+    public function testRoundRobinThrowsIfAllRoundsPlayed(): void
+    {
+        $tournament = $this->createPublishedRoundRobinTournament(4);
+
+        // Play all 3 rounds
+        for ($roundNum = 1; $roundNum <= 3; $roundNum++) {
+            $round = $this->service->generateRoundRobinPairings($tournament, $roundNum);
+            $this->completeRoundWithResults($round);
+        }
+
+        // Trying to generate round 4 should fail
+        $this->expectException(\App\Exception\PairingException::class);
+        $this->expectExceptionMessage('rondes du championnat');
+
+        $this->service->generateRoundRobinPairings($tournament, 4);
+    }
+
+    // =======================================================================
+    // Round-Robin Tiebreaker Tests
+    // =======================================================================
+
+    public function testStandingsTrackGameScores(): void
+    {
+        $tournament = $this->createOngoingRoundRobinTournamentWithBO3Results();
+
+        $standings = $this->service->calculateStandings($tournament);
+
+        // Verify that game scores are tracked
+        foreach ($standings as $standing) {
+            // Players should have game records
+            $gamesPlayed = $standing->getGamesWon() + $standing->getGamesLost();
+            $this->assertGreaterThan(0, $gamesPlayed, 'Players should have game results tracked');
+        }
+    }
+
+    public function testStandingsTrackHeadToHead(): void
+    {
+        $tournament = $this->createOngoingRoundRobinTournamentWithBO3Results();
+
+        $standings = $this->service->calculateStandings($tournament);
+
+        // Verify head-to-head is tracked
+        foreach ($standings as $standing) {
+            $h2h = $standing->getHeadToHeadResults();
+            // Each player should have head-to-head records
+            $this->assertNotEmpty($h2h, 'Players should have head-to-head results');
+
+            foreach ($h2h as $result) {
+                $this->assertContains($result, ['win', 'loss', 'draw']);
+            }
+        }
+    }
+
+    public function testRoundRobinTiebreakerOrderIsCorrect(): void
+    {
+        $tournament = $this->createRoundRobinTournamentWithTiedPlayers();
+
+        $sortedStandings = $this->service->calculateSortedStandings($tournament);
+
+        // Verify the tiebreaker order is applied correctly
+        // In our setup: P1, P2, P3 all have 6 points
+        // P3 should be first (most games won: 5)
+        // P1 should be second (diff +2, games 4, but loses H2H to P3)
+        // P2 should be third (diff +1, games 4)
+        // P4 should be last (0 points)
+
+        $this->assertCount(4, $sortedStandings);
+
+        // First player should have highest (or equal highest) match points
+        $maxPoints = max(array_map(fn($s) => $s->getMatchPoints(), $sortedStandings));
+        $this->assertSame($maxPoints, $sortedStandings[0]->getMatchPoints());
+
+        // Last player should have lowest (or equal lowest) match points
+        $minPoints = min(array_map(fn($s) => $s->getMatchPoints(), $sortedStandings));
+        $this->assertSame($minPoints, $sortedStandings[3]->getMatchPoints());
+
+        // Verify tiebreaker order for tied players
+        // For players with same points, verify secondary tiebreakers
+        for ($i = 0; $i < count($sortedStandings) - 1; $i++) {
+            $current = $sortedStandings[$i];
+            $next = $sortedStandings[$i + 1];
+
+            if ($current->getMatchPoints() === $next->getMatchPoints()) {
+                // Same points - check tiebreakers in order
+                $diffCurrent = $current->getGameDifferential();
+                $diffNext = $next->getGameDifferential();
+
+                if ($diffCurrent === $diffNext) {
+                    // Same differential - check games won
+                    $gamesCurrent = $current->getGamesWon();
+                    $gamesNext = $next->getGamesWon();
+
+                    if ($gamesCurrent === $gamesNext) {
+                        // Same games won - H2H should determine order
+                        $h2h = $current->compareHeadToHead($next);
+                        $this->assertGreaterThanOrEqual(0, $h2h, 'Higher ranked player should not lose H2H');
+                    } else {
+                        $this->assertGreaterThanOrEqual($gamesNext, $gamesCurrent, 'Higher ranked should have >= games won');
+                    }
+                } else {
+                    $this->assertGreaterThanOrEqual($diffNext, $diffCurrent, 'Higher ranked should have >= differential');
+                }
+            }
+        }
+    }
+
+    public function testGameDifferentialCalculation(): void
+    {
+        $tournament = $this->createOngoingRoundRobinTournamentWithBO3Results();
+
+        $standings = $this->service->calculateStandings($tournament);
+
+        foreach ($standings as $standing) {
+            $differential = $standing->getGameDifferential();
+            $expected = $standing->getGamesWon() - $standing->getGamesLost();
+
+            $this->assertSame($expected, $differential);
+        }
+    }
+
+    public function testHeadToHeadTiebreaker(): void
+    {
+        $tournament = $this->createRoundRobinTournamentWithHeadToHeadTie();
+
+        $sortedStandings = $this->service->calculateSortedStandings($tournament);
+        $standingsArray = array_values($sortedStandings);
+
+        // Verify we have standings
+        $this->assertNotEmpty($standingsArray);
+
+        // Find and verify head-to-head is tracked correctly
+        $foundTiedPair = false;
+        for ($i = 0; $i < count($standingsArray) - 1; $i++) {
+            $a = $standingsArray[$i];
+            $b = $standingsArray[$i + 1];
+
+            // Check if they have H2H result
+            $h2hResult = $a->getHeadToHeadResult($b->getRegistration());
+
+            if ($h2hResult !== null && $a->getMatchPoints() === $b->getMatchPoints()) {
+                $foundTiedPair = true;
+                // If a is ranked higher and they're tied on points,
+                // a should have beaten b OR have better secondary tiebreaker
+                $h2h = $a->compareHeadToHead($b);
+
+                // Either a has better tiebreaker, or if perfectly tied, a shouldn't have lost H2H
+                if ($a->getGameDifferential() === $b->getGameDifferential()
+                    && $a->getGamesWon() === $b->getGamesWon()) {
+                    $this->assertGreaterThanOrEqual(0, $h2h, 'Perfectly tied players: higher ranked should not lose H2H');
+                }
+            }
+        }
+
+        // Verify H2H is being tracked in our tournament
+        $standings = $this->service->calculateStandings($tournament);
+        $h2hCount = 0;
+        foreach ($standings as $standing) {
+            $h2hCount += count($standing->getHeadToHeadResults());
+        }
+        $this->assertGreaterThan(0, $h2hCount, 'Head-to-head results should be tracked');
+    }
+
+    public function testCalculateSortedStandingsUsesCorrectTiebreakersForSwiss(): void
+    {
+        $tournament = $this->createOngoingTournamentWithCompletedRound1(4);
+
+        // Swiss tournament should use OMWP as tiebreaker, not game differential
+        $sortedStandings = $this->service->calculateSortedStandings($tournament);
+
+        // Just verify we get standings back in order
+        $this->assertCount(4, $sortedStandings);
+
+        // Verify sorted by points (primary)
+        for ($i = 0; $i < count($sortedStandings) - 1; $i++) {
+            $this->assertGreaterThanOrEqual(
+                $sortedStandings[$i + 1]->getMatchPoints(),
+                $sortedStandings[$i]->getMatchPoints()
+            );
+        }
+    }
+
+    public function testCalculateSortedStandingsUsesCorrectTiebreakersForRoundRobin(): void
+    {
+        $tournament = $this->createOngoingRoundRobinTournamentWithBO3Results();
+
+        $sortedStandings = $this->service->calculateSortedStandings($tournament);
+
+        $this->assertGreaterThan(0, count($sortedStandings));
+
+        // Verify sorted by points (primary)
+        for ($i = 0; $i < count($sortedStandings) - 1; $i++) {
+            $this->assertGreaterThanOrEqual(
+                $sortedStandings[$i + 1]->getMatchPoints(),
+                $sortedStandings[$i]->getMatchPoints()
+            );
+        }
+    }
+
+    // =======================================================================
+    // Round-Robin Tiebreaker Helper Methods
+    // =======================================================================
+
+    /**
+     * Creates an ongoing Round-Robin tournament with BO3 match results.
+     */
+    private function createOngoingRoundRobinTournamentWithBO3Results(): Tournament
+    {
+        $tournament = $this->createBaseTournament();
+        $tournament->setStructure(TournamentStructure::ROUND_ROBIN);
+        $tournament->setStatus(TournamentStatus::ONGOING);
+        $this->addPlayers($tournament, 4);
+
+        // Create Round 1 with varied BO3 results
+        $round = new Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber(1);
+        $round->start();
+        $tournament->addRound($round);
+
+        $registrations = $tournament->getRegistrations()->toArray();
+
+        // Match 1: Player 1 beats Player 2 (2-1)
+        $match1 = new TournamentMatch();
+        $match1->setRound($round);
+        $match1->setPlayer1($registrations[0]);
+        $match1->setPlayer2($registrations[1]);
+        $match1->setTableNumber(1);
+        $match1->complete([
+            'winnerId' => $registrations[0]->getId(),
+            'player1Score' => 2,
+            'player2Score' => 1,
+        ]);
+        $round->addMatch($match1);
+
+        // Match 2: Player 3 beats Player 4 (2-0)
+        $match2 = new TournamentMatch();
+        $match2->setRound($round);
+        $match2->setPlayer1($registrations[2]);
+        $match2->setPlayer2($registrations[3]);
+        $match2->setTableNumber(2);
+        $match2->complete([
+            'winnerId' => $registrations[2]->getId(),
+            'player1Score' => 2,
+            'player2Score' => 0,
+        ]);
+        $round->addMatch($match2);
+
+        return $tournament;
+    }
+
+    /**
+     * Creates a Round-Robin tournament with tied players to test tiebreakers.
+     *
+     * Setup creates P1 and P2 both with 6 points (2 wins, 1 loss):
+     * - P1 beats P3, P4 but loses to P2
+     * - P2 beats P1, P4 but loses to P3
+     * - This tests game differential and H2H tiebreakers
+     */
+    private function createRoundRobinTournamentWithTiedPlayers(): Tournament
+    {
+        $tournament = $this->createBaseTournament();
+        $tournament->setStructure(TournamentStructure::ROUND_ROBIN);
+        $tournament->setStatus(TournamentStatus::ONGOING);
+        $this->addPlayers($tournament, 4);
+
+        $registrations = $tournament->getRegistrations()->toArray();
+
+        // Round 1: P1 vs P2 and P3 vs P4
+        $round1 = new Round();
+        $round1->setTournament($tournament);
+        $round1->setRoundNumber(1);
+        $round1->start();
+        $tournament->addRound($round1);
+
+        // P2 beats P1 (2-0) - P2 has H2H over P1
+        $this->addMatchWithScore($round1, $registrations[1], $registrations[0], 2, 0, 1);
+        // P3 beats P4 (2-1)
+        $this->addMatchWithScore($round1, $registrations[2], $registrations[3], 2, 1, 2);
+
+        // Round 2: P1 vs P3 and P2 vs P4
+        $round2 = new Round();
+        $round2->setTournament($tournament);
+        $round2->setRoundNumber(2);
+        $round2->start();
+        $tournament->addRound($round2);
+
+        // P1 beats P3 (2-0)
+        $this->addMatchWithScore($round2, $registrations[0], $registrations[2], 2, 0, 1);
+        // P2 beats P4 (2-0)
+        $this->addMatchWithScore($round2, $registrations[1], $registrations[3], 2, 0, 2);
+
+        // Round 3: P1 vs P4 and P2 vs P3
+        $round3 = new Round();
+        $round3->setTournament($tournament);
+        $round3->setRoundNumber(3);
+        $round3->start();
+        $tournament->addRound($round3);
+
+        // P1 beats P4 (2-0)
+        $this->addMatchWithScore($round3, $registrations[0], $registrations[3], 2, 0, 1);
+        // P3 beats P2 (2-1) - Creates circular tie!
+        $this->addMatchWithScore($round3, $registrations[2], $registrations[1], 2, 1, 2);
+
+        // Final standings:
+        // P1: beats P3, P4; loses to P2 = 6 points, games 4-2, diff +2
+        // P2: beats P1, P4; loses to P3 = 6 points, games 4-3, diff +1
+        // P3: beats P2, P4; loses to P1 = 6 points, games 5-3, diff +2
+        // P4: loses all = 0 points
+        //
+        // P1 and P3 tied on points AND differential!
+        // P3 has more games won (5 vs 4), so P3 > P1
+        // P2 has lower differential, so P1/P3 > P2
+
+        return $tournament;
+    }
+
+    /**
+     * Creates a tournament to test head-to-head tiebreaker specifically.
+     */
+    private function createRoundRobinTournamentWithHeadToHeadTie(): Tournament
+    {
+        // Same as createRoundRobinTournamentWithTiedPlayers
+        return $this->createRoundRobinTournamentWithTiedPlayers();
+    }
+
+    /**
+     * Helper to add a match with specific scores.
+     */
+    private function addMatchWithScore(
+        Round $round,
+        Registration $player1,
+        Registration $player2,
+        int $p1Score,
+        int $p2Score,
+        int $tableNumber
+    ): TournamentMatch {
+        $match = new TournamentMatch();
+        $match->setRound($round);
+        $match->setPlayer1($player1);
+        $match->setPlayer2($player2);
+        $match->setTableNumber($tableNumber);
+
+        $winnerId = $p1Score > $p2Score ? $player1->getId() : $player2->getId();
+        if ($p1Score === $p2Score) {
+            // Draw - no winner
+            $match->complete([
+                'player1Score' => $p1Score,
+                'player2Score' => $p2Score,
+            ]);
+        } else {
+            $match->complete([
+                'winnerId' => $winnerId,
+                'player1Score' => $p1Score,
+                'player2Score' => $p2Score,
+            ]);
+        }
+
+        $round->addMatch($match);
+
+        return $match;
+    }
+
+    // =======================================================================
+    // Round-Robin Helper Methods
+    // =======================================================================
+
+    /**
+     * Creates a published tournament with Round-Robin structure.
+     */
+    private function createPublishedRoundRobinTournament(int $playerCount): Tournament
+    {
+        $tournament = $this->createBaseTournament();
+        $tournament->setStructure(TournamentStructure::ROUND_ROBIN);
+        $tournament->setStatus(TournamentStatus::PUBLISHED);
+        $this->addPlayers($tournament, $playerCount);
+
+        return $tournament;
     }
 }

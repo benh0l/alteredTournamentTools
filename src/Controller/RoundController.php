@@ -318,6 +318,10 @@ final class RoundController extends AbstractController
 
     /**
      * Get the current standings for a tournament.
+     *
+     * Uses appropriate tiebreakers based on tournament structure:
+     * - Swiss: Match points, then OMWP
+     * - Round-Robin: Match points, game differential, games won, head-to-head
      */
     #[Route('/standings', name: 'round_standings', methods: ['GET'])]
     public function standings(Tournament $tournament): Response
@@ -327,26 +331,20 @@ final class RoundController extends AbstractController
             return $this->redirectToRoute('tournament_groups', ['id' => $tournament->getId()]);
         }
 
-        $standings = $this->pairingService->calculateStandings($tournament);
-
-        // Sort by match points (desc), then OMWP (desc)
-        $sortedStandings = array_values($standings);
-        usort($sortedStandings, function ($a, $b): int {
-            $pointsDiff = $b->getMatchPoints() <=> $a->getMatchPoints();
-            if ($pointsDiff !== 0) {
-                return $pointsDiff;
-            }
-
-            return $b->getOpponentMatchWinPercentage() <=> $a->getOpponentMatchWinPercentage();
-        });
+        // Use calculateSortedStandings which applies correct tiebreakers per structure
+        $sortedStandings = $this->pairingService->calculateSortedStandings($tournament);
 
         // Check if user can manage (organizer) for drop actions
         $canManage = $this->isGranted(TournamentVoter::MANAGE, $tournament);
+
+        // Determine if this is a Round-Robin tournament for template display
+        $isRoundRobin = $tournament->getStructure()?->hasRoundRobin() ?? false;
 
         return $this->render('round/standings.html.twig', [
             'tournament' => $tournament,
             'standings' => $sortedStandings,
             'can_manage' => $canManage,
+            'is_round_robin' => $isRoundRobin,
         ]);
     }
 
