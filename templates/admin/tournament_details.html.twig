@@ -85,7 +85,7 @@
                     <div>
                         <dt class="text-sm font-medium" style="color: var(--text-muted);">Rondes</dt>
                         <dd class="mt-1 text-sm" style="color: var(--text-primary);">
-                            {{ tournament.rounds|length }}{% if tournament.nbRounds %} / {{ tournament.nbRounds }}{% endif %}
+                            {{ tournament.rounds|length }}{% if tournament.swissRounds %} / {{ tournament.swissRounds }}{% endif %}
                         </dd>
                     </div>
                     <div>
@@ -226,8 +226,8 @@
                    target="_blank">
                     Voir le tournoi (public)
                 </a>
-                {% if tournament.status.value == 'ongoing' %}
-                    <a href="{{ path('organizer_dashboard', {id: tournament.id}) }}"
+                {% if tournament.status.value == 'ongoing' or tournament.status.value == 'abandoned' %}
+                    <a href="{{ path('tournament_dashboard', {id: tournament.id}) }}"
                        class="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium" style="border: 1px solid var(--border-default); color: var(--text-secondary); background-color: var(--card-bg);"
                        target="_blank">
                         Dashboard organisateur
