@@ -16,6 +16,7 @@ use App\Event\PlayerDroppedEvent;
 use App\Exception\DropException;
 use App\Repository\TournamentMatchRepository;
 use App\Service\DropService;
+use App\Service\StandingsService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -32,6 +33,7 @@ final class DropServiceTest extends TestCase
     private MockObject&TournamentMatchRepository $matchRepository;
     private MockObject&EventDispatcherInterface $eventDispatcher;
     private MockObject&LoggerInterface $logger;
+    private MockObject&StandingsService $standingsService;
 
     protected function setUp(): void
     {
@@ -39,12 +41,14 @@ final class DropServiceTest extends TestCase
         $this->matchRepository = $this->createMock(TournamentMatchRepository::class);
         $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->standingsService = $this->createMock(StandingsService::class);
 
         $this->service = new DropService(
             $this->entityManager,
             $this->matchRepository,
             $this->eventDispatcher,
-            $this->logger
+            $this->logger,
+            $this->standingsService
         );
     }
 

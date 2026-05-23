@@ -7,8 +7,11 @@ namespace App\Tests\Unit\Entity;
 use App\Entity\MatchSubmission;
 use App\Entity\Registration;
 use App\Entity\Round;
+use App\Entity\Tournament;
 use App\Entity\TournamentMatch;
+use App\Enum\MatchFormat;
 use App\Enum\MatchStatus;
+use App\Enum\TournamentStructure;
 use PHPUnit\Framework\TestCase;
 
 final class TournamentMatchTest extends TestCase
@@ -180,7 +183,17 @@ final class TournamentMatchTest extends TestCase
         $player1 = $this->createMock(Registration::class);
         $player1->method('getId')->willReturn(123);
 
+        // Setup tournament and round for assignBye to work
+        $tournament = new Tournament();
+        $tournament->setStructure(TournamentStructure::SWISS_ONLY);
+        $tournament->setSwissMatchFormat(MatchFormat::BO3);
+
+        $round = new Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber(1);
+
         $match = new TournamentMatch();
+        $match->setRound($round);
         $match->setPlayer1($player1);
         $match->setTableNumber(1);
         $match->assignBye();
@@ -194,7 +207,7 @@ final class TournamentMatchTest extends TestCase
         $result = $match->getResult();
         $this->assertNotNull($result);
         $this->assertSame(123, $result['winnerId']);
-        $this->assertSame(2, $result['player1Score']);
+        $this->assertSame(2, $result['player1Score']); // BO3 format = 2 points
         $this->assertSame(0, $result['player2Score']);
         $this->assertTrue($result['isBye']);
     }
@@ -262,7 +275,17 @@ final class TournamentMatchTest extends TestCase
         $player1 = $this->createMock(Registration::class);
         $player1->method('getId')->willReturn(123);
 
+        // Setup tournament and round for assignBye to work
+        $tournament = new Tournament();
+        $tournament->setStructure(TournamentStructure::SWISS_ONLY);
+        $tournament->setSwissMatchFormat(MatchFormat::BO3);
+
+        $round = new Round();
+        $round->setTournament($tournament);
+        $round->setRoundNumber(1);
+
         $match = new TournamentMatch();
+        $match->setRound($round);
         $match->setPlayer1($player1);
         $match->setTableNumber(1);
         $match->assignBye();

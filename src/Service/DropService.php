@@ -21,7 +21,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  *
  * A drop removes a player from future pairings while keeping them in standings.
  */
-final class DropService
+class DropService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,

@@ -20,10 +20,11 @@ final class MatchStatusTest extends TestCase
 
     public function testGetLabel(): void
     {
-        $this->assertSame('En attente', MatchStatus::PENDING->getLabel());
-        $this->assertSame('En cours', MatchStatus::ONGOING->getLabel());
-        $this->assertSame('Termine', MatchStatus::COMPLETED->getLabel());
-        $this->assertSame('Litige', MatchStatus::DISPUTE->getLabel());
+        // Labels are translation keys
+        $this->assertSame('enum.match_status.pending', MatchStatus::PENDING->getLabel());
+        $this->assertSame('enum.match_status.ongoing', MatchStatus::ONGOING->getLabel());
+        $this->assertSame('enum.match_status.completed', MatchStatus::COMPLETED->getLabel());
+        $this->assertSame('enum.match_status.dispute', MatchStatus::DISPUTE->getLabel());
     }
 
     public function testGetBadgeClasses(): void

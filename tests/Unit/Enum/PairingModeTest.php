@@ -18,13 +18,15 @@ final class PairingModeTest extends TestCase
 
     public function testGetLabel(): void
     {
-        $this->assertSame('Aleatoire', PairingMode::RANDOM->getLabel());
-        $this->assertSame('Ordre d\'inscription', PairingMode::REGISTRATION_ORDER->getLabel());
+        // Labels are translation keys
+        $this->assertSame('enum.pairing_mode.random', PairingMode::RANDOM->getLabel());
+        $this->assertSame('enum.pairing_mode.registration_order', PairingMode::REGISTRATION_ORDER->getLabel());
     }
 
     public function testGetDescription(): void
     {
-        $this->assertStringContainsString('aleatoirement', PairingMode::RANDOM->getDescription());
-        $this->assertStringContainsString('ordre d\'inscription', PairingMode::REGISTRATION_ORDER->getDescription());
+        // Descriptions are translation keys
+        $this->assertSame('enum.pairing_mode_description.random', PairingMode::RANDOM->getDescription());
+        $this->assertSame('enum.pairing_mode_description.registration_order', PairingMode::REGISTRATION_ORDER->getDescription());
     }
 }

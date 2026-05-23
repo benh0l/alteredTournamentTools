@@ -84,7 +84,8 @@ final class CalendarServiceTest extends TestCase
         $ics = $this->service->generateICS($this->tournament);
 
         $this->assertStringContainsString('DESCRIPTION:', $ics);
-        $this->assertStringContainsString('Format: Construit', $ics);
+        // Labels are now translation keys
+        $this->assertStringContainsString('Format: enum.tournament_format.constructed_standard', $ics);
     }
 
     public function testGenerateICSContainsAlarm(): void

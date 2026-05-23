@@ -15,24 +15,47 @@ use App\Enum\TournamentFormat;
 use App\Enum\TournamentStatus;
 use App\Enum\TournamentStructure;
 use App\Enum\TournamentVisibility;
+use App\Repository\RegistrationRepository;
+use App\Repository\TournamentGroupRepository;
 use App\Repository\TournamentMatchRepository;
+use App\Service\BracketService;
+use App\Service\DropService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class DashboardControllerTest extends TestCase
 {
     private TournamentMatchRepository&MockObject $matchRepository;
+    private BracketService&MockObject $bracketService;
+    private RegistrationRepository&MockObject $registrationRepository;
+    private DropService&MockObject $dropService;
+    private TournamentGroupRepository&MockObject $groupRepository;
 
     protected function setUp(): void
     {
         $this->matchRepository = $this->createMock(TournamentMatchRepository::class);
+        $this->bracketService = $this->createMock(BracketService::class);
+        $this->registrationRepository = $this->createMock(RegistrationRepository::class);
+        $this->dropService = $this->createMock(DropService::class);
+        $this->groupRepository = $this->createMock(TournamentGroupRepository::class);
+    }
+
+    private function createController(): DashboardController
+    {
+        return new DashboardController(
+            $this->matchRepository,
+            $this->bracketService,
+            $this->registrationRepository,
+            $this->dropService,
+            $this->groupRepository
+        );
     }
 
     public function testCalculateRoundStatisticsWithNoCurrentRound(): void
     {
         $tournament = $this->createTournament();
 
-        $controller = new DashboardController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('calculateRoundStatistics');
@@ -97,7 +120,7 @@ final class DashboardControllerTest extends TestCase
         $match4->setStatus(MatchStatus::DISPUTE);
         $round->addMatch($match4);
 
-        $controller = new DashboardController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('calculateRoundStatistics');
@@ -144,7 +167,7 @@ final class DashboardControllerTest extends TestCase
         $regularMatch->setStatus(MatchStatus::COMPLETED);
         $round->addMatch($regularMatch);
 
-        $controller = new DashboardController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('calculateRoundStatistics');
@@ -179,7 +202,7 @@ final class DashboardControllerTest extends TestCase
         $byeMatch->setStatus(MatchStatus::COMPLETED);
         $round->addMatch($byeMatch);
 
-        $controller = new DashboardController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('calculateRoundStatistics');

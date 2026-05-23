@@ -18,21 +18,33 @@ use App\Enum\TournamentVisibility;
 use App\Repository\TournamentMatchRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class DashboardStreamControllerTest extends TestCase
 {
     private TournamentMatchRepository&MockObject $matchRepository;
+    private TranslatorInterface&MockObject $translator;
 
     protected function setUp(): void
     {
         $this->matchRepository = $this->createMock(TournamentMatchRepository::class);
+        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->translator->method('trans')->willReturnCallback(fn ($key) => $key);
+    }
+
+    private function createController(): DashboardStreamController
+    {
+        return new DashboardStreamController(
+            $this->matchRepository,
+            $this->translator
+        );
     }
 
     public function testBuildDashboardDataWithNoCurrentRound(): void
     {
         $tournament = $this->createTournament();
 
-        $controller = new DashboardStreamController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildDashboardData');
@@ -53,6 +65,7 @@ final class DashboardStreamControllerTest extends TestCase
         $round->setTournament($tournament);
         $round->setRoundNumber(1);
         $round->start();
+        $round->startTimer();
         $tournament->addRound($round);
 
         $user = $this->createUser();
@@ -76,7 +89,7 @@ final class DashboardStreamControllerTest extends TestCase
         $match2->setStatus(MatchStatus::ONGOING);
         $round->addMatch($match2);
 
-        $controller = new DashboardStreamController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildDashboardData');
@@ -111,7 +124,7 @@ final class DashboardStreamControllerTest extends TestCase
         $match->setStatus(MatchStatus::PENDING);
         $round->addMatch($match);
 
-        $controller = new DashboardStreamController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildDashboardData');
@@ -145,7 +158,7 @@ final class DashboardStreamControllerTest extends TestCase
         $match->setStatus(MatchStatus::DISPUTE);
         $round->addMatch($match);
 
-        $controller = new DashboardStreamController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildDashboardData');
@@ -177,7 +190,7 @@ final class DashboardStreamControllerTest extends TestCase
         $byeMatch->setStatus(MatchStatus::COMPLETED);
         $round->addMatch($byeMatch);
 
-        $controller = new DashboardStreamController($this->matchRepository);
+        $controller = $this->createController();
 
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildDashboardData');

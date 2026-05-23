@@ -149,7 +149,7 @@ final class SwissRoundsCalculatorTest extends TestCase
     {
         $suggestion = $this->calculator->getSuggestion(32, MatchFormat::BO1);
 
-        $this->assertStringContainsString('+1 pour BO1', $suggestion->explanation);
+        $this->assertStringContainsString('+1 ronde pour BO1', $suggestion->explanation);
         $this->assertStringContainsString('Altered TCG', $suggestion->explanation);
     }
 
@@ -196,8 +196,8 @@ final class SwissRoundsCalculatorTest extends TestCase
             'one' => [1],
             'two' => [2],
             'three' => [3],
-            'above max (129)' => [129],
-            'way above max (256)' => [256],
+            'above max (257)' => [257],
+            'way above max (512)' => [512],
             'negative' => [-1],
         ];
     }
@@ -211,7 +211,7 @@ final class SwissRoundsCalculatorTest extends TestCase
 
     public function testGetMaxPlayersReturnsExpectedValue(): void
     {
-        $this->assertSame(128, $this->calculator->getMaxPlayers());
+        $this->assertSame(256, $this->calculator->getMaxPlayers());
     }
 
     public function testMinMaxPlayersAreConsistent(): void
