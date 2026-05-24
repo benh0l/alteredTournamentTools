@@ -13,7 +13,7 @@
             <h1 class="text-3xl font-bold" style="color: var(--text-primary);">{{ 'profile.edit.title'|trans }}</h1>
         </div>
 
-        {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data', 'data-controller': 'button-loader'}}) }}
 
             {# Avatar Card #}
             <div class="rounded-2xl shadow-xl overflow-hidden" style="background-color: var(--card-bg);">
