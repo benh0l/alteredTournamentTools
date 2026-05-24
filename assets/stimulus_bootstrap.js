@@ -5,6 +5,8 @@ import PlayerSearchController from './controllers/player_search_controller.js';
 import PairingEditorController from './controllers/pairing_editor_controller.js';
 import ToastController from './controllers/toast_controller.js';
 import ButtonLoaderController from './controllers/button_loader_controller.js';
+import DropdownController from './controllers/dropdown_controller.js';
+import ThemeSelectorController from './controllers/theme_selector_controller.js';
 
 // Start Stimulus application with auto-discovery
 const app = startStimulusApp();
@@ -23,3 +25,5 @@ app.register('player-search', PlayerSearchController);
 app.register('pairing-editor', PairingEditorController);
 app.register('toast', ToastController);
 app.register('button-loader', ButtonLoaderController);
+app.register('dropdown', DropdownController);
+app.register('theme-selector', ThemeSelectorController);
