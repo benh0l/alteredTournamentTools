@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Tournament;
+use App\Enum\TournamentFormat;
 use App\Enum\TournamentVisibility;
 use App\Repository\TournamentRepository;
+use App\Service\GeocodingService;
 use App\Service\StandingsService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +24,7 @@ class TournamentApiController extends AbstractController
     public function __construct(
         private readonly TournamentRepository $tournamentRepository,
         private readonly StandingsService $standingsService,
+        private readonly GeocodingService $geocodingService,
     ) {
     }
 
@@ -106,6 +109,190 @@ class TournamentApiController extends AbstractController
             'total' => $total,
             'limit' => $limit,
             'offset' => $offset,
+        ]);
+    }
+
+    #[Route('/search', name: 'api_v1_tournaments_search', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Recherche de tournois avec filtres',
+        description: 'Recherche de tournois publics avec filtres optionnels (localisation, format, dates, etc.)',
+    )]
+    #[OA\RequestBody(
+        description: 'Filtres de recherche',
+        required: false,
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'location', type: 'string', description: 'Ville ou code postal (geocode automatiquement)'),
+                new OA\Property(property: 'latitude', type: 'number', description: 'Latitude (alternative a location)'),
+                new OA\Property(property: 'longitude', type: 'number', description: 'Longitude (alternative a location)'),
+                new OA\Property(property: 'radius', type: 'integer', description: 'Rayon de recherche en km (defaut: 50, max: 1000)'),
+                new OA\Property(property: 'format', type: 'string', description: 'Format de tournoi'),
+                new OA\Property(property: 'dateFrom', type: 'string', format: 'date', description: 'Date de debut (YYYY-MM-DD)'),
+                new OA\Property(property: 'dateTo', type: 'string', format: 'date', description: 'Date de fin (YYYY-MM-DD)'),
+                new OA\Property(property: 'isTumult', type: 'boolean', description: 'Filtrer les tournois Tumult'),
+                new OA\Property(property: 'isSeasonFinalsQualifier', type: 'boolean', description: 'Filtrer les qualificatifs de finale de saison'),
+                new OA\Property(property: 'limit', type: 'integer', description: 'Nombre maximum de resultats (max 100, defaut: 50)'),
+                new OA\Property(property: 'offset', type: 'integer', description: 'Decalage pour la pagination (defaut: 0)'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Resultats de recherche',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'tournaments', type: 'array', items: new OA\Items(type: 'object')),
+                new OA\Property(property: 'total', type: 'integer'),
+                new OA\Property(property: 'limit', type: 'integer'),
+                new OA\Property(property: 'offset', type: 'integer'),
+                new OA\Property(property: 'filters', type: 'object', description: 'Filtres appliques'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 400, description: 'Parametre invalide')]
+    public function search(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        // Pagination
+        $limit = min((int) ($data['limit'] ?? 50), 100);
+        $offset = max((int) ($data['offset'] ?? 0), 0);
+
+        // Parse filters
+        $location = isset($data['location']) ? trim((string) $data['location']) : null;
+        $latitude = isset($data['latitude']) ? (float) $data['latitude'] : null;
+        $longitude = isset($data['longitude']) ? (float) $data['longitude'] : null;
+        $radius = min(max((float) ($data['radius'] ?? 50), 1), 1000);
+
+        // Format filter
+        $format = null;
+        if (isset($data['format']) && !empty($data['format'])) {
+            $formatValue = (string) $data['format'];
+            $format = TournamentFormat::tryFrom($formatValue);
+            if ($format === null) {
+                return $this->json([
+                    'error' => 'invalid_parameter',
+                    'message' => sprintf('Format invalide: %s', $formatValue),
+                    'valid_formats' => array_map(fn (TournamentFormat $f) => $f->value, TournamentFormat::cases()),
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        // Date filters
+        $dateFrom = null;
+        $dateTo = null;
+        if (isset($data['dateFrom']) && !empty($data['dateFrom'])) {
+            try {
+                $dateFrom = new \DateTimeImmutable($data['dateFrom']);
+            } catch (\Exception) {
+                return $this->json([
+                    'error' => 'invalid_parameter',
+                    'message' => 'Format de date invalide pour dateFrom (attendu: YYYY-MM-DD)',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+        if (isset($data['dateTo']) && !empty($data['dateTo'])) {
+            try {
+                $dateTo = new \DateTimeImmutable($data['dateTo']);
+            } catch (\Exception) {
+                return $this->json([
+                    'error' => 'invalid_parameter',
+                    'message' => 'Format de date invalide pour dateTo (attendu: YYYY-MM-DD)',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        // Boolean filters
+        $isTumult = isset($data['isTumult']) ? (bool) $data['isTumult'] : null;
+        $isSeasonFinalsQualifier = isset($data['isSeasonFinalsQualifier']) ? (bool) $data['isSeasonFinalsQualifier'] : null;
+
+        // Determine search mode: location-based or filtered
+        $hasLocation = false;
+        $geocodedLocation = null;
+
+        // Priority: direct coordinates > geocoded location
+        if ($latitude !== null && $longitude !== null) {
+            $hasLocation = true;
+        } elseif ($location !== null && $location !== '') {
+            $coords = $this->geocodingService->geocode($location);
+            if ($coords !== null) {
+                $latitude = $coords['lat'];
+                $longitude = $coords['lng'];
+                $hasLocation = true;
+                $geocodedLocation = $location;
+            }
+        }
+
+        // Execute search
+        if ($hasLocation) {
+            $results = $this->tournamentRepository->findByLocation(
+                $latitude,
+                $longitude,
+                $radius,
+                $format,
+                $dateFrom,
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
+            );
+        } else {
+            $results = $this->tournamentRepository->findPublicTournamentsFiltered(
+                $format,
+                $dateFrom,
+                $dateTo,
+                $isTumult,
+                $isSeasonFinalsQualifier
+            );
+        }
+
+        // Apply pagination
+        $total = count($results);
+        $results = array_slice($results, $offset, $limit);
+
+        // Serialize results
+        $tournaments = array_map(function (array $result) {
+            $serialized = $this->serializeTournament($result['tournament']);
+            if ($result['distance'] !== null) {
+                $serialized['distance'] = $result['distance'];
+            }
+
+            return $serialized;
+        }, $results);
+
+        // Build applied filters for response
+        $appliedFilters = [];
+        if ($hasLocation) {
+            $appliedFilters['latitude'] = $latitude;
+            $appliedFilters['longitude'] = $longitude;
+            $appliedFilters['radius'] = $radius;
+            if ($geocodedLocation !== null) {
+                $appliedFilters['geocodedFrom'] = $geocodedLocation;
+            }
+        }
+        if ($format !== null) {
+            $appliedFilters['format'] = $format->value;
+        }
+        if ($dateFrom !== null) {
+            $appliedFilters['dateFrom'] = $dateFrom->format('Y-m-d');
+        }
+        if ($dateTo !== null) {
+            $appliedFilters['dateTo'] = $dateTo->format('Y-m-d');
+        }
+        if ($isTumult !== null) {
+            $appliedFilters['isTumult'] = $isTumult;
+        }
+        if ($isSeasonFinalsQualifier !== null) {
+            $appliedFilters['isSeasonFinalsQualifier'] = $isSeasonFinalsQualifier;
+        }
+
+        return $this->json([
+            'tournaments' => $tournaments,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+            'filters' => $appliedFilters,
         ]);
     }
 
