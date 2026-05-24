@@ -68,14 +68,15 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% set statusColors = {
-                                    'draft': 'bg-gray-500/20 text-gray-800 dark:text-gray-300',
-                                    'published': 'bg-green-500/20 text-green-800 dark:text-green-300',
-                                    'ongoing': 'bg-blue-500/20 text-blue-800 dark:text-blue-300',
-                                    'completed': 'bg-purple-500/20 text-purple-800 dark:text-purple-300',
-                                    'abandoned': 'bg-orange-500/20 text-orange-800 dark:text-orange-300'
+                                {% set statusStyles = {
+                                    'draft': 'background-color: var(--badge-gray-bg); color: var(--badge-gray-text);',
+                                    'published': 'background-color: var(--badge-green-bg); color: var(--badge-green-text);',
+                                    'ongoing': 'background-color: var(--badge-blue-bg); color: var(--badge-blue-text);',
+                                    'abandoned': 'background-color: var(--badge-orange-bg); color: var(--badge-orange-text);',
+                                    'completed': 'background-color: var(--badge-purple-bg); color: var(--badge-purple-text);',
+                                    'cancelled': 'background-color: var(--badge-red-bg); color: var(--badge-red-text);'
                                 } %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ statusColors[tournament.status.value] }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="{{ statusStyles[tournament.status.value] }}">
                                     {{ tournament.status.label|trans }}
                                 </span>
                             </td>

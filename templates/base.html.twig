@@ -635,26 +635,7 @@
     </header>
 
     <main id="main-content" class="flex-1 container mx-auto px-4 py-8">
-        {# Flash messages with theme-aware styling #}
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="mb-6 {% if label == 'success' %}alert-success{% elseif label == 'error' %}alert-danger{% elseif label == 'warning' %}alert-warning{% else %}alert-info{% endif %}" role="alert">
-                    <div class="flex items-center">
-                        {% if label == 'success' %}
-                            {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-3'}) }}
-                        {% elseif label == 'error' %}
-                            {{ ux_icon('lucide:x-circle', {class: 'w-5 h-5 mr-3'}) }}
-                        {% elseif label == 'warning' %}
-                            {{ ux_icon('lucide:alert-triangle', {class: 'w-5 h-5 mr-3'}) }}
-                        {% else %}
-                            {{ ux_icon('lucide:info', {class: 'w-5 h-5 mr-3'}) }}
-                        {% endif %}
-                        <span class="font-medium">{{ message|trans }}</span>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endfor %}
-
+        {# Flash messages are now handled via toast notifications at the end of body #}
         {% block body %}{% endblock %}
     </main>
 
@@ -713,5 +694,54 @@
 
     {# Cookie consent banner - GDPR compliance #}
     {% include 'components/_cookie_banner.html.twig' %}
+
+    {# Toast notifications container #}
+    <div data-controller="toast" data-toast-duration-value="5000">
+        <div data-toast-target="container" class="toast-container"></div>
+    </div>
+
+    {# Convert flash messages to toasts - wait for Stimulus to be ready #}
+    {% set flashMessages = app.flashes %}
+    {% if flashMessages|length > 0 %}
+        <script>
+            (function() {
+                var pendingToasts = [
+                    {% for label, messages in flashMessages %}
+                        {% for message in messages %}
+                            {
+                                type: '{{ label == 'error' ? 'error' : (label == 'warning' ? 'warning' : (label == 'success' ? 'success' : 'info')) }}',
+                                message: '{{ message|trans|e('js') }}'
+                            },
+                        {% endfor %}
+                    {% endfor %}
+                ];
+
+                var toastsShown = false;
+
+                function showToasts() {
+                    if (toastsShown) return;
+                    toastsShown = true;
+                    pendingToasts.forEach(function(toast) {
+                        window.dispatchEvent(new CustomEvent('toast:show', { detail: toast }));
+                    });
+                }
+
+                // Wait for Stimulus controller to be ready
+                var checkInterval = setInterval(function() {
+                    var container = document.querySelector('[data-controller="toast"]');
+                    if (container && container.__stimulusControllerConnected) {
+                        clearInterval(checkInterval);
+                        showToasts();
+                    }
+                }, 50);
+
+                // Fallback: show after 1 second max
+                setTimeout(function() {
+                    clearInterval(checkInterval);
+                    showToasts();
+                }, 1000);
+            })();
+        </script>
+    {% endif %}
 </body>
 </html>
