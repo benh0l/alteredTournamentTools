@@ -25,6 +25,10 @@
                                 <span class="ml-3 px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full">
                                     {{ 'enum.tournament_status.ongoing'|trans }}
                                 </span>
+                            {% elseif tournament.abandoned %}
+                                <span class="ml-3 px-3 py-1 bg-orange-500/80 text-white text-xs font-semibold rounded-full">
+                                    {{ 'enum.tournament_status.abandoned'|trans }}
+                                </span>
                             {% elseif tournament.completed %}
                                 <span class="ml-3 px-3 py-1 bg-emerald-500/80 text-white text-xs font-semibold rounded-full">
                                     {{ 'enum.tournament_status.completed'|trans }}

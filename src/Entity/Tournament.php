@@ -856,6 +856,14 @@ class Tournament
     }
 
     /**
+     * Check if tournament is ABANDONED.
+     */
+    public function isAbandoned(): bool
+    {
+        return $this->status === TournamentStatus::ABANDONED;
+    }
+
+    /**
      * Check if tournament is COMPLETED.
      */
     public function isCompleted(): bool
