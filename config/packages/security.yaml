@@ -89,6 +89,10 @@ security:
 
         # API documentation (public access)
         - { path: ^/api/v1/doc, roles: PUBLIC_ACCESS }
+        # Public API routes (no authentication required)
+        - { path: ^/api/v1/tournaments$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/v1/tournaments/upcoming$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/v1/tournaments/search$, roles: PUBLIC_ACCESS, methods: [POST] }
         # API routes (requires valid API key via ApiKeyAuthenticator)
         - { path: ^/api/v1, roles: IS_AUTHENTICATED_FULLY }
         # Other API routes (if applicable)
