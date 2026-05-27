@@ -84,6 +84,10 @@ final class TournamentController extends AbstractController
             }
         }
 
+        if ($dateFrom === null) {
+            $dateFrom = new \DateTimeImmutable('today');
+        }
+
         // Check if any search params are provided
         $hasSearchParams = $request->query->count() > 0;
 

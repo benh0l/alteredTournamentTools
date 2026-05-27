@@ -81,6 +81,10 @@ final class TournamentSearchController extends AbstractController
                 }
             }
 
+            if ($dateFrom === null) {
+                $dateFrom = new \DateTimeImmutable('today');
+            }
+
             // Get format filter
             $format = null;
             if (!empty($formatValue)) {
