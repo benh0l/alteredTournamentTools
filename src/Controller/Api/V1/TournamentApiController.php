@@ -208,6 +208,10 @@ class TournamentApiController extends AbstractController
         $isTumult = isset($data['isTumult']) ? (bool) $data['isTumult'] : null;
         $isSeasonFinalsQualifier = isset($data['isSeasonFinalsQualifier']) ? (bool) $data['isSeasonFinalsQualifier'] : null;
 
+        if ($dateFrom === null) {
+            $dateFrom = new \DateTimeImmutable('today');
+        }
+
         // Determine search mode: location-based or filtered
         $hasLocation = false;
         $geocodedLocation = null;
@@ -481,10 +485,16 @@ class TournamentApiController extends AbstractController
 
     private function serializeTournament(Tournament $tournament): array
     {
+        $date = $tournament->getDate();
+        $time = $tournament->getTime();
+        if ($time !== null) {
+            $date = $date->setTime((int) $time->format('H'), (int) $time->format('i'), (int) $time->format('s'));
+        }
+
         return [
             'id' => $tournament->getId(),
             'name' => $tournament->getName(),
-            'date' => $tournament->getDate()->format(\DateTimeInterface::ATOM),
+            'date' => $date->format(\DateTimeInterface::ATOM),
             'location' => $tournament->getLocation(),
             'format' => $tournament->getFormat()->value,
             'structure' => $tournament->getStructure()->value,
