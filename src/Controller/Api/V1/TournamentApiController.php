@@ -500,7 +500,7 @@ class TournamentApiController extends AbstractController
             'structure' => $tournament->getStructure()->value,
             'status' => $tournament->getStatus()->value,
             'playerCount' => $tournament->getRegistrations()->count(),
-            'maxPlayers' => $tournament->getMaxPlayers(),
+            'maxPlayers' => $tournament->getExpectedPlayers(),
             'isTumult' => $tournament->isTumult(),
             'isSeasonFinalsQualifier' => $tournament->isSeasonFinalsQualifier(),
             'organizer' => [
