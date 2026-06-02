@@ -20,8 +20,9 @@ final class SecurityController extends AbstractController
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // Redirect if already logged in
-        if ($this->getUser()) {
+        // Redirect if already fully authenticated (not just remembered)
+        // A remembered-but-not-fully-authenticated user may land here for re-auth — let them see the form
+        if ($this->getUser() && $this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('app_home');
         }
 

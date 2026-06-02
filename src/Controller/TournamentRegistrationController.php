@@ -32,7 +32,7 @@ final class TournamentRegistrationController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'tournament_register', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted('ROLE_USER')]
     public function register(Request $request, Tournament $tournament): Response
     {
         // Check tournament is open for registration
