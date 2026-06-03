@@ -10,7 +10,7 @@
                 <p class="text-sm mt-1" style="color: var(--text-muted);">
                     <span class="inline-flex items-center">
                         {{ ux_icon('lucide:calendar', {class: 'w-4 h-4 mr-1'}) }}
-                        {{ tournament.date|date('d/m/Y') }}{% if tournament.time %} a {{ tournament.time|date('H:i') }}{% endif %}
+                        {{ tournament.date|date('d/m/Y') }}{% if tournament.time %} a <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                     </span>
                 </p>
                 {% if tournament.location %}

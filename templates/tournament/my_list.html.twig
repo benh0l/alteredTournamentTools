@@ -64,7 +64,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
                                 {{ tournament.date|date('d/m/Y') }}
                                 {% if tournament.time %}
-                                    <br>{{ tournament.time|date('H:i') }}
+                                    <br><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

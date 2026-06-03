@@ -265,7 +265,7 @@
                                 <span class="font-medium" style="color: var(--text-primary);">
                                     {{ tournament.date|date('d/m/Y') }}
                                     {% if tournament.time %}
-                                        {{ 'common.at'|trans|default('a') }} {{ tournament.time|date('H:i') }}
+                                        {{ 'common.at'|trans|default('a') }} <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>
                                     {% endif %}
                                 </span>
                             </div>

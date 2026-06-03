@@ -224,7 +224,7 @@
                                     <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                     {% if tournament.time %}
                                         <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                        <span>{{ tournament.time|date('H:i') }}</span>
+                                        <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time></span>
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center text-sm" style="color: var(--text-secondary);">
@@ -311,7 +311,7 @@
                                     <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                     {% if tournament.time %}
                                         <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                        <span>{{ tournament.time|date('H:i') }}</span>
+                                        <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time></span>
                                     {% endif %}
                                 </div>
                                 {% if tournament.location %}
@@ -575,7 +575,7 @@
                                 <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                 {% if tournament.time %}
                                     <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                    <span>{{ tournament.time|date('H:i') }}</span>
+                                    <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time></span>
                                 {% endif %}
                             </div>
                             {% if tournament.location %}
