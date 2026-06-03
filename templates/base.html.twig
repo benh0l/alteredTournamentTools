@@ -696,10 +696,9 @@
     <script>
     (function() {
         function convertLocalTimes() {
-            document.querySelectorAll('time.local-time[data-ts]').forEach(function(el) {
-                var ts = parseInt(el.dataset.ts, 10) * 1000;
-                if (isNaN(ts)) return;
-                var d = new Date(ts);
+            document.querySelectorAll('time.local-time[data-datetime]').forEach(function(el) {
+                var d = new Date(el.dataset.datetime);
+                if (isNaN(d.getTime())) return;
                 el.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
             });
         }

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}{{ 'home.title'|trans }}{% endblock %}
 
@@ -224,7 +224,7 @@
                                     <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                     {% if tournament.time %}
                                         <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                        <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
+                                        <span><time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center text-sm" style="color: var(--text-secondary);">
@@ -311,7 +311,7 @@
                                     <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                     {% if tournament.time %}
                                         <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                        <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
+                                        <span><time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
                                     {% endif %}
                                 </div>
                                 {% if tournament.location %}
@@ -575,7 +575,7 @@
                                 <span class="font-medium">{{ tournament.date|date('d/m/Y') }}</span>
                                 {% if tournament.time %}
                                     <span class="mx-1" style="color: var(--text-muted);">-</span>
-                                    <span><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
+                                    <span><time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></span>
                                 {% endif %}
                             </div>
                             {% if tournament.location %}

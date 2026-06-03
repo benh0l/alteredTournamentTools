@@ -1,4 +1,4 @@
-{% extends 'tournament/wizard/layout.html.twig' %}
+﻿{% extends 'tournament/wizard/layout.html.twig' %}
 
 {% block wizard_content %}
     <div class="text-center mb-8">
@@ -25,7 +25,7 @@
                     <dt class="text-xs mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.step10.date'|trans }}</dt>
                     <dd class="text-sm font-medium" style="color: var(--text-primary);">
                         {{ summary.date|date('d/m/Y') }}
-                        {% if summary.time %} {{ 'common.at'|trans }} <time class="local-time" data-ts="{{ (summary.date|date('Y-m-d') ~ ' ' ~ summary.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ summary.time|date('H:i') }}</time>{% endif %}
+                        {% if summary.time %} {{ 'common.at'|trans }} <time class="local-time" data-datetime="{{ summary.date|date('Y-m-d') ~ 'T' ~ summary.time|date('H:i:s') ~ summary.date|date('P', 'Europe/Paris') }}">{{ summary.time|date('H:i') }}</time>{% endif %}
                     </dd>
                 </div>
                 {% if summary.location %}

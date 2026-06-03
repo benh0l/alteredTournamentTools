@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}{{ tournament.name }} - Tournoi Altered{% endblock %}
 
@@ -65,7 +65,7 @@
                 <div class="text-right">
                     <p class="text-2xl font-bold">{{ tournament.date|date('d/m/Y') }}</p>
                     {% if tournament.time %}
-                    <p class="text-blue-100"><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></p>
+                    <p class="text-blue-100"><time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time></p>
                     {% endif %}
                 </div>
             </div>
