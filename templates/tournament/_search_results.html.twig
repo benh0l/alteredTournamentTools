@@ -15,7 +15,7 @@
                                 <h3 class="font-bold text-lg" style="color: var(--text-primary);">{{ tournament.name }}</h3>
                                 <p class="text-sm" style="color: var(--text-secondary);">
                                     {{ tournament.date|date('d/m/Y') }}
-                                    {% if tournament.time %}a <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
+                                    {% if tournament.time %}a <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                                 </p>
                             </div>
                             <div class="flex flex-wrap gap-1 justify-end">

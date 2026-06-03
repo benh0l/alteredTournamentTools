@@ -250,7 +250,7 @@
                                 <dt class="text-sm font-medium" style="color: var(--text-muted);">{{ 'common.date'|trans }}</dt>
                                 <dd class="text-base font-semibold" style="color: var(--text-primary);">
                                     {{ tournament.date|date('d/m/Y') }}
-                                    {% if tournament.time %} {{ 'common.at'|trans }} <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
+                                    {% if tournament.time %} {{ 'common.at'|trans }} <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                                 </dd>
                             </div>
                         </div>
