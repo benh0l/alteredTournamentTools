@@ -692,6 +692,26 @@
         {% endblock %}
     </footer>
 
+    {# Local timezone conversion for tournament times #}
+    <script>
+    (function() {
+        function convertLocalTimes() {
+            document.querySelectorAll('time.local-time[data-ts]').forEach(function(el) {
+                var ts = parseInt(el.dataset.ts, 10) * 1000;
+                if (isNaN(ts)) return;
+                var d = new Date(ts);
+                el.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', convertLocalTimes);
+        } else {
+            convertLocalTimes();
+        }
+        window.convertLocalTimes = convertLocalTimes;
+    })();
+    </script>
+
     {# Cookie consent banner - GDPR compliance #}
     {% include 'components/_cookie_banner.html.twig' %}
 

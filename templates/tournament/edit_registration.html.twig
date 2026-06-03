@@ -13,7 +13,7 @@
                 <dt class="text-sm" style="color: var(--text-muted);">Date</dt>
                 <dd class="font-medium">
                     {{ tournament.date|date('d/m/Y') }}
-                    {% if tournament.time %} a {{ tournament.time|date('H:i') }}{% endif %}
+                    {% if tournament.time %} a <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                 </dd>
             </div>
             {% if tournament.location %}
