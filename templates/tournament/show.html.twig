@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}{{ tournament.name }} - Altered Tournament Tools{% endblock %}
 
@@ -250,7 +250,7 @@
                                 <dt class="text-sm font-medium" style="color: var(--text-muted);">{{ 'common.date'|trans }}</dt>
                                 <dd class="text-base font-semibold" style="color: var(--text-primary);">
                                     {{ tournament.date|date('d/m/Y') }}
-                                    {% if tournament.time %} {{ 'common.at'|trans }} <time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
+                                    {% if tournament.time %} {{ 'common.at'|trans }} <time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                                 </dd>
                             </div>
                         </div>

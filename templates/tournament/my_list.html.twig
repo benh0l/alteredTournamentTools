@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}Mes événements - Altered Tournament Tools{% endblock %}
 
@@ -64,7 +64,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-muted);">
                                 {{ tournament.date|date('d/m/Y') }}
                                 {% if tournament.time %}
-                                    <br><time class="local-time" data-ts="{{ (tournament.date|date('Y-m-d') ~ ' ' ~ tournament.time|date('H:i:s'))|date('U', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>
+                                    <br><time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
