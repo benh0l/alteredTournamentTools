@@ -764,8 +764,8 @@ tournament:
             structure_desc:
                 swiss_only: "Plusieurs rondes, tout le monde joue tous les matchs. Idéal pour les petits tournois."
                 single_elimination: "Élimination directe dès le premier match. Rapide et intense."
-                mixed: "Rondes suisses puis Top Cut en élimination. Le meilleur des deux mondes."
-                group_stage_elimination: "Phase de groupes (round-robin) puis élimination des qualifiés."
+                mixed: "Rondes suisses puis Top Cut en élimination directe. Le meilleur des deux mondes."
+                group_stage_elimination: "Phase de groupes (round-robin) puis Top Cut en élimination directe."
                 round_robin: "Format championnat. Chaque joueur affronte tous les autres une fois."
         step5:
             title: "Format des matchs"
@@ -2132,4 +2132,34 @@ groups:
     qualifiers_info: "Les %count% premiers sont qualifiés pour la phase éliminatoire"
     round_table: "Ronde %round% - Table %table%"
     no_matches_generated: "Aucun match généré"
+
+# ----------------------------------------------------------------------------
+# Onboarding modal
+# ----------------------------------------------------------------------------
+onboarding:
+    title: "Bienvenue sur ATT !"
+    subtitle: "Voici les 3 choses essentielles pour démarrer."
+    cta: "C'est parti !"
+    action:
+        browse:
+            title: "Explorer les tournois"
+            desc: "Découvrez les tournois disponibles près de chez vous."
+        create:
+            title: "Créer un tournoi"
+            desc: "Organisez votre propre tournoi en quelques étapes simples."
+        register:
+            title: "S'inscrire à un tournoi"
+            desc: "Rejoignez un tournoi et affrontez d'autres joueurs."
+
+# ----------------------------------------------------------------------------
+# Tooltips contextuels
+# ----------------------------------------------------------------------------
+tooltip:
+    swiss_only: "Chaque joueur dispute toutes les rondes. Les joueurs avec le même score s'affrontent."
+    single_elimination: "Les joueurs sont éliminés dès la première défaite. Format rapide et intense."
+    mixed: "Phase suisse pour classer les joueurs, puis Top Cut en élimination directe."
+    group_stage_elimination: "Groupes en Round-Robin, puis les meilleurs passent en Top Cut à élimination directe."
+    round_robin: "Tous contre tous. Le joueur avec le meilleur bilan remporte le titre."
+    bo1: "Un seul match décide du vainqueur de la rencontre."
+    bo3: "Le premier à gagner 2 parties sur 3 l'emporte. Plus stratégique."
     back_to_tournament: "Retour au tournoi"

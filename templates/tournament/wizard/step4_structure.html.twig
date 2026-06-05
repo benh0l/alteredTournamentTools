@@ -43,7 +43,12 @@
                                 {% endif %}
                             </div>
                             <div class="flex-1">
-                                <div class="font-semibold text-lg" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                                <div class="font-semibold text-lg flex items-center" style="color: var(--text-primary);">
+                                {{ child.vars.label|trans }}
+                                {% if child.vars.value in ['swiss_only', 'single_elimination', 'mixed', 'group_stage_elimination', 'round_robin'] %}
+                                    {{ include('components/_tooltip.html.twig', {text: ('tooltip.' ~ child.vars.value)|trans, position: 'top'}) }}
+                                {% endif %}
+                            </div>
                                 <div class="text-sm mt-1" style="color: var(--text-muted);">
                                     {{ ('tournament.wizard.step4.structure_desc.' ~ child.vars.value)|trans }}
                                 </div>
