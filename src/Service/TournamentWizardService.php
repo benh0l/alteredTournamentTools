@@ -227,6 +227,8 @@ final class TournamentWizardService
         $summary['expectedPlayers'] = $wizardData[6]['expectedPlayers'] ?? null;
         $summary['swissRounds'] = $wizardData[6]['swissRounds'] ?? null;
         $summary['topCutSize'] = $wizardData[6]['topCutSize'] ?? null;
+        $summary['swissRoundsAutoSuggested'] = false;
+        $summary['roundRobinRounds'] = null;
 
         // Group stage configuration (for GROUP_STAGE_ELIMINATION)
         $summary['groupCount'] = $wizardData[6]['groupCount'] ?? null;
