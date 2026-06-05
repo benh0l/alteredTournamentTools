@@ -467,6 +467,64 @@
         </div>
 
         {# ================================================================== #}
+        {# Récurrence & publication                                           #}
+        {# ================================================================== #}
+        <div class="rounded-2xl shadow-xl p-6 border" style="background-color: var(--card-bg); border-color: var(--border-muted);"
+             data-controller="recurrence">
+
+            {# Publication #}
+            <h2 class="text-xl font-bold mb-4 flex items-center" style="color: var(--text-primary);">
+                <span class="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center mr-3">
+                    {{ ux_icon('lucide:send', {class: 'w-5 h-5 text-green-600'}) }}
+                </span>
+                {{ 'tournament.wizard.recurrence.publish_label'|trans }}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                {% for child in recurrenceForm.publishImmediately %}
+                    <label class="cursor-pointer flex items-center gap-3 p-4 rounded-xl border-2 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-500/10"
+                           style="border-color: var(--border-default);">
+                        {{ form_widget(child, {attr: {class: 'accent-green-500'}}) }}
+                        <div class="font-medium text-sm" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                    </label>
+                {% endfor %}
+            </div>
+
+            {# Séparateur #}
+            <hr class="mb-6" style="border-color: var(--border-default);">
+
+            {# Récurrence toggle #}
+            <label class="flex items-center gap-3 cursor-pointer" data-action="change->recurrence#toggle">
+                {{ form_widget(recurrenceForm.enabled) }}
+                <div>
+                    <span class="font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1 text-purple-500'}) }}
+                        {{ 'tournament.wizard.recurrence.enabled'|trans }}
+                    </span>
+                    <p class="text-xs mt-0.5" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.enabled_hint'|trans }}</p>
+                </div>
+            </label>
+
+            <div class="mt-4 space-y-4 hidden" data-recurrence-target="fields">
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.interval_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.interval, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.unit_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.unit, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.count_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.count, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                </div>
+                <p class="text-xs" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.count_hint'|trans }}</p>
+                {{ form_errors(recurrenceForm) }}
+            </div>
+        </div>
+
+        {# ================================================================== #}
         {# Boutons d'action                                                   #}
         {# ================================================================== #}
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
