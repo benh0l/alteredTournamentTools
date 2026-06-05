@@ -1,0 +1,22 @@
+{# Composant tooltip réutilisable.
+   Params: text (string), position (top|bottom|right, défaut: top) #}
+{% set pos = position|default('top') %}
+<span class="group relative inline-flex items-center">
+    <button type="button"
+            class="ml-1.5 w-4 h-4 rounded-full text-xs font-bold inline-flex items-center justify-center cursor-help select-none focus:outline-none"
+            style="background-color: var(--color-primary-100); color: var(--color-primary-600);"
+            aria-label="{{ text }}"
+            tabindex="0">
+        ?
+    </button>
+    <span role="tooltip"
+          class="absolute z-50 w-60 text-xs rounded-xl px-3 py-2 shadow-xl leading-relaxed
+                 invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100
+                 transition-all duration-200 pointer-events-none
+                 {% if pos == 'bottom' %}top-full left-1/2 -translate-x-1/2 mt-2
+                 {% elseif pos == 'right' %}left-full top-1/2 -translate-y-1/2 ml-2
+                 {% else %}bottom-full left-1/2 -translate-x-1/2 mb-2{% endif %}"
+          style="background-color: var(--card-bg); color: var(--text-secondary); border: 1px solid var(--border-default);">
+        {{ text }}
+    </span>
+</span>
