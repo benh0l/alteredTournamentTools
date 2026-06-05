@@ -8,10 +8,13 @@ use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\MatchFormat;
 use App\Enum\TournamentFormat;
+use App\Exception\TournamentValidationException;
 use App\Form\TournamentSearchType;
 use App\Form\TournamentType;
+use App\Form\Wizard\RecurrenceType;
 use App\Repository\TournamentRepository;
 use App\Security\Voter\TournamentVoter;
+use App\Service\RecurringTournamentService;
 use App\Service\RegistrationService;
 use App\Service\SwissRoundsCalculator;
 use App\Service\TournamentService;
@@ -30,6 +33,7 @@ final class TournamentController extends AbstractController
         private readonly TournamentService $tournamentService,
         private readonly TournamentRepository $tournamentRepository,
         private readonly RegistrationService $registrationService,
+        private readonly RecurringTournamentService $recurringService,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -137,22 +141,62 @@ final class TournamentController extends AbstractController
     {
         $tournament = new Tournament();
         $form = $this->createForm(TournamentType::class, $tournament);
+        $recurrenceForm = $this->createForm(RecurrenceType::class);
+
         $form->handleRequest($request);
+        $recurrenceForm->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var User $user */
             $user = $this->getUser();
+
+            $recurrence = $recurrenceForm->isValid() ? $recurrenceForm->getData() : [];
+            $publishImmediately = (bool) ($recurrence['publishImmediately'] ?? false);
+            $recurrenceEnabled = !empty($recurrence['enabled']);
+
+            try {
+                $copies = $recurrenceEnabled
+                    ? $this->recurringService->generateCopies($tournament, $recurrence)
+                    : [];
+            } catch (TournamentValidationException $e) {
+                $this->addFlash('error', $this->translator->trans($e->getMessage()));
+
+                return $this->render('tournament/create.html.twig', [
+                    'form' => $form,
+                    'recurrenceForm' => $recurrenceForm,
+                ]);
+            }
+
             $this->tournamentService->createTournament($tournament, $user);
+            foreach ($copies as $copy) {
+                $this->tournamentService->createTournament($copy, $user);
+            }
+
+            if ($publishImmediately) {
+                $this->tournamentService->publishTournament($tournament);
+                foreach ($copies as $copy) {
+                    $this->tournamentService->publishTournament($copy);
+                }
+            }
+
+            $total = 1 + \count($copies);
+            if ($total > 1) {
+                $this->addFlash('success', $this->translator->trans(
+                    'flash.success.tournaments_created_recurring',
+                    ['%count%' => $total]
+                ));
+
+                return $this->redirectToRoute('tournament_my_list');
+            }
 
             $this->addFlash('success', $this->translator->trans('flash.success.tournament_created'));
 
-            return $this->redirectToRoute('tournament_show', [
-                'id' => $tournament->getId(),
-            ]);
+            return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
         }
 
         return $this->render('tournament/create.html.twig', [
             'form' => $form,
+            'recurrenceForm' => $recurrenceForm,
         ]);
     }
 

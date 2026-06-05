@@ -2134,6 +2134,30 @@ groups:
     no_matches_generated: "Aucun match généré"
 
 # ----------------------------------------------------------------------------
+# Recurring tournaments / Series
+# ----------------------------------------------------------------------------
+tournament.series.title: "Série de tournois"
+tournament.series.subtitle: "%count% tournoi dans cette série|%count% tournois dans cette série"
+tournament.series.badge: "Série"
+tournament.series.badge_title: "Voir tous les tournois de cette série"
+flash.success.tournaments_created_recurring: "%count% tournois créés avec succès"
+tournament.wizard.recurrence.enabled: "Créer plusieurs tournois récurrents"
+tournament.wizard.recurrence.enabled_hint: "Génère automatiquement plusieurs tournois aux mêmes paramètres, décalés dans le temps."
+tournament.wizard.recurrence.publish_label: "Publication"
+tournament.wizard.recurrence.draft: "Créer en brouillon"
+tournament.wizard.recurrence.publish_now: "Publier immédiatement"
+tournament.wizard.recurrence.interval_label: "Tous les"
+tournament.wizard.recurrence.unit_label: "Unité"
+tournament.wizard.recurrence.unit.days: "Jours"
+tournament.wizard.recurrence.unit.weeks: "Semaines"
+tournament.wizard.recurrence.unit.months: "Mois"
+tournament.wizard.recurrence.count_label: "Nombre de tournois"
+tournament.wizard.recurrence.count_hint: "Maximum 52 tournois (limite d'une année hebdomadaire)"
+tournament.wizard.recurrence.interval_range: "L'intervalle doit être compris entre 1 et 52."
+tournament.wizard.recurrence.count_range: "Le nombre de tournois doit être compris entre 2 et 52."
+tournament.wizard.recurrence.date_in_past: "Une des dates générées est dans le passé. Vérifiez l'intervalle et le nombre de tournois."
+
+# ----------------------------------------------------------------------------
 # Onboarding modal
 # ----------------------------------------------------------------------------
 onboarding:

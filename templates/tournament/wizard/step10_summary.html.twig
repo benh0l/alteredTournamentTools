@@ -213,20 +213,72 @@
         {% endif %}
     </div>
 
-    <div class="alert-warning mt-6">
-        <p class="flex items-start">
-            {{ ux_icon('lucide:alert-circle', {class: 'w-5 h-5 mr-2 flex-shrink-0'}) }}
-            <span><strong>{{ 'tournament.wizard.step10.draft_warning'|trans }}</strong></span>
-        </p>
-    </div>
-{% endblock %}
-
-{% block wizard_next_button %}
-    <form action="{{ path('tournament_wizard_create') }}" method="POST" class="inline">
+    {# Recurrence + publish options #}
+    <form action="{{ path('tournament_wizard_create') }}" method="POST" id="wizard-create-form"
+          data-controller="recurrence">
         <input type="hidden" name="_token" value="{{ csrf_token('wizard_create') }}">
-        <button type="submit" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg transition-all duration-200 transform hover:scale-105">
-            {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
-            {{ 'tournament.wizard.step10.confirm_create'|trans }}
-        </button>
+
+        {# Publication mode #}
+        <div class="border rounded-2xl p-5 mt-6" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
+                {{ ux_icon('lucide:send', {class: 'w-5 h-5 mr-2 text-green-500'}) }}
+                {{ 'tournament.wizard.recurrence.publish_label'|trans }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {% for child in recurrenceForm.publishImmediately %}
+                    <label class="cursor-pointer flex items-center gap-3 p-4 rounded-xl border-2 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-500/10"
+                           style="border-color: var(--border-default);">
+                        {{ form_widget(child, {attr: {class: 'accent-green-500'}}) }}
+                        <div>
+                            <div class="font-medium text-sm" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Recurrence toggle #}
+        <div class="border rounded-2xl p-5 mt-4" style="background-color: var(--card-bg); border-color: var(--border-default);">
+            <label class="flex items-center gap-3 cursor-pointer" data-action="change->recurrence#toggle">
+                {{ form_widget(recurrenceForm.enabled) }}
+                <div>
+                    <span class="font-semibold" style="color: var(--text-primary);">
+                        {{ ux_icon('lucide:repeat', {class: 'w-4 h-4 inline mr-1 text-purple-500'}) }}
+                        {{ 'tournament.wizard.recurrence.enabled'|trans }}
+                    </span>
+                    <p class="text-xs mt-0.5" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.enabled_hint'|trans }}</p>
+                </div>
+            </label>
+
+            {# Recurrence fields — hidden until checkbox is checked #}
+            <div class="mt-4 space-y-4 hidden" data-recurrence-target="fields">
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.interval_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.interval, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.unit_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.unit, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.count_label'|trans }}</label>
+                        {{ form_widget(recurrenceForm.count, {attr: {class: 'w-full rounded-xl px-3 py-2 border text-sm', style: 'background-color: var(--bg-subtle); border-color: var(--border-default); color: var(--text-primary);'}}) }}
+                    </div>
+                </div>
+                <p class="text-xs" style="color: var(--text-muted);">{{ 'tournament.wizard.recurrence.count_hint'|trans }}</p>
+                {{ form_errors(recurrenceForm) }}
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button type="submit" form="wizard-create-form"
+                    class="inline-flex items-center px-8 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-lg transition-all duration-200 transform hover:scale-105">
+                {{ ux_icon('lucide:check-circle', {class: 'w-5 h-5 mr-2'}) }}
+                {{ 'tournament.wizard.step10.confirm_create'|trans }}
+            </button>
+        </div>
     </form>
 {% endblock %}
+
+{% block wizard_next_button %}{% endblock %}

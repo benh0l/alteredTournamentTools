@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Exception\TournamentValidationException;
 use App\Form\Wizard\AdditionalDetailsType;
 use App\Form\Wizard\DateLocationType;
 use App\Form\Wizard\DecklistTransparencyType;
 use App\Form\Wizard\ExpectedPlayersType;
 use App\Form\Wizard\GameFormatType;
 use App\Form\Wizard\MatchFormatType;
+use App\Form\Wizard\RecurrenceType;
 use App\Form\Wizard\TournamentNameType;
 use App\Form\Wizard\TournamentStructureType;
 use App\Form\Wizard\VisibilityType;
+use App\Service\RecurringTournamentService;
 use App\Service\TournamentService;
 use App\Service\TournamentWizardService;
 use App\Service\WizardSessionService;
@@ -47,6 +50,7 @@ final class TournamentWizardController extends AbstractController
         private readonly WizardSessionService $wizardSession,
         private readonly TournamentWizardService $wizardService,
         private readonly TournamentService $tournamentService,
+        private readonly RecurringTournamentService $recurringService,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -120,9 +124,50 @@ final class TournamentWizardController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $tournament = $this->wizardService->buildTournamentFromWizardData($allData, $user);
+
+        $recurrenceForm = $this->createForm(RecurrenceType::class);
+        $recurrenceForm->handleRequest($request);
+        $recurrence = $recurrenceForm->isSubmitted() && $recurrenceForm->isValid()
+            ? $recurrenceForm->getData()
+            : [];
+
+        $publishImmediately = (bool) ($recurrence['publishImmediately'] ?? false);
+        $recurrenceEnabled = !empty($recurrence['enabled']);
+
+        try {
+            $copies = $recurrenceEnabled
+                ? $this->recurringService->generateCopies($tournament, $recurrence)
+                : [];
+        } catch (TournamentValidationException $e) {
+            $this->addFlash('error', $this->translator->trans($e->getMessage()));
+
+            return $this->redirectToRoute('tournament_wizard_step', ['step' => 10]);
+        }
+
         $this->tournamentService->createTournament($tournament, $user);
+        foreach ($copies as $copy) {
+            $this->tournamentService->createTournament($copy, $user);
+        }
+
+        if ($publishImmediately) {
+            $this->tournamentService->publishTournament($tournament);
+            foreach ($copies as $copy) {
+                $this->tournamentService->publishTournament($copy);
+            }
+        }
 
         $this->wizardSession->clearWizard(self::WIZARD_NAME);
+
+        $total = 1 + \count($copies);
+        if ($total > 1) {
+            $this->addFlash('success', $this->translator->trans(
+                'flash.success.tournaments_created_recurring',
+                ['%count%' => $total]
+            ));
+
+            return $this->redirectToRoute('tournament_my_list');
+        }
+
         $this->addFlash('success', $this->translator->trans('flash.success.tournament_created'));
 
         return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
@@ -147,6 +192,7 @@ final class TournamentWizardController extends AbstractController
         }
 
         $summary = $this->wizardService->buildSummaryFromWizardData($allData);
+        $recurrenceForm = $this->createForm(RecurrenceType::class);
 
         return $this->render('tournament/wizard/step10_summary.html.twig', [
             'step' => 10,
@@ -154,6 +200,7 @@ final class TournamentWizardController extends AbstractController
             'stepTitle' => 'Resume',
             'summary' => $summary,
             'stepConfig' => self::STEP_CONFIG,
+            'recurrenceForm' => $recurrenceForm,
         ]);
     }
 }
