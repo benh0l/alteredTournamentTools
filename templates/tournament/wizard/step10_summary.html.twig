@@ -225,7 +225,6 @@
                 {{ 'tournament.wizard.recurrence.publish_label'|trans }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {{ form_widget(recurrenceForm.publishImmediately, {attr: {class: 'sr-only'}}) }}
                 {% for child in recurrenceForm.publishImmediately %}
                     <label class="cursor-pointer flex items-center gap-3 p-4 rounded-xl border-2 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-500/10"
                            style="border-color: var(--border-default);">
