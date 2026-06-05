@@ -7,9 +7,11 @@ namespace App\Controller;
 use App\Entity\Tournament;
 use App\Enum\TournamentVisibility;
 use App\Repository\RegistrationRepository;
+use App\Repository\TournamentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Controller for public tournament views (FR62).
@@ -22,6 +24,7 @@ final class TournamentPublicController extends AbstractController
 {
     public function __construct(
         private readonly RegistrationRepository $registrationRepository,
+        private readonly TournamentRepository $tournamentRepository,
     ) {
     }
 
@@ -64,6 +67,29 @@ final class TournamentPublicController extends AbstractController
             'is_registered' => $isRegistered,
             'can_register' => $canRegister,
             'user' => $user,
+        ]);
+    }
+
+    #[Route('/series/{groupId}', name: 'tournament_series', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function series(string $groupId): Response
+    {
+        $tournaments = $this->tournamentRepository->findByRecurrenceGroup($groupId);
+
+        if (empty($tournaments)) {
+            throw $this->createNotFoundException('Série introuvable.');
+        }
+
+        $user = $this->getUser();
+        $firstTournament = $tournaments[0];
+
+        if ($firstTournament->getOrganizer() !== $user && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $this->render('tournament/series.html.twig', [
+            'tournaments' => $tournaments,
+            'groupId' => $groupId,
         ]);
     }
 }

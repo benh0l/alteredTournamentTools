@@ -2023,6 +2023,30 @@ groups:
     no_matches_generated: "No matches generated"
 
 # ----------------------------------------------------------------------------
+# Recurring tournaments / Series
+# ----------------------------------------------------------------------------
+tournament.series.title: "Tournament Series"
+tournament.series.subtitle: "%count% tournament in this series|%count% tournaments in this series"
+tournament.series.badge: "Series"
+tournament.series.badge_title: "View all tournaments in this series"
+flash.success.tournaments_created_recurring: "%count% tournaments created successfully"
+tournament.wizard.recurrence.enabled: "Create multiple recurring tournaments"
+tournament.wizard.recurrence.enabled_hint: "Automatically generates several tournaments with the same settings, spaced over time."
+tournament.wizard.recurrence.publish_label: "Publication"
+tournament.wizard.recurrence.draft: "Create as draft"
+tournament.wizard.recurrence.publish_now: "Publish immediately"
+tournament.wizard.recurrence.interval_label: "Every"
+tournament.wizard.recurrence.unit_label: "Unit"
+tournament.wizard.recurrence.unit.days: "Days"
+tournament.wizard.recurrence.unit.weeks: "Weeks"
+tournament.wizard.recurrence.unit.months: "Months"
+tournament.wizard.recurrence.count_label: "Number of tournaments"
+tournament.wizard.recurrence.count_hint: "Maximum 52 tournaments (one year of weekly tournaments)"
+tournament.wizard.recurrence.interval_range: "Interval must be between 1 and 52."
+tournament.wizard.recurrence.count_range: "Number of tournaments must be between 2 and 52."
+tournament.wizard.recurrence.date_in_past: "A generated date falls in the past. Check your interval and tournament count."
+
+# ----------------------------------------------------------------------------
 # Onboarding modal
 # ----------------------------------------------------------------------------
 onboarding:

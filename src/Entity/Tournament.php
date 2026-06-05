@@ -166,6 +166,9 @@ class Tournament
     #[ORM\Column(name: 'results_published', type: 'boolean')]
     private bool $resultsPublished = false;
 
+    #[ORM\Column(name: 'recurrence_group_id', type: 'string', length: 36, nullable: true)]
+    private ?string $recurrenceGroupId = null;
+
     /**
      * Whether this is a Tumult tournament.
      */
@@ -1231,5 +1234,17 @@ class Tournament
         }
 
         return null;
+    }
+
+    public function getRecurrenceGroupId(): ?string
+    {
+        return $this->recurrenceGroupId;
+    }
+
+    public function setRecurrenceGroupId(?string $recurrenceGroupId): self
+    {
+        $this->recurrenceGroupId = $recurrenceGroupId;
+
+        return $this;
     }
 }

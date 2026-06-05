@@ -8,6 +8,7 @@ import ButtonLoaderController from './controllers/button_loader_controller.js';
 import DropdownController from './controllers/dropdown_controller.js';
 import ThemeSelectorController from './controllers/theme_selector_controller.js';
 import OnboardingController from './controllers/onboarding_controller.js';
+import RecurrenceController from './controllers/recurrence_controller.js';
 
 // Start Stimulus application with auto-discovery
 const app = startStimulusApp();
@@ -29,3 +30,4 @@ app.register('button-loader', ButtonLoaderController);
 app.register('dropdown', DropdownController);
 app.register('theme-selector', ThemeSelectorController);
 app.register('onboarding', OnboardingController);
+app.register('recurrence', RecurrenceController);

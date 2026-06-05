@@ -629,4 +629,19 @@ class TournamentRepository extends ServiceEntityRepository
     {
         return $this->findByStatus(TournamentStatus::ABANDONED);
     }
+
+    /**
+     * Find all tournaments belonging to a recurrence group, ordered by date.
+     *
+     * @return Tournament[]
+     */
+    public function findByRecurrenceGroup(string $groupId): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.recurrenceGroupId = :groupId')
+            ->setParameter('groupId', $groupId)
+            ->orderBy('t.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

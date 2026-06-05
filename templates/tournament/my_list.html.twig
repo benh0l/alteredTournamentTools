@@ -52,10 +52,18 @@
                     {% for tournament in tournaments %}
                         <tr class="hover:opacity-90 transition-opacity" style="border-color: var(--border-default);">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium" style="color: var(--text-primary);">
+                                <div class="text-sm font-medium flex items-center gap-2" style="color: var(--text-primary);">
                                     <a href="{{ path('tournament_show', {id: tournament.id}) }}" class="hover:opacity-80" style="color: var(--color-primary-600);">
                                         {{ tournament.name }}
                                     </a>
+                                    {% if tournament.recurrenceGroupId %}
+                                        <a href="{{ path('tournament_series', {groupId: tournament.recurrenceGroupId}) }}"
+                                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-500/15 text-purple-700 dark:text-purple-300 hover:bg-purple-500/25 transition-colors"
+                                           title="{{ 'tournament.series.badge_title'|trans }}">
+                                            {{ ux_icon('lucide:repeat', {class: 'w-3 h-3'}) }}
+                                            {{ 'tournament.series.badge'|trans }}
+                                        </a>
+                                    {% endif %}
                                 </div>
                                 {% if tournament.location %}
                                     <div class="text-sm" style="color: var(--text-muted);">{{ tournament.location }}</div>
