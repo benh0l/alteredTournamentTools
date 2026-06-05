@@ -714,6 +714,9 @@
     {# Cookie consent banner - GDPR compliance #}
     {% include 'components/_cookie_banner.html.twig' %}
 
+    {# Onboarding modal - first visit only, tracked via localStorage #}
+    {% include 'components/_onboarding_modal.html.twig' %}
+
     {# Toast notifications container #}
     <div data-controller="toast" data-toast-duration-value="5000">
         <div data-toast-target="container" class="toast-container"></div>

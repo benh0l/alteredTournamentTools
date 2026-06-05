@@ -762,7 +762,7 @@ tournament:
                 swiss_only: "Multiple rounds, everyone plays all matches. Ideal for small tournaments."
                 single_elimination: "Direct elimination from the first match. Fast and intense."
                 mixed: "Swiss rounds then Top Cut elimination. The best of both worlds."
-                group_stage_elimination: "Group stage (round-robin) then elimination of qualifiers."
+                group_stage_elimination: "Group stage (round-robin) then direct elimination Top Cut."
                 round_robin: "Championship format. Each player faces every other player once."
         step5:
             title: "Match Format"
@@ -2021,4 +2021,34 @@ groups:
     qualifiers_info: "The top %count% qualify for the elimination phase"
     round_table: "Round %round% - Table %table%"
     no_matches_generated: "No matches generated"
+
+# ----------------------------------------------------------------------------
+# Onboarding modal
+# ----------------------------------------------------------------------------
+onboarding:
+    title: "Welcome to ATT!"
+    subtitle: "Here are the 3 essentials to get you started."
+    cta: "Let's go!"
+    action:
+        browse:
+            title: "Browse tournaments"
+            desc: "Discover available tournaments near you."
+        create:
+            title: "Create a tournament"
+            desc: "Organize your own tournament in a few simple steps."
+        register:
+            title: "Join a tournament"
+            desc: "Sign up and compete against other players."
+
+# ----------------------------------------------------------------------------
+# Contextual tooltips
+# ----------------------------------------------------------------------------
+tooltip:
+    swiss_only: "Everyone plays all rounds. Players with equal score face each others."
+    single_elimination: "Lose once and you're out. Fast and intense format."
+    mixed: "Swiss rounds to rank players, then a Top Cut elimination bracket."
+    group_stage_elimination: "Round-robin groups, then top players advance to direct elimination Top Cut."
+    round_robin: "Everyone plays everyone. Best overall record wins the title."
+    bo1: "A single game decides the winner of the match."
+    bo3: "First to win 2 games out of 3. More strategic and thorough."
     back_to_tournament: "Back to tournament"

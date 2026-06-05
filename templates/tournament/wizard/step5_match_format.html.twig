@@ -45,7 +45,10 @@
                                     <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">3</span>
                                 {% endif %}
                             </div>
-                            <div class="font-semibold text-lg" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                            <div class="font-semibold text-lg flex items-center justify-center" style="color: var(--text-primary);">
+                                {{ child.vars.label|trans }}
+                                {{ include('components/_tooltip.html.twig', {text: ('tooltip.' ~ child.vars.value)|trans, position: 'top'}) }}
+                            </div>
                             <div class="text-sm mt-1" style="color: var(--text-muted);">
                                 {{ ('tournament.wizard.step5.match_desc.' ~ child.vars.value)|trans }}
                             </div>
@@ -86,7 +89,10 @@
                                     <span class="text-2xl font-bold text-amber-600 dark:text-amber-400">3</span>
                                 {% endif %}
                             </div>
-                            <div class="font-semibold text-lg" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                            <div class="font-semibold text-lg flex items-center justify-center" style="color: var(--text-primary);">
+                                {{ child.vars.label|trans }}
+                                {{ include('components/_tooltip.html.twig', {text: ('tooltip.' ~ child.vars.value)|trans, position: 'top'}) }}
+                            </div>
                         </div>
                     </label>
                 {% endfor %}
