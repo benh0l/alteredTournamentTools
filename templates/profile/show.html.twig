@@ -133,6 +133,7 @@
                         {% else %}
                             {# Show link button #}
                             <a href="{{ path('oauth_altered_reunion_link') }}"
+                               data-turbo="false"
                                class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all"
                                style="color: var(--color-primary-600); background-color: var(--color-primary-50);">
                                 {{ ux_icon('lucide:link', {class: 'w-4 h-4 mr-1'}) }}
