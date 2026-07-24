@@ -578,6 +578,34 @@ tournament:
         view_on_altered: "Voir sur Altered.gg"
         entry_fee: "Prix d'entrée"
 
+    edit_registration:
+        format: "Format"
+        structure: "Structure"
+        faction_hero_title: "Factions et Héros"
+        faction_hero_title_single: "Faction et Héros"
+        hero_oof_title: "Format Héros Out of Faction :"
+        hero_oof_text: "Vous devez choisir un héros appartenant à une <strong>faction différente</strong> de celle de votre deck."
+        bifaction_title: "Format Bifaction :"
+        bifaction_text: "Vous devez choisir <strong>deux factions</strong> et un héros appartenant à <strong>l'une de ces deux factions</strong>."
+        instructions_bifaction: "Modifiez vos deux factions et votre héros pour ce tournoi. (optionnel)"
+        instructions_single: "Modifiez votre faction et votre héros pour ce tournoi. (optionnel)"
+        factions_legend: "Factions :"
+        decklist_title: "Decklist"
+        limited_title: "Format Limité"
+        limited_text: "La faction et le héros seront déterminés lors de la construction du deck sur place."
+        submit: "Mettre à jour"
+
+    register:
+        page_title: "Inscription"
+        title: "Inscription au tournoi"
+        entry_fee_label: "Prix d'entrée :"
+        instructions_bifaction: "Sélectionnez vos deux factions et votre héros pour ce tournoi. (optionnel)"
+        instructions_single: "Sélectionnez votre faction et votre héros pour ce tournoi. (optionnel)"
+        instructions_note: "Vous pourrez le modifier jusqu'au début du tournoi."
+        decklist_info_title: "Bon à savoir :"
+        decklist_info_text: "La decklist est optionnelle pour l'inscription. Vous pourrez la modifier jusqu'au début du tournoi."
+        submit: "Confirmer mon inscription"
+
     checkin:
         title: "Check-in"
         confirmed: "Vous avez confirmé votre présence"

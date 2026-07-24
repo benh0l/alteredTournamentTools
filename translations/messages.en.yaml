@@ -575,6 +575,34 @@ tournament:
         view_on_altered: "View on Altered.gg"
         entry_fee: "Entry fee"
 
+    edit_registration:
+        format: "Format"
+        structure: "Structure"
+        faction_hero_title: "Factions and Heroes"
+        faction_hero_title_single: "Faction and Hero"
+        hero_oof_title: "Hero Out of Faction format:"
+        hero_oof_text: "You must choose a hero belonging to a <strong>different faction</strong> than your deck's."
+        bifaction_title: "Bifaction format:"
+        bifaction_text: "You must choose <strong>two factions</strong> and a hero belonging to <strong>one of these two factions</strong>."
+        instructions_bifaction: "Update your two factions and your hero for this tournament. (optional)"
+        instructions_single: "Update your faction and your hero for this tournament. (optional)"
+        factions_legend: "Factions:"
+        decklist_title: "Decklist"
+        limited_title: "Limited Format"
+        limited_text: "The faction and hero will be determined when building the deck on-site."
+        submit: "Update"
+
+    register:
+        page_title: "Registration"
+        title: "Tournament Registration"
+        entry_fee_label: "Entry fee:"
+        instructions_bifaction: "Select your two factions and your hero for this tournament. (optional)"
+        instructions_single: "Select your faction and your hero for this tournament. (optional)"
+        instructions_note: "You will be able to change it until the tournament starts."
+        decklist_info_title: "Good to know:"
+        decklist_info_text: "The decklist is optional for registration. You will be able to modify it until the tournament starts."
+        submit: "Confirm my registration"
+
     checkin:
         title: "Check-in"
         confirmed: "You have confirmed your attendance"
