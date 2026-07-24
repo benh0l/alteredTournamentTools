@@ -52,12 +52,14 @@ enum Faction: string
                 'atsadi-surge' => 'Atsadi & Surge',
                 'basira-kaizaimon' => 'Basira & Kaizaimon',
                 'sol-halua' => 'Sol & Halua',
+                'gretel-rust' => 'Gretel & Rust',
             ],
             self::LYRA => [
                 'nevenka-blotch' => 'Nevenka & Blotch',
                 'fen-crowbar' => 'Fen & Crowbar',
                 'auraq-kibble' => 'Auraq & Kibble',
                 'nadir-bubbles' => 'Nadir & Bubbles',
+                'yeong-gi-ember' => 'Yeong-Gi & Ember',
             ],
             self::MUNA => [
                 'teija-nauraa' => 'Teija & Nauraa',
@@ -78,6 +80,7 @@ enum Faction: string
                 'afanas-senka' => 'Afanas & Senka',
                 'lindiwe-maw' => 'Lindiwe & Maw',
                 'moyo-silk' => 'Moyo & Silk',
+                'sam-spook' => 'Sam & Spook',
             ],
         };
     }
