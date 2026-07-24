@@ -1,39 +1,39 @@
 ﻿{% extends 'base.html.twig' %}
 
-{% block title %}Inscription - {{ tournament.name }}{% endblock %}
+{% block title %}{{ 'tournament.register.page_title'|trans }} - {{ tournament.name }}{% endblock %}
 
 {% block body %}
 <div class="container mx-auto px-4 py-8 max-w-2xl">
-    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">Inscription au tournoi</h1>
+    <h1 class="text-3xl font-bold mb-6" style="color: var(--text-primary);">{{ 'tournament.register.title'|trans }}</h1>
 
     <div class="shadow rounded-lg p-6 mb-6" style="background-color: var(--card-bg);">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">{{ tournament.name }}</h2>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-2" style="color: var(--text-secondary);">
             <div>
-                <dt class="text-sm" style="color: var(--text-muted);">Date</dt>
+                <dt class="text-sm" style="color: var(--text-muted);">{{ 'common.date'|trans }}</dt>
                 <dd class="font-medium">
                     {{ tournament.date|date('d/m/Y') }}
-                    {% if tournament.time %} a <time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
+                    {% if tournament.time %} {{ 'common.at'|trans }} <time class="local-time" data-datetime="{{ tournament.date|date('Y-m-d') ~ 'T' ~ tournament.time|date('H:i:s') ~ tournament.date|date('P', 'Europe/Paris') }}">{{ tournament.time|date('H:i') }}</time>{% endif %}
                 </dd>
             </div>
             {% if tournament.location %}
                 <div>
-                    <dt class="text-sm" style="color: var(--text-muted);">Lieu</dt>
+                    <dt class="text-sm" style="color: var(--text-muted);">{{ 'common.location'|trans }}</dt>
                     <dd class="font-medium">{{ tournament.location }}</dd>
                 </div>
             {% endif %}
             <div>
-                <dt class="text-sm" style="color: var(--text-muted);">Format</dt>
+                <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.format'|trans }}</dt>
                 <dd class="font-medium">{{ tournament.format.label|trans }}</dd>
             </div>
             <div>
-                <dt class="text-sm" style="color: var(--text-muted);">Structure</dt>
+                <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.structure'|trans }}</dt>
                 <dd class="font-medium">{{ tournament.structure.label|trans }}</dd>
             </div>
         </dl>
         {% if tournament.entryFee %}
             <p class="mt-4 text-sm" style="color: var(--text-secondary);">
-                <span class="font-medium">Prix d'entree:</span> {{ tournament.entryFee }}
+                <span class="font-medium">{{ 'tournament.register.entry_fee_label'|trans }}</span> {{ tournament.entryFee }}
             </p>
         {% endif %}
     </div>
@@ -72,9 +72,9 @@
                         {{ ux_icon('lucide:shield', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
                     {% endif %}
                     {% if tournament.format.isBifaction %}
-                        Factions et Heros
+                        {{ 'tournament.edit_registration.faction_hero_title'|trans }}
                     {% else %}
-                        Faction et Heros
+                        {{ 'tournament.edit_registration.faction_hero_title_single'|trans }}
                     {% endif %}
                 </h3>
 
@@ -82,27 +82,27 @@
                     <div class="flex items-start p-4 mb-4 rounded-lg bg-pink-500/10 border border-pink-500/30">
                         {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-pink-500 mr-3 flex-shrink-0 mt-0.5'}) }}
                         <div class="text-sm" style="color: var(--text-secondary);">
-                            <strong class="text-pink-600">Format Heros Out of Faction :</strong><br>
-                            Vous devez choisir un heros appartenant a une <strong>faction differente</strong> de celle de votre deck.
+                            <strong class="text-pink-600">{{ 'tournament.edit_registration.hero_oof_title'|trans }}</strong><br>
+                            {{ 'tournament.edit_registration.hero_oof_text'|trans|raw }}
                         </div>
                     </div>
                 {% elseif tournament.format.isBifaction %}
                     <div class="flex items-start p-4 mb-4 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
                         {{ ux_icon('lucide:info', {class: 'w-5 h-5 text-cyan-500 mr-3 flex-shrink-0 mt-0.5'}) }}
                         <div class="text-sm" style="color: var(--text-secondary);">
-                            <strong class="text-cyan-600">Format Bifaction :</strong><br>
-                            Vous devez choisir <strong>deux factions</strong> et un heros appartenant a <strong>l'une de ces deux factions</strong>.
+                            <strong class="text-cyan-600">{{ 'tournament.edit_registration.bifaction_title'|trans }}</strong><br>
+                            {{ 'tournament.edit_registration.bifaction_text'|trans|raw }}
                         </div>
                     </div>
                 {% endif %}
 
                 <p class="text-sm mb-4" style="color: var(--text-muted);">
                     {% if tournament.format.isBifaction %}
-                        Selectionnez vos deux factions et votre heros pour ce tournoi. (optionnel) <br>
+                        {{ 'tournament.register.instructions_bifaction'|trans }} <br>
                     {% else %}
-                        Selectionnez votre faction et votre heros pour ce tournoi. (optionnel) <br>
+                        {{ 'tournament.register.instructions_single'|trans }} <br>
                     {% endif %}
-                    Vous pourrez le modifier jusqu'au debut du tournoi.
+                    {{ 'tournament.register.instructions_note'|trans }}
                 </p>
 
                 <div class="flex flex-col md:flex-row gap-6 mb-4">
@@ -110,7 +110,7 @@
                     <div class="flex-1 grid grid-cols-1 gap-4">
                         {# Faction Selection #}
                         <div>
-                            {{ form_label(form.faction, tournament.format.isBifaction ? 'Premiere Faction' : null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
+                            {{ form_label(form.faction, tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : null, {'label_attr': {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'}}) }}
                             <div class="relative">
                                 {{ form_widget(form.faction) }}
                             </div>
@@ -155,14 +155,14 @@
                             <img src="" alt="" class="w-full h-full object-cover hidden" data-registration-form-target="heroImage">
                         </div>
                         <span class="mt-2 text-sm font-medium" style="color: var(--text-secondary);" data-registration-form-target="heroName">
-                            Selectionnez un heros
+                            {{ 'form.registration.select_hero'|trans }}
                         </span>
                     </div>
                 </div>
 
                 {# Faction Color Legend #}
                 <div class="flex flex-wrap gap-3 pt-4 border-t" style="border-color: var(--border-muted);">
-                    <span class="text-xs" style="color: var(--text-muted);">Factions:</span>
+                    <span class="text-xs" style="color: var(--text-muted);">{{ 'tournament.edit_registration.factions_legend'|trans }}</span>
                     <span class="inline-flex items-center text-xs px-2 py-1 rounded-full" style="background-color: rgba(245, 158, 11, 0.2); color: #7a4d25;">
                         <span class="w-2 h-2 rounded-full mr-1" style="background-color: #7a4d25;"></span>
                         Axiom
@@ -194,7 +194,7 @@
             <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
                 <h3 class="text-lg font-medium mb-4 flex items-center" style="color: var(--text-primary);">
                     {{ ux_icon('lucide:file-text', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
-                    Decklist
+                    {{ 'tournament.edit_registration.decklist_title'|trans }}
                 </h3>
 
                 <div class="mb-4">
@@ -209,8 +209,7 @@
                 <div class="p-4 rounded-lg" style="background-color: var(--bg-subtle); border: 1px solid var(--border-muted);">
                     <p class="text-sm" style="color: var(--text-secondary);">
                         {{ ux_icon('lucide:info', {class: 'w-4 h-4 inline mr-1'}) }}
-                        <strong>Bon a savoir:</strong> La decklist est optionnelle pour l'inscription.
-                        Vous pourrez la modifier jusqu'au debut du tournoi.
+                        <strong>{{ 'tournament.register.decklist_info_title'|trans }}</strong> {{ 'tournament.register.decklist_info_text'|trans }}
                     </p>
                 </div>
             </div>
@@ -222,10 +221,10 @@
                         {{ ux_icon('lucide:dice-5', {class: 'w-6 h-6 text-purple-600 dark:text-purple-400'}) }}
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">Format Limite</h3>
+                        <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">{{ 'tournament.edit_registration.limited_title'|trans }}</h3>
                         <p class="text-sm" style="color: var(--text-secondary);">
                             {{ tournament.format.description|trans }}<br>
-                            La faction et le heros seront determines lors de la construction du deck sur place.
+                            {{ 'tournament.edit_registration.limited_text'|trans }}
                         </p>
                     </div>
                 </div>
@@ -246,13 +245,13 @@
             <a href="{{ path('tournament_show', {'id': tournament.id}) }}"
                class="inline-flex items-center hover:opacity-80" style="color: var(--text-secondary);">
                 {{ ux_icon('lucide:arrow-left', {class: 'w-4 h-4 mr-2'}) }}
-                Annuler
+                {{ 'action.cancel'|trans }}
             </a>
             <button type="submit"
                     class="inline-flex items-center px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all"
                     style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));">
                 {{ ux_icon('lucide:check', {class: 'w-5 h-5 mr-2'}) }}
-                Confirmer mon inscription
+                {{ 'tournament.register.submit'|trans }}
             </button>
         </div>
     {{ form_end(form) }}
