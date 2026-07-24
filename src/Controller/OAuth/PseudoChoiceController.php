@@ -13,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator;
 
 class PseudoChoiceController extends AbstractController
 {
@@ -20,6 +22,8 @@ class PseudoChoiceController extends AbstractController
 
     public function __construct(
         private readonly OAuthLoginService $loginService,
+        private readonly UserAuthenticatorInterface $userAuthenticator,
+        private readonly FormLoginAuthenticator $formLoginAuthenticator,
     ) {
     }
 
@@ -97,12 +101,7 @@ class PseudoChoiceController extends AbstractController
 
     private function loginUser(Request $request, User $user): Response
     {
-        // Manually authenticate the user
-        $request->getSession()->set('_security_main', serialize(new \Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken(
-            $user,
-            'main',
-            $user->getRoles()
-        )));
+        $this->userAuthenticator->authenticateUser($user, $this->formLoginAuthenticator, $request);
 
         $this->addFlash('success', 'Compte créé et connexion réussie via Altered Re:Union.');
 
