@@ -24,4 +24,6 @@ when@prod:
     framework:
         session:
             cookie_secure: true  # Force HTTPS in production
-            cookie_samesite: strict
+            # cookie_samesite reste "lax" (config de base) : "strict" bloque le cookie
+            # de session sur le retour cross-site depuis auth.altered.re (callback OAuth),
+            # ce qui fait échouer la validation du state en production.
