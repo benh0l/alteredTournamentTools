@@ -32,6 +32,7 @@ class KeycloakCallbackController extends AbstractController
         private readonly OAuthLinkingService $linkingService,
         private readonly OAuthLoginService $loginService,
         private readonly UserAuthenticatorInterface $userAuthenticator,
+        private readonly FormLoginAuthenticator $formLoginAuthenticator,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -209,12 +210,7 @@ class KeycloakCallbackController extends AbstractController
 
     private function loginUser(Request $request, User $user): Response
     {
-        // Manually authenticate the user
-        $request->getSession()->set('_security_main', serialize(new \Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken(
-            $user,
-            'main',
-            $user->getRoles()
-        )));
+        $this->userAuthenticator->authenticateUser($user, $this->formLoginAuthenticator, $request);
 
         $this->addFlash('success', 'Connexion réussie via Altered Re:Union.');
 
