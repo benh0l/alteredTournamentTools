@@ -86,6 +86,7 @@ final class RecurringTournamentService
         }
 
         $copy->setFormat($source->getFormat());
+        $copy->setTeamSize($source->getTeamSize());
         $copy->setStructure($source->getStructure());
         $copy->setSwissMatchFormat($source->getSwissMatchFormat());
         $copy->setEliminationMatchFormat($source->getEliminationMatchFormat());

@@ -158,7 +158,7 @@ final class DropController extends AbstractController
                 true // By organizer
             );
 
-            $playerName = $registration->getPlayer()->getDisplayName();
+            $playerName = $registration->getDisplayName();
 
             $this->logger->info('Organizer dropped player from tournament', [
                 'organizer_id' => $this->getUser()?->getId(),
@@ -224,7 +224,7 @@ final class DropController extends AbstractController
         try {
             $this->dropService->undropPlayer($registration);
 
-            $playerName = $registration->getPlayer()->getDisplayName();
+            $playerName = $registration->getDisplayName();
 
             $this->logger->info('Organizer undropped player from tournament', [
                 'organizer_id' => $this->getUser()?->getId(),

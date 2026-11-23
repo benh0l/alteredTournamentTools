@@ -178,7 +178,7 @@ final class GroupStandings
     {
         return [
             'registrationId' => $this->registration->getId(),
-            'playerName' => $this->registration->getPlayer()->getDisplayName(),
+            'playerName' => $this->registration->getDisplayName(),
             'groupLetter' => $this->group->getLetter(),
             'wins' => $this->wins,
             'losses' => $this->losses,

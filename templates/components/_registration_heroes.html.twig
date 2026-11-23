@@ -1,0 +1,20 @@
+{#
+    Hero(es) of a registration, for "Hero" columns: one hero in 1v1, both teammates' heroes in 2v2.
+    Params: registration, size (Tailwind size classes, default 'w-10 h-10'), grayscale (bool).
+#}
+{% set size = size|default('w-10 h-10') %}
+{% set decks = registration.decks|filter(deck => deck.hero) %}
+{% if decks is empty %}
+    <span class="text-xs" style="color: var(--text-muted);">-</span>
+{% else %}
+    <div class="flex items-start justify-center gap-3">
+        {% for deck in decks %}
+            <div class="flex flex-col items-center"{% if registration.partner %} title="{{ deck.member.displayName }}"{% endif %}>
+                <div class="{{ size }} rounded-full overflow-hidden border-2 mb-1 {% if grayscale|default(false) %}grayscale{% endif %}" style="border-color: {{ deck.faction ? deck.faction.color : 'var(--border-muted)' }};">
+                    <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span class=\'text-xs\' style=\'color: var(--text-muted);\'>?</span></div>'">
+                </div>
+                <span class="text-xs" style="color: var(--text-muted);">{{ deck.heroLabel }}</span>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

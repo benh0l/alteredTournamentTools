@@ -93,7 +93,7 @@ class DropService
             'tournament_id' => $tournament->getId(),
             'tournament_name' => $tournament->getName(),
             'player_id' => $registration->getPlayer()->getId(),
-            'player_pseudo' => $registration->getPlayer()->getPseudo(),
+            'player_pseudo' => $registration->getPseudo(),
             'by_organizer' => $byOrganizer,
             'reason' => $reason,
         ]);
@@ -117,7 +117,7 @@ class DropService
             'tournament_id' => $registration->getTournament()->getId(),
             'tournament_name' => $registration->getTournament()->getName(),
             'player_id' => $registration->getPlayer()->getId(),
-            'player_pseudo' => $registration->getPlayer()->getPseudo(),
+            'player_pseudo' => $registration->getPseudo(),
         ]);
     }
 

@@ -45,6 +45,9 @@ final class AccountDeletionService
             // 2. TODO: Delete tournament registrations when Registration entity exists
             // $this->registrationRepository->removeAllForUser($user);
 
+            // 2b. 2v2 teams: keep the teammate's registration instead of deleting it with the user
+            $this->detachFromTeams($user);
+
             // 3. TODO: Anonymize match results when Match entity exists
             // $this->anonymizeMatchResults($user);
 
@@ -70,6 +73,36 @@ final class AccountDeletionService
             ]);
 
             throw $e;
+        }
+    }
+
+    /**
+     * Before deleting a user, keep their 2v2 teammates registered:
+     * - captain: the partner takes over the registration (otherwise the cascade would delete it);
+     * - partner: they are removed from the team, with their deck data.
+     */
+    private function detachFromTeams(User $user): void
+    {
+        $changed = false;
+
+        foreach ($this->registrationRepository->findByPlayer($user) as $registration) {
+            $partner = $registration->getPartner();
+            if ($partner === null) {
+                continue;
+            }
+
+            if ($partner->getId() === $user->getId()) {
+                $registration->removePartner();
+            } else {
+                $registration->promotePartner();
+            }
+            $changed = true;
+        }
+
+        if ($changed) {
+            $this->entityManager->flush();
+            // Reload the user so the cascade only sees the registrations still owned by them
+            $this->entityManager->refresh($user);
         }
     }
 
@@ -116,6 +149,9 @@ final class AccountDeletionService
 
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
+            // In 2v2 the user may be the partner: export their own deck, and name the teammate
+            $isPartner = $registration->getPartner() !== null && $registration->getPartner()->getId() === $user->getId();
+            $teammate = $isPartner ? $registration->getPlayer() : $registration->getPartner();
             $data[] = [
                 'tournament' => [
                     'id' => $tournament->getId(),
@@ -125,10 +161,11 @@ final class AccountDeletionService
                     'status' => $tournament->getStatus()->value,
                 ],
                 'registered_at' => $registration->getRegisteredAt()->format('c'),
-                'faction' => $registration->getFaction()?->value,
-                'faction2' => $registration->getFaction2()?->value,
-                'hero' => $registration->getHero(),
-                'decklist_url' => $registration->getDecklistUrl(),
+                'faction' => ($isPartner ? $registration->getPartnerFaction() : $registration->getFaction())?->value,
+                'faction2' => ($isPartner ? $registration->getPartnerFaction2() : $registration->getFaction2())?->value,
+                'hero' => $isPartner ? $registration->getPartnerHero() : $registration->getHero(),
+                'decklist_url' => $isPartner ? $registration->getPartnerDecklistUrl() : $registration->getDecklistUrl(),
+                'teammate' => $teammate?->getPseudo(),
             ];
         }
 
@@ -237,7 +274,7 @@ final class AccountDeletionService
             'tournament' => $tournamentName,
             'round' => $match->getRound()->getRoundNumber(),
             'table' => $match->getTableNumber(),
-            'opponent' => $opponent?->getPlayer()->getPseudo(),
+            'opponent' => $opponent?->getPseudo(),
             'is_bye' => $match->isByeMatch(),
             'status' => $match->getStatus()->value,
             'outcome' => $outcome,

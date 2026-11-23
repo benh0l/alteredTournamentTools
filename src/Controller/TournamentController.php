@@ -221,6 +221,7 @@ final class TournamentController extends AbstractController
         $tournament->setPrizes($source->getPrizes());
         $tournament->setAlteredGgLink($source->getAlteredGgLink());
         $tournament->setFormat($source->getFormat());
+        $tournament->setTeamSize($source->getTeamSize());
         $tournament->setStructure($source->getStructure());
         $tournament->setVisibility($source->getVisibility());
         $tournament->setDecklistTransparency($source->getDecklistTransparency());
@@ -285,7 +286,10 @@ final class TournamentController extends AbstractController
         // Check authorization via Voter (organizer + tournament not started)
         $this->denyAccessUnlessGranted(TournamentVoter::EDIT, $tournament);
 
-        $form = $this->createForm(TournamentType::class, $tournament);
+        $form = $this->createForm(TournamentType::class, $tournament, [
+            // Switching between 1v1 and 2v2 would leave existing registrations inconsistent
+            'team_size_locked' => !$tournament->getRegistrations()->isEmpty(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

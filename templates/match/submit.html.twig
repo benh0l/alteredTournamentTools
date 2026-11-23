@@ -30,7 +30,7 @@
             </div>
             <p class="text-sm mt-1">
                 {{ 'match.submit.current_result'|trans }} : {{ match.player1Score }} - {{ match.player2Score }}
-                ({{ 'match.submit.winner'|trans }} : {{ match.winner.player.displayName }})
+                ({{ 'match.submit.winner'|trans }} : {{ match.winner.displayName }})
             </p>
             <p class="text-sm">{{ 'match.submit.correct_result'|trans }}</p>
         </div>
@@ -49,12 +49,12 @@
         <div class="rounded-lg p-4 mb-6" style="background-color: var(--color-gray-50);">
             <div class="flex justify-between items-center">
                 <div class="text-center flex-1">
-                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</p>
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.displayName }}</p>
                     <p class="text-sm" style="color: var(--text-muted);">{{ 'match.submit.player1'|trans }}</p>
                 </div>
                 <div class="px-4 text-2xl font-bold" style="color: var(--text-muted);">{{ 'match.show.vs'|trans }}</div>
                 <div class="text-center flex-1">
-                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</p>
+                    <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player2.displayName }}</p>
                     <p class="text-sm" style="color: var(--text-muted);">{{ 'match.submit.player2'|trans }}</p>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                                     peer-checked:border-green-500 peer-checked:bg-gradient-to-br peer-checked:from-green-500 peer-checked:to-emerald-600 peer-checked:shadow-xl peer-checked:scale-[1.02] peer-checked:[&>span]:text-white
                                     hover:border-green-300 hover:shadow-md"
                              style="background-color: var(--card-bg); border-color: var(--border-default);">
-                            <span class="font-bold text-lg block transition-colors" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</span>
+                            <span class="font-bold text-lg block transition-colors" style="color: var(--text-primary);">{{ match.player1.displayName }}</span>
                             <span class="text-sm font-medium text-green-600 transition-colors">{{ 'match.submit.victory'|trans }}</span>
                         </div>
                         <div class="absolute -top-2 -right-2 hidden peer-checked:flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-lg border-2 border-green-500">
@@ -109,7 +109,7 @@
                                     peer-checked:border-green-500 peer-checked:bg-gradient-to-br peer-checked:from-green-500 peer-checked:to-emerald-600 peer-checked:shadow-xl peer-checked:scale-[1.02] peer-checked:[&>span]:text-white
                                     hover:border-green-300 hover:shadow-md"
                              style="background-color: var(--card-bg); border-color: var(--border-default);">
-                            <span class="font-bold text-lg block transition-colors" style="color: var(--text-primary);">{{ match.player2.player.displayName }}</span>
+                            <span class="font-bold text-lg block transition-colors" style="color: var(--text-primary);">{{ match.player2.displayName }}</span>
                             <span class="text-sm font-medium text-green-600 transition-colors">{{ 'match.submit.victory'|trans }}</span>
                         </div>
                         <div class="absolute -top-2 -right-2 hidden peer-checked:flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-lg border-2 border-green-500">
@@ -141,7 +141,7 @@
                     <div class="flex items-center justify-center gap-4">
                         <div class="text-center">
                             <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                                {{ match.player1.player.displayName }}
+                                {{ match.player1.displayName }}
                             </label>
                             <input type="number" id="player1_score" name="player1_score" min="0" max="2" value="0" required
                                    class="form-input w-16 h-12 text-center text-xl rounded-lg">
@@ -149,7 +149,7 @@
                         <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
                         <div class="text-center">
                             <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                                {{ match.player2.player.displayName }}
+                                {{ match.player2.displayName }}
                             </label>
                             <input type="number" id="player2_score" name="player2_score" min="0" max="2" value="0" required
                                    class="form-input w-16 h-12 text-center text-xl rounded-lg">
@@ -168,7 +168,7 @@
                     <div class="flex items-center justify-center gap-4">
                         <div class="text-center">
                             <label for="player1_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                                {{ match.player1.player.displayName }}
+                                {{ match.player1.displayName }}
                             </label>
                             <input type="number" id="player1_score" name="player1_score" min="0" max="3" value="0"
                                    class="form-input w-16 h-12 text-center text-xl rounded-lg">
@@ -176,7 +176,7 @@
                         <span class="text-2xl font-bold" style="color: var(--text-muted);">-</span>
                         <div class="text-center">
                             <label for="player2_score" class="block text-xs mb-1" style="color: var(--text-muted);">
-                                {{ match.player2.player.displayName }}
+                                {{ match.player2.displayName }}
                             </label>
                             <input type="number" id="player2_score" name="player2_score" min="0" max="3" value="0"
                                    class="form-input w-16 h-12 text-center text-xl rounded-lg">

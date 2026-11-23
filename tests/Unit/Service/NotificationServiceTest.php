@@ -200,6 +200,38 @@ final class NotificationServiceTest extends TestCase
         $this->assertEquals(0, $stats['skipped']);
     }
 
+    public function testQueueRoundStartNotificationsNotifiesBothTeammates(): void
+    {
+        $partner = new User();
+        $partner->setEmail('partner@test.com');
+        $partner->setPseudo('Partner');
+        $partner->setPassword('password');
+        (new \ReflectionProperty(User::class, 'id'))->setValue($this->player, 10);
+        (new \ReflectionProperty(User::class, 'id'))->setValue($partner, 11);
+        (new \ReflectionProperty(Tournament::class, 'id'))->setValue($this->tournament, 20);
+        $this->tournament->setTeamSize(2);
+        $this->registration->setPartner($partner);
+
+        $this->registrationRepository->method('findBy')->willReturn([$this->registration]);
+        $this->notificationRepository->method('hasBeenSent')->willReturn(false);
+
+        $notifiedUsers = [];
+        $this->notificationRepository
+            ->expects($this->exactly(2))
+            ->method('save')
+            ->willReturnCallback(function (Notification $notification) use (&$notifiedUsers): void {
+                $notifiedUsers[] = $notification->getUser();
+                $idProperty = new \ReflectionProperty($notification, 'id');
+                $idProperty->setValue($notification, count($notifiedUsers));
+            });
+        $this->messageBus->method('dispatch')->willReturn(new Envelope(new \stdClass()));
+
+        $stats = $this->service->queueRoundStartNotifications($this->tournament, 1);
+
+        $this->assertSame(2, $stats['queued']);
+        $this->assertSame([$this->player, $partner], $notifiedUsers);
+    }
+
     public function testQueueRoundStartNotificationsSkipsAlreadySent(): void
     {
         $this->registrationRepository

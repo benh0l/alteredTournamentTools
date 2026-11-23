@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTO\DeckChoice;
 use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\Faction;
 use App\Enum\TournamentStatus;
 use App\Exception\AlreadyRegisteredException;
+use App\Exception\InvalidTeamException;
 use App\Form\RegistrationType;
 use App\Repository\RegistrationRepository;
+use App\Repository\UserRepository;
 use App\Service\RegistrationService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,6 +33,7 @@ final class TournamentRegistrationController extends AbstractController
         private readonly RegistrationRepository $registrationRepository,
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
+        private readonly UserRepository $userRepository,
     ) {
     }
 
@@ -61,6 +67,8 @@ final class TournamentRegistrationController extends AbstractController
 
         $form = $this->createForm(RegistrationType::class, null, [
             'tournament_format' => $tournament->getFormat(),
+            'team' => $tournament->isTeamTournament(),
+            'partner_editable' => $tournament->isTeamTournament(),
         ]);
         $form->handleRequest($request);
 
@@ -70,12 +78,27 @@ final class TournamentRegistrationController extends AbstractController
                 $factionValue = $form->get('faction')->getData();
                 $faction = $factionValue ? Faction::tryFrom($factionValue) : null;
 
+                // Second faction (bifaction format)
+                $faction2Value = $form->get('faction2')->getData();
+                $faction2 = $faction2Value ? Faction::tryFrom($faction2Value) : null;
+
+                $partner = null;
+                $partnerDeck = null;
+                if ($tournament->isTeamTournament()) {
+                    $partner = $this->userRepository->findByPseudo(trim((string) $form->get('partnerPseudo')->getData()))
+                        ?? throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_FOUND);
+                    $partnerDeck = $this->partnerDeckFromForm($form);
+                }
+
                 $this->registrationService->registerPlayerToTournament(
                     $user,
                     $tournament,
                     $form->get('decklistUrl')->getData(),
                     $faction,
-                    $form->get('hero')->getData()
+                    $form->get('hero')->getData(),
+                    $partner,
+                    $partnerDeck,
+                    $faction2
                 );
 
                 $this->addFlash('success', $this->translator->trans('flash.success.registration_success'));
@@ -89,6 +112,9 @@ final class TournamentRegistrationController extends AbstractController
                 $this->addFlash('error', $this->translator->trans('flash.error.already_registered'));
 
                 return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
+            } catch (InvalidTeamException $e) {
+                $field = $form->has('partnerPseudo') ? $form->get('partnerPseudo') : $form;
+                $field->addError(new FormError($this->translator->trans($e->getTranslationKey())));
             }
         }
 
@@ -157,6 +183,13 @@ final class TournamentRegistrationController extends AbstractController
             'initial_hero' => $registration->getHero(),
             'initial_decklist_url' => $registration->getDecklistUrl(),
             'tournament_format' => $tournament->getFormat(),
+            'team' => $tournament->isTeamTournament(),
+            // A team that lost its partner (account deleted) can name a new one
+            'partner_editable' => $registration->isIncompleteTeam(),
+            'initial_partner_faction' => $registration->getPartnerFaction()?->value,
+            'initial_partner_faction2' => $registration->getPartnerFaction2()?->value,
+            'initial_partner_hero' => $registration->getPartnerHero(),
+            'initial_partner_decklist_url' => $registration->getPartnerDecklistUrl(),
         ]);
         $form->handleRequest($request);
 
@@ -168,6 +201,24 @@ final class TournamentRegistrationController extends AbstractController
             $faction2Value = $form->get('faction2')->getData();
             $faction2 = $faction2Value ? Faction::tryFrom($faction2Value) : null;
 
+            // Validate a new partner first so that nothing is saved if it is refused
+            if ($registration->isIncompleteTeam()) {
+                try {
+                    $partner = $this->userRepository->findByPseudo(trim((string) $form->get('partnerPseudo')->getData()))
+                        ?? throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_FOUND);
+                    $this->registrationService->assignPartner($registration, $partner, $this->partnerDeckFromForm($form));
+                } catch (InvalidTeamException $e) {
+                    $form->get('partnerPseudo')->addError(new FormError($this->translator->trans($e->getTranslationKey())));
+
+                    return $this->render('tournament/edit_registration.html.twig', [
+                        'tournament' => $tournament,
+                        'registration' => $registration,
+                        'form' => $form,
+                        'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
+                    ], new Response(null, Response::HTTP_UNPROCESSABLE_ENTITY));
+                }
+            }
+
             $this->registrationService->updateRegistration(
                 $registration,
                 $form->get('decklistUrl')->getData(),
@@ -175,6 +226,10 @@ final class TournamentRegistrationController extends AbstractController
                 $form->get('hero')->getData(),
                 $faction2
             );
+
+            if ($registration->getPartner() !== null) {
+                $this->registrationService->updatePartnerDeck($registration, $this->partnerDeckFromForm($form));
+            }
 
             $this->addFlash('success', $this->translator->trans('flash.success.registration_updated'));
             $this->logger->info('Player updated registration', [
@@ -223,5 +278,15 @@ final class TournamentRegistrationController extends AbstractController
         }
 
         return $this->redirectToRoute('tournament_show', ['id' => $tournament->getId()]);
+    }
+
+    private function partnerDeckFromForm(FormInterface $form): DeckChoice
+    {
+        return DeckChoice::fromRaw(
+            $form->get('partnerDecklistUrl')->getData(),
+            $form->get('partnerFaction')->getData(),
+            $form->get('partnerFaction2')->getData(),
+            $form->get('partnerHero')->getData(),
+        );
     }
 }

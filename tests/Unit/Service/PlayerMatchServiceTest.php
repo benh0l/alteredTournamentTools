@@ -42,7 +42,7 @@ final class PlayerMatchServiceTest extends TestCase
         $user = $this->createUser();
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([]);
 
         $result = $this->service->findCurrentMatch($user);
@@ -57,7 +57,7 @@ final class PlayerMatchServiceTest extends TestCase
         $registration = new Registration($tournament, $user);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $result = $this->service->findCurrentMatch($user);
@@ -87,7 +87,7 @@ final class PlayerMatchServiceTest extends TestCase
         $round->addMatch($match);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $result = $this->service->findCurrentMatch($user);
@@ -116,7 +116,7 @@ final class PlayerMatchServiceTest extends TestCase
         $round->addMatch($match);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $result = $this->service->findCurrentMatch($user);
@@ -134,7 +134,7 @@ final class PlayerMatchServiceTest extends TestCase
         $ongoingReg = new Registration($ongoingTournament, $user);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$upcomingReg, $ongoingReg]);
 
         $result = $this->service->getUpcomingTournamentRegistrations($user);
@@ -153,7 +153,7 @@ final class PlayerMatchServiceTest extends TestCase
         $ongoingReg = new Registration($ongoingTournament, $user);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$upcomingReg, $ongoingReg]);
 
         $result = $this->service->getOngoingTournamentRegistrations($user);

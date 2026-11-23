@@ -15,7 +15,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'registrations')]
 #[ORM\UniqueConstraint(name: 'uniq_registration_tournament_player', columns: ['tournament_id', 'player_id'])]
 #[ORM\Index(name: 'idx_registrations_tournament', columns: ['tournament_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_registration_tournament_partner', columns: ['tournament_id', 'partner_id'])]
 #[ORM\Index(name: 'idx_registrations_player', columns: ['player_id'])]
+#[ORM\Index(name: 'idx_registrations_partner', columns: ['partner_id'])]
 #[ORM\Index(name: 'idx_registrations_registered_at', columns: ['registered_at'])]
 #[ORM\Index(name: 'idx_registrations_dropped_at', columns: ['dropped_at'])]
 #[ORM\Index(name: 'idx_registrations_checked_in_at', columns: ['checked_in_at'])]
@@ -34,6 +36,27 @@ class Registration
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'registrations')]
     #[ORM\JoinColumn(name: 'player_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private User $player;
+
+    /**
+     * Teammate in team tournaments (Tournament::isTeamTournament()). Null in 1v1.
+     * SET NULL on delete: the team stays registered if the partner deletes their account.
+     */
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'partner_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $partner = null;
+
+    #[ORM\Column(name: 'partner_decklist_url', type: 'string', length: 255, nullable: true)]
+    #[Assert\Url(message: 'Le lien de la decklist doit etre une URL valide')]
+    private ?string $partnerDecklistUrl = null;
+
+    #[ORM\Column(name: 'partner_faction', type: 'string', length: 50, nullable: true, enumType: Faction::class)]
+    private ?Faction $partnerFaction = null;
+
+    #[ORM\Column(name: 'partner_faction2', type: 'string', length: 50, nullable: true, enumType: Faction::class)]
+    private ?Faction $partnerFaction2 = null;
+
+    #[ORM\Column(name: 'partner_hero', type: 'string', length: 100, nullable: true)]
+    private ?string $partnerHero = null;
 
     #[ORM\Column(name: 'decklist_url', type: 'string', length: 255, nullable: true)]
     #[Assert\Url(message: 'Le lien de la decklist doit etre une URL valide')]
@@ -81,6 +104,207 @@ class Registration
     public function getPlayer(): User
     {
         return $this->player;
+    }
+
+    /**
+     * All users competing under this registration.
+     *
+     * A registration is the competitor unit used by pairings, standings and brackets.
+     * Always use this (or hasMember()) instead of getPlayer() when the question is
+     * "which users are behind this competitor?".
+     *
+     * @return User[]
+     */
+    public function getMembers(): array
+    {
+        return $this->partner !== null ? [$this->player, $this->partner] : [$this->player];
+    }
+
+    /**
+     * Check whether the given user competes under this registration.
+     */
+    public function hasMember(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        foreach ($this->getMembers() as $member) {
+            if ($member === $user || ($member->getId() !== null && $member->getId() === $user->getId())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Name of the competitor as shown in pairings, standings and brackets.
+     */
+    public function getDisplayName(): string
+    {
+        return implode(' & ', array_map(
+            static fn (User $member): string => $member->getDisplayName(),
+            $this->getMembers(),
+        ));
+    }
+
+    /**
+     * Pseudo(s) of the competitor: the player's pseudo, or "Alice & Bob" for a team.
+     */
+    public function getPseudo(): string
+    {
+        return implode(' & ', array_map(
+            static fn (User $member): string => $member->getPseudo(),
+            $this->getMembers(),
+        ));
+    }
+
+    /**
+     * Deck of each member: one entry in 1v1, two in 2v2 (player first, then partner).
+     *
+     * @return list<array{member: User, faction: ?Faction, faction2: ?Faction, hero: ?string, heroLabel: ?string, heroImage: ?string, decklistUrl: ?string}>
+     */
+    public function getDecks(): array
+    {
+        $decks = [[
+            'member' => $this->player,
+            'faction' => $this->faction,
+            'faction2' => $this->faction2,
+            'hero' => $this->hero,
+            'heroLabel' => $this->getHeroLabel(),
+            'heroImage' => $this->getHeroImage(),
+            'decklistUrl' => $this->decklistUrl,
+        ]];
+
+        if ($this->partner !== null) {
+            $decks[] = [
+                'member' => $this->partner,
+                'faction' => $this->partnerFaction,
+                'faction2' => $this->partnerFaction2,
+                'hero' => $this->partnerHero,
+                'heroLabel' => $this->getPartnerHeroLabel(),
+                'heroImage' => $this->getPartnerHeroImage(),
+                'decklistUrl' => $this->partnerDecklistUrl,
+            ];
+        }
+
+        return $decks;
+    }
+
+    public function getPartner(): ?User
+    {
+        return $this->partner;
+    }
+
+    public function setPartner(?User $partner): self
+    {
+        if ($partner !== null && ($partner === $this->player || ($partner->getId() !== null && $partner->getId() === $this->player->getId()))) {
+            throw new \InvalidArgumentException('A player cannot be their own partner.');
+        }
+
+        $this->partner = $partner;
+
+        return $this;
+    }
+
+    /**
+     * Remove the partner and their deck (e.g. when the partner deletes their account).
+     */
+    public function removePartner(): self
+    {
+        $this->partner = null;
+        $this->partnerDecklistUrl = null;
+        $this->partnerFaction = null;
+        $this->partnerFaction2 = null;
+        $this->partnerHero = null;
+
+        return $this;
+    }
+
+    /**
+     * The partner takes over the registration, with their own deck (e.g. when the captain
+     * deletes their account): the team keeps its place, pairings and results.
+     */
+    public function promotePartner(): self
+    {
+        if ($this->partner === null) {
+            throw new \LogicException('Cannot promote a partner on a registration without partner.');
+        }
+
+        $this->player = $this->partner;
+        $this->decklistUrl = $this->partnerDecklistUrl;
+        $this->faction = $this->partnerFaction;
+        $this->faction2 = $this->partnerFaction2;
+        $this->hero = $this->partnerHero;
+
+        return $this->removePartner();
+    }
+
+    /**
+     * Team registration that lost its partner (2v2 only).
+     */
+    public function isIncompleteTeam(): bool
+    {
+        return $this->tournament->isTeamTournament() && $this->partner === null;
+    }
+
+    public function getPartnerDecklistUrl(): ?string
+    {
+        return $this->partnerDecklistUrl;
+    }
+
+    public function setPartnerDecklistUrl(?string $partnerDecklistUrl): self
+    {
+        $this->partnerDecklistUrl = $partnerDecklistUrl;
+
+        return $this;
+    }
+
+    public function getPartnerFaction(): ?Faction
+    {
+        return $this->partnerFaction;
+    }
+
+    public function setPartnerFaction(?Faction $partnerFaction): self
+    {
+        $this->partnerFaction = $partnerFaction;
+
+        return $this;
+    }
+
+    public function getPartnerFaction2(): ?Faction
+    {
+        return $this->partnerFaction2;
+    }
+
+    public function setPartnerFaction2(?Faction $partnerFaction2): self
+    {
+        $this->partnerFaction2 = $partnerFaction2;
+
+        return $this;
+    }
+
+    public function getPartnerHero(): ?string
+    {
+        return $this->partnerHero;
+    }
+
+    public function setPartnerHero(?string $partnerHero): self
+    {
+        $this->partnerHero = $partnerHero;
+
+        return $this;
+    }
+
+    public function getPartnerHeroLabel(): ?string
+    {
+        return $this->partnerHero !== null ? Faction::getHeroLabel($this->partnerHero) : null;
+    }
+
+    public function getPartnerHeroImage(): ?string
+    {
+        return $this->partnerHero !== null ? Faction::getHeroImage($this->partnerHero) : null;
     }
 
     public function getDecklistUrl(): ?string

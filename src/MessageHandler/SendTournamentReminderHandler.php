@@ -104,10 +104,7 @@ final class SendTournamentReminderHandler
 
         // Get unregister URL using the registration's token
         $unregisterUrl = null;
-        $registration = $this->registrationRepository->findOneBy([
-            'player' => $user,
-            'tournament' => $tournament,
-        ]);
+        $registration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
 
         if ($registration !== null) {
             $unregisterUrl = $this->urlGenerator->generate(

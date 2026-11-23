@@ -458,7 +458,7 @@ class PairingService
             $opponent = $this->findBestOpponent($standing, $sortedStandings, $pairedPlayers);
 
             if ($opponent === null) {
-                throw PairingException::noValidOpponent($player->getPlayer()->getPseudo());
+                throw PairingException::noValidOpponent($player->getPseudo());
             }
 
             $pairings[] = [

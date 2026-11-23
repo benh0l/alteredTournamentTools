@@ -36,7 +36,7 @@ class PlayerMatchService
     public function findCurrentMatch(User $user): ?TournamentMatch
     {
         // Get all registrations for ongoing tournaments
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
 
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
@@ -70,7 +70,7 @@ class PlayerMatchService
     public function findAllOngoingMatches(User $user): array
     {
         $matches = [];
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
 
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
@@ -101,10 +101,7 @@ class PlayerMatchService
     {
         $tournament = $match->getRound()->getTournament();
 
-        return $this->registrationRepository->findOneBy([
-            'player' => $user,
-            'tournament' => $tournament,
-        ]);
+        return $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
     }
 
     /**
@@ -114,7 +111,7 @@ class PlayerMatchService
      */
     public function getUpcomingTournamentRegistrations(User $user, int $limit = 3): array
     {
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
         $upcoming = [];
 
         foreach ($registrations as $registration) {
@@ -138,7 +135,7 @@ class PlayerMatchService
      */
     public function getOngoingTournamentRegistrations(User $user): array
     {
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
         $ongoing = [];
 
         foreach ($registrations as $registration) {

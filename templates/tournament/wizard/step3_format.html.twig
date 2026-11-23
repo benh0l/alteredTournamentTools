@@ -60,5 +60,28 @@
             {% endfor %}
         </div>
         {{ form_errors(form.format) }}
+
+        <div class="pt-4">
+            <h3 class="text-lg font-semibold text-center mb-4" style="color: var(--text-primary);">{{ 'tournament.wizard.step3.team_size_question'|trans }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for child in form.teamSize %}
+                    <label class="cursor-pointer group">
+                        {{ form_widget(child, {attr: {class: 'sr-only peer'}}) }}
+                        <div class="border-2 rounded-2xl p-5 transition-all duration-200 peer-checked:border-orange-500 peer-checked:bg-orange-500/10 peer-checked:shadow-lg hover:shadow-md" style="border-color: var(--border-default);">
+                            <div class="flex items-center gap-4">
+                                {{ ux_icon(child.vars.value == '2' ? 'lucide:users' : 'lucide:user', {class: 'w-8 h-8 shrink-0', style: 'color: var(--color-primary-600);'}) }}
+                                <div>
+                                    <div class="font-semibold" style="color: var(--text-primary);">{{ child.vars.label|trans }}</div>
+                                    <div class="text-sm" style="color: var(--text-muted);">
+                                        {{ ('tournament.wizard.step3.team_size_desc.' ~ (child.vars.value == '2' ? 'duo' : 'solo'))|trans }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form_errors(form.teamSize) }}
+        </div>
     {{ form_end(form) }}
 {% endblock %}

@@ -86,7 +86,7 @@
                                 {{ match.tableNumber }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm {% if match.winner and match.winner == match.player1 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
-                                {{ match.player1.player.displayName }}
+                                {{ match.player1.displayName }}
                                 {% if isMyMatch and match.player1 and match.player1.id == player_registration.id %}
                                     <span style="color: var(--color-primary-600);">(vous)</span>
                                 {% endif %}
@@ -102,7 +102,7 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-right {% if match.winner and match.player2 and match.winner == match.player2 %}font-bold text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
                                 {% if match.player2 %}
-                                    {{ match.player2.player.displayName }}
+                                    {{ match.player2.displayName }}
                                     {% if isMyMatch and match.player2.id == player_registration.id %}
                                         <span style="color: var(--color-primary-600);">(vous)</span>
                                     {% endif %}

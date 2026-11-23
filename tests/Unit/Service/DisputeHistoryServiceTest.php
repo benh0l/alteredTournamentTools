@@ -41,7 +41,7 @@ final class DisputeHistoryServiceTest extends TestCase
         $user = $this->createMockUser(1);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([]);
 
         $summary = $this->service->getDisputeSummaryForUser($user);
@@ -66,7 +66,7 @@ final class DisputeHistoryServiceTest extends TestCase
         $match = $this->createDisputedMatch($registration);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $this->matchRepository
@@ -105,7 +105,7 @@ final class DisputeHistoryServiceTest extends TestCase
         $registration = new Registration($tournament, $user);
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $this->matchRepository
@@ -143,7 +143,7 @@ final class DisputeHistoryServiceTest extends TestCase
         }
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $this->matchRepository
@@ -182,7 +182,7 @@ final class DisputeHistoryServiceTest extends TestCase
         }
 
         $this->registrationRepository
-            ->method('findBy')
+            ->method('findByPlayer')
             ->willReturn([$registration]);
 
         $this->matchRepository

@@ -331,6 +331,12 @@
                             <dt class="text-sm" style="color: var(--text-muted);">{{ 'form.tournament.format'|trans }}</dt>
                             <dd class="text-sm font-semibold px-3 py-1 rounded-full" style="color: var(--color-primary-600); background: var(--color-primary-500) / 0.2;">{{ ('enum.tournament_format.' ~ tournament.format.value)|trans }}</dd>
                         </div>
+                        {% if tournament.teamTournament %}
+                        <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
+                            <dt class="text-sm" style="color: var(--text-muted);">{{ 'form.tournament.team_size'|trans }}</dt>
+                            <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ tournament.teamSizeLabel|trans }}</dd>
+                        </div>
+                        {% endif %}
                         <div class="flex justify-between items-center py-2 border-b" style="border-color: var(--border-muted);">
                             <dt class="text-sm" style="color: var(--text-muted);">{{ 'form.tournament.structure'|trans }}</dt>
                             <dd class="text-sm font-semibold" style="color: var(--text-primary);">{{ ('enum.tournament_structure.' ~ tournament.structure.value)|trans }}</dd>
@@ -483,7 +489,7 @@
                     <div class="flex justify-between items-center">
                         <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
                             {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2 text-rose-500'}) }}
-                            {{ 'tournament.show.players_card.title'|trans }}
+                            {{ (tournament.teamTournament ? 'tournament.show.players_card.title_teams' : 'tournament.show.players_card.title')|trans }}
                         </h2>
                         <span class="bg-rose-500/20 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full text-sm font-bold">
                             {{ tournament.registrations|length }}{% if tournament.maxPlayers %}/{{ tournament.maxPlayers }}{% endif %}
@@ -504,7 +510,7 @@
                                                 <span class="text-white font-semibold text-sm">{{ registration.player.pseudo|slice(0,1)|upper }}</span>
                                             </div>
                                         {% endif %}
-                                        <span class="font-medium" style="color: var(--text-primary);">{{ registration.player.displayName }}</span>
+                                        <span class="font-medium" style="color: var(--text-primary);">{{ registration.displayName }}</span>
                                     </div>
                                     <span class="text-xs" style="color: var(--text-muted);">{{ registration.registeredAt|date('d/m') }}</span>
                                 </li>

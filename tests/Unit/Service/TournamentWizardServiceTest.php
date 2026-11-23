@@ -143,6 +143,25 @@ final class TournamentWizardServiceTest extends TestCase
         $this->assertTrue($summary['swissRoundsAutoSuggested']);
     }
 
+    public function testBuildTournamentDefaultsToSoloWhenTeamSizeMissing(): void
+    {
+        $tournament = $this->service->buildTournamentFromWizardData($this->createCompleteWizardData(), $this->createMock(User::class));
+
+        $this->assertSame(1, $tournament->getTeamSize());
+    }
+
+    public function testBuildTeamTournamentFromWizardData(): void
+    {
+        $wizardData = $this->createCompleteWizardData();
+        $wizardData[3]['teamSize'] = 2;
+
+        $tournament = $this->service->buildTournamentFromWizardData($wizardData, $this->createMock(User::class));
+        $summary = $this->service->buildSummaryFromWizardData($wizardData);
+
+        $this->assertTrue($tournament->isTeamTournament());
+        $this->assertSame('enum.team_size.duo', $summary['teamSize']);
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */

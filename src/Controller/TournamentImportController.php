@@ -43,6 +43,10 @@ final class TournamentImportController extends AbstractController
     {
         $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
 
+        if ($tournament->isTeamTournament()) {
+            return $this->rejectTeamTournament($tournament);
+        }
+
         return $this->render('tournament/import/upload.html.twig', [
             'tournament' => $tournament,
             'maxFileSize' => $this->csvParser->getMaxFileSize(),
@@ -60,6 +64,10 @@ final class TournamentImportController extends AbstractController
         SessionInterface $session
     ): Response {
         $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if ($tournament->isTeamTournament()) {
+            return $this->rejectTeamTournament($tournament);
+        }
 
         /** @var UploadedFile|null $file */
         $file = $request->files->get('csv_file');
@@ -149,6 +157,10 @@ final class TournamentImportController extends AbstractController
         SessionInterface $session
     ): Response {
         $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
+
+        if ($tournament->isTeamTournament()) {
+            return $this->rejectTeamTournament($tournament);
+        }
 
         // Verify CSRF token
         if (!$this->isCsrfTokenValid('import_' . $tournament->getId(), $request->request->get('_token'))) {
@@ -278,5 +290,15 @@ final class TournamentImportController extends AbstractController
             'hero' => $this->translator->trans('import.mapping.field_hero'),
             'decklistUrl' => $this->translator->trans('import.mapping.field_decklist_url'),
         ];
+    }
+
+    /**
+     * CSV import only knows one player per row: not available for 2v2 tournaments.
+     */
+    private function rejectTeamTournament(Tournament $tournament): Response
+    {
+        $this->addFlash('error', $this->translator->trans('flash.error.import_not_available_for_teams'));
+
+        return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
     }
 }

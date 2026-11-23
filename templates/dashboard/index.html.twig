@@ -473,7 +473,7 @@
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap">
                                                 <span class="font-medium" style="color: {% if match.winner and match.winner == match.player1 %}var(--color-emerald-600){% else %}var(--text-primary){% endif %};">
-                                                    {{ match.player1.player.displayName }}
+                                                    {{ match.player1.displayName }}
                                                     {% if match.winner and match.winner == match.player1 %}
                                                         {{ ux_icon('lucide:check-circle', {class: 'inline w-4 h-4 ml-1 text-emerald-500'}) }}
                                                     {% endif %}
@@ -502,7 +502,7 @@
                                                         {% if match.winner and match.player2 and match.winner == match.player2 %}
                                                             {{ ux_icon('lucide:check-circle', {class: 'inline w-4 h-4 mr-1 text-emerald-500'}) }}
                                                         {% endif %}
-                                                        {{ match.player2.player.displayName }}
+                                                        {{ match.player2.displayName }}
                                                     </span>
                                                 {% else %}
                                                     <span class="text-purple-400 italic">BYE</span>
@@ -529,8 +529,8 @@
                                                 {% elseif not match.completed and not match.isByeMatch %}
                                                     {# Check if current user is a player in this match (but not if they're the organizer) #}
                                                     {% set isPlayerInMatch = app.user and not can_manage and (
-                                                        (match.player1 and match.player1.player.id == app.user.id) or
-                                                        (match.player2 and match.player2.player.id == app.user.id)
+                                                        (match.player1 and match.player1.hasMember(app.user)) or
+                                                        (match.player2 and match.player2.hasMember(app.user))
                                                     ) %}
                                                     {% if isPlayerInMatch %}
                                                         <a href="{{ path('match_submit_form', {id: match.id}) }}"

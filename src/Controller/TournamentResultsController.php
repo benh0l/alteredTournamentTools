@@ -240,8 +240,9 @@ final class TournamentResultsController extends AbstractController
      */
     private function calculateFactionDistribution(Tournament $tournament): array
     {
-        $registrations = $this->registrationRepository->findByTournament($tournament);
-        $total = count($registrations);
+        // One entry per deck: both teammates' decks count in 2v2
+        $decks = $this->getAllDecks($tournament);
+        $total = count($decks);
 
         if ($total === 0) {
             return [];
@@ -250,8 +251,8 @@ final class TournamentResultsController extends AbstractController
         $distribution = [];
         $noFactionCount = 0;
 
-        foreach ($registrations as $registration) {
-            $faction = $registration->getFaction();
+        foreach ($decks as $deck) {
+            $faction = $deck['faction'];
             if ($faction === null) {
                 $noFactionCount++;
                 continue;
@@ -298,8 +299,9 @@ final class TournamentResultsController extends AbstractController
      */
     private function calculateHeroDistribution(Tournament $tournament): array
     {
-        $registrations = $this->registrationRepository->findByTournament($tournament);
-        $total = count($registrations);
+        // One entry per deck: both teammates' decks count in 2v2
+        $decks = $this->getAllDecks($tournament);
+        $total = count($decks);
 
         if ($total === 0) {
             return [];
@@ -309,14 +311,14 @@ final class TournamentResultsController extends AbstractController
         $factionHeroes = [];
         $noHeroCount = 0;
 
-        foreach ($registrations as $registration) {
-            $hero = $registration->getHero();
+        foreach ($decks as $deck) {
+            $hero = $deck['hero'];
             if ($hero === null) {
                 $noHeroCount++;
                 continue;
             }
 
-            $faction = $registration->getFaction();
+            $faction = $deck['faction'];
             $factionKey = $faction ? $faction->value : 'unknown';
 
             if (!isset($factionHeroes[$factionKey])) {
@@ -330,8 +332,8 @@ final class TournamentResultsController extends AbstractController
             if (!isset($factionHeroes[$factionKey]['heroes'][$hero])) {
                 $factionHeroes[$factionKey]['heroes'][$hero] = [
                     'count' => 0,
-                    'label' => $registration->getHeroLabel() ?? $hero,
-                    'image' => $registration->getHeroImage(),
+                    'label' => $deck['heroLabel'] ?? $hero,
+                    'image' => $deck['heroImage'],
                     'faction' => $factionKey,
                 ];
             }
@@ -432,37 +434,13 @@ final class TournamentResultsController extends AbstractController
             $winner = $match->getWinner();
             $loser = $match->getLoser();
 
-            // Handle draws (no winner)
             if ($winner === null) {
-                // It's a draw - both players get a draw
-                $player1 = $match->getPlayer1();
-                $player2 = $match->getPlayer2();
-
-                if ($player1->getHero() !== null) {
-                    $this->initHeroStats($heroStats, $player1);
-                    $heroStats[$player1->getHero()]['draws']++;
-                    $heroStats[$player1->getHero()]['total']++;
-                }
-
-                if ($player2 !== null && $player2->getHero() !== null) {
-                    $this->initHeroStats($heroStats, $player2);
-                    $heroStats[$player2->getHero()]['draws']++;
-                    $heroStats[$player2->getHero()]['total']++;
-                }
+                // It's a draw - both sides get a draw
+                $this->recordHeroResult($heroStats, $match->getPlayer1(), 'draws');
+                $this->recordHeroResult($heroStats, $match->getPlayer2(), 'draws');
             } else {
-                // Winner
-                if ($winner->getHero() !== null) {
-                    $this->initHeroStats($heroStats, $winner);
-                    $heroStats[$winner->getHero()]['wins']++;
-                    $heroStats[$winner->getHero()]['total']++;
-                }
-
-                // Loser
-                if ($loser !== null && $loser->getHero() !== null) {
-                    $this->initHeroStats($heroStats, $loser);
-                    $heroStats[$loser->getHero()]['losses']++;
-                    $heroStats[$loser->getHero()]['total']++;
-                }
+                $this->recordHeroResult($heroStats, $winner, 'wins');
+                $this->recordHeroResult($heroStats, $loser, 'losses');
             }
         }
 
@@ -484,28 +462,53 @@ final class TournamentResultsController extends AbstractController
     }
 
     /**
-     * Initialize hero stats array if not exists.
+     * Record a match result for every hero of a side (both teammates' heroes in 2v2).
      *
      * @param array<string, array<string, mixed>> $heroStats
+     * @param 'wins'|'losses'|'draws'             $result
      */
-    private function initHeroStats(array &$heroStats, Registration $registration): void
+    private function recordHeroResult(array &$heroStats, ?Registration $side, string $result): void
     {
-        $hero = $registration->getHero();
-        if ($hero === null || isset($heroStats[$hero])) {
-            return;
+        foreach ($side?->getDecks() ?? [] as $deck) {
+            $hero = $deck['hero'];
+            if ($hero === null) {
+                continue;
+            }
+
+            if (!isset($heroStats[$hero])) {
+                $faction = $deck['faction'];
+                $heroStats[$hero] = [
+                    'wins' => 0,
+                    'losses' => 0,
+                    'draws' => 0,
+                    'total' => 0,
+                    'winrate' => 0.0,
+                    'color' => $faction ? $faction->getColor() : '#6b7280',
+                    'label' => $deck['heroLabel'] ?? $hero,
+                    'image' => $deck['heroImage'],
+                ];
+            }
+
+            $heroStats[$hero][$result]++;
+            $heroStats[$hero]['total']++;
+        }
+    }
+
+    /**
+     * Every deck of the tournament: one per player in 1v1, two per team in 2v2.
+     *
+     * @return list<array{member: \App\Entity\User, faction: ?\App\Enum\Faction, faction2: ?\App\Enum\Faction, hero: ?string, heroLabel: ?string, heroImage: ?string, decklistUrl: ?string}>
+     */
+    private function getAllDecks(Tournament $tournament): array
+    {
+        $decks = [];
+        foreach ($this->registrationRepository->findByTournament($tournament) as $registration) {
+            foreach ($registration->getDecks() as $deck) {
+                $decks[] = $deck;
+            }
         }
 
-        $faction = $registration->getFaction();
-        $heroStats[$hero] = [
-            'wins' => 0,
-            'losses' => 0,
-            'draws' => 0,
-            'total' => 0,
-            'winrate' => 0.0,
-            'color' => $faction ? $faction->getColor() : '#6b7280',
-            'label' => $registration->getHeroLabel() ?? $hero,
-            'image' => $registration->getHeroImage(),
-        ];
+        return $decks;
     }
 
     /**
@@ -522,24 +525,23 @@ final class TournamentResultsController extends AbstractController
         foreach ($standings as $rank => $entry) {
             /** @var Registration $registration */
             $registration = $entry['registration'];
-            $faction = $registration->getFaction();
 
-            if ($faction === null) {
-                continue;
-            }
+            // In 2v2 each teammate's deck can make the team champion of its faction
+            foreach ($registration->getDecks() as $deck) {
+                $faction = $deck['faction'];
+                if ($faction === null || isset($champions[$faction->value])) {
+                    continue;
+                }
 
-            $factionKey = $faction->value;
-
-            // Only keep the first (best ranked) player for each faction
-            if (!isset($champions[$factionKey])) {
-                $champions[$factionKey] = [
+                // Only keep the first (best ranked) player for each faction
+                $champions[$faction->value] = [
                     'rank' => $rank + 1,
-                    'player' => $registration->getPlayer()->getDisplayName(),
-                    'playerAvatar' => $registration->getPlayer()->getAvatar(),
+                    'player' => $deck['member']->getDisplayName(),
+                    'playerAvatar' => $deck['member']->getAvatar(),
                     'faction' => $faction,
-                    'hero' => $registration->getHero(),
-                    'heroLabel' => $registration->getHeroLabel(),
-                    'heroImage' => $registration->getHeroImage(),
+                    'hero' => $deck['hero'],
+                    'heroLabel' => $deck['heroLabel'],
+                    'heroImage' => $deck['heroImage'],
                     'matchPoints' => $entry['matchPoints'],
                     'wins' => $entry['wins'],
                     'losses' => $entry['losses'],

@@ -286,8 +286,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->createQuery(
                 "SELECT COUNT(m.id) FROM App\Entity\TournamentMatch m
                  JOIN m.round r
-                 WHERE (m.player1 IN (SELECT reg.id FROM App\Entity\Registration reg WHERE reg.player = :user)
-                        OR m.player2 IN (SELECT reg2.id FROM App\Entity\Registration reg2 WHERE reg2.player = :user))
+                 WHERE (m.player1 IN (SELECT reg.id FROM App\Entity\Registration reg WHERE reg.player = :user OR reg.partner = :user)
+                        OR m.player2 IN (SELECT reg2.id FROM App\Entity\Registration reg2 WHERE reg2.player = :user OR reg2.partner = :user))
                  AND m.disputeHistory IS NOT NULL"
             )
             ->setParameter('user', $user)
@@ -297,7 +297,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Find all disputed matches for a user (FR74).
      *
-     * @return array<array{match: \App\Entity\TournamentMatch, tournament: \App\Entity\Tournament, opponent: ?User, resolution: ?string}>
+     * @return array<array{match: \App\Entity\TournamentMatch, tournament: \App\Entity\Tournament, opponent: ?\App\Entity\Registration, resolution: ?string}>
      */
     public function findDisputedMatchesForUser(User $user): array
     {
@@ -310,7 +310,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                  LEFT JOIN m.player2 p2
                  LEFT JOIN p1.player u1
                  LEFT JOIN p2.player u2
-                 WHERE (p1.player = :user OR p2.player = :user)
+                 WHERE (p1.player = :user OR p1.partner = :user OR p2.player = :user OR p2.partner = :user)
                  AND m.disputeHistory IS NOT NULL
                  ORDER BY r.roundNumber DESC"
             )
@@ -337,12 +337,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             }
 
             if ($isDispute) {
-                $opponent = null;
-                if ($match->getPlayer1()?->getPlayer() === $user) {
-                    $opponent = $match->getPlayer2()?->getPlayer();
-                } else {
-                    $opponent = $match->getPlayer1()?->getPlayer();
-                }
+                // Opposing side: a player, or a whole team in 2v2
+                $opponent = $match->getPlayer1()?->hasMember($user)
+                    ? $match->getPlayer2()
+                    : $match->getPlayer1();
 
                 $result[] = [
                     'match' => $match,

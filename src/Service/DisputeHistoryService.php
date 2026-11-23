@@ -42,7 +42,7 @@ class DisputeHistoryService
     public function getDisputeSummaryForUser(User $user): array
     {
         // Get all registrations for this user
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
 
         $totalDisputes = 0;
         $resolvedInFavor = 0;
@@ -141,7 +141,7 @@ class DisputeHistoryService
             'matchId' => $match->getId() ?? 0,
             'tournamentName' => $match->getRound()->getTournament()->getName(),
             'roundNumber' => $match->getRound()->getRoundNumber(),
-            'opponent' => $opponent?->getPlayer()->getPseudo() ?? 'BYE',
+            'opponent' => $opponent?->getPseudo() ?? 'BYE',
             'result' => $result,
             'resolvedAt' => $resolvedAt,
             'wasInFavor' => $wasInFavor,
@@ -158,7 +158,7 @@ class DisputeHistoryService
      */
     public function checkDisputePattern(User $user): array
     {
-        $registrations = $this->registrationRepository->findBy(['player' => $user]);
+        $registrations = $this->registrationRepository->findByPlayer($user);
 
         $totalMatches = 0;
         $totalDisputes = 0;

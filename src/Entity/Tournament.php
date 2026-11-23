@@ -91,6 +91,21 @@ class Tournament
     #[ORM\Column(name: 'status', type: 'string', length: 15, enumType: TournamentStatus::class)]
     private TournamentStatus $status;
 
+    /**
+     * Allowed team sizes, keyed by translation label.
+     */
+    public const TEAM_SIZE_CHOICES = [
+        'enum.team_size.solo' => 1,
+        'enum.team_size.duo' => 2,
+    ];
+
+    /**
+     * Number of players per competitor: 1 for 1v1, 2 for 2v2.
+     */
+    #[ORM\Column(name: 'team_size', type: 'smallint', options: ['default' => 1])]
+    #[Assert\Choice(choices: self::TEAM_SIZE_CHOICES)]
+    private int $teamSize = 1;
+
     #[ORM\Column(name: 'swiss_match_format', type: 'string', length: 5, enumType: MatchFormat::class)]
     private MatchFormat $swissMatchFormat;
 
@@ -430,6 +445,28 @@ class Tournament
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getTeamSize(): int
+    {
+        return $this->teamSize;
+    }
+
+    public function setTeamSize(int $teamSize): self
+    {
+        $this->teamSize = $teamSize;
+
+        return $this;
+    }
+
+    public function isTeamTournament(): bool
+    {
+        return $this->teamSize > 1;
+    }
+
+    public function getTeamSizeLabel(): string
+    {
+        return (string) array_search($this->teamSize, self::TEAM_SIZE_CHOICES, true);
     }
 
     public function getSwissMatchFormat(): MatchFormat
@@ -1034,7 +1071,7 @@ class Tournament
     public function isPlayerRegistered(User $player): bool
     {
         return $this->registrations->exists(
-            fn (int $key, Registration $registration): bool => $registration->getPlayer() === $player
+            fn (int $key, Registration $registration): bool => $registration->hasMember($player)
         );
     }
 

@@ -24,7 +24,7 @@
 
         {% if match.isByeMatch %}
             <div class="rounded-lg p-6 text-center" style="background-color: var(--bg-subtle);">
-                <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.player.displayName }}</p>
+                <p class="font-semibold text-lg" style="color: var(--text-primary);">{{ match.player1.displayName }}</p>
                 <p class="mt-2" style="color: var(--text-muted);">{{ 'match.bye_automatic_win'|trans }}</p>
             </div>
         {% else %}
@@ -41,7 +41,7 @@
                 <div class="flex justify-between items-center">
                     <div class="text-center flex-1">
                         <p class="font-semibold text-lg {{ match.winner and match.winner.id == match.player1.id ? 'text-green-600' : '' }}" style="{% if not (match.winner and match.winner.id == match.player1.id) %}color: var(--text-primary);{% endif %}">
-                            {{ match.player1.player.displayName }}
+                            {{ match.player1.displayName }}
                             {% if match.winner and match.winner.id == match.player1.id %}
                                 {{ ux_icon('lucide:trophy', {class: 'inline w-5 h-5 ml-1 text-amber-500'}) }}
                             {% endif %}
@@ -59,7 +59,7 @@
                     </div>
                     <div class="text-center flex-1">
                         <p class="font-semibold text-lg {{ match.winner and match.winner.id == match.player2.id ? 'text-green-600' : '' }}" style="{% if not (match.winner and match.winner.id == match.player2.id) %}color: var(--text-primary);{% endif %}">
-                            {{ match.player2.player.displayName }}
+                            {{ match.player2.displayName }}
                             {% if match.winner and match.winner.id == match.player2.id %}
                                 {{ ux_icon('lucide:trophy', {class: 'inline w-5 h-5 ml-1 text-amber-500'}) }}
                             {% endif %}

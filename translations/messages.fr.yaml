@@ -91,6 +91,9 @@ common:
 # Enums - Tournament Status
 # ----------------------------------------------------------------------------
 enum:
+    team_size:
+        solo: "1v1 (individuel)"
+        duo: "2v2 (équipes de 2)"
     tournament_status:
         draft: "Brouillon"
         published: "Publié"
@@ -574,6 +577,7 @@ tournament:
         players_card:
             title: "Joueurs"
             no_players: "Aucun joueur inscrit"
+            title_teams: "Équipes"
         prizes: "Dotations"
         view_on_altered: "Voir sur Altered.gg"
         entry_fee: "Prix d'entrée"
@@ -739,6 +743,11 @@ tournament:
         closed_badge: "Inscriptions fermées"
         player_count: "%count% joueur|%count% joueurs"
         export: "Exporter la liste"
+        partner_pseudo_label: "Pseudo du partenaire (compte existant)"
+        partner_guest_name_label: "…ou nom d'un partenaire invité"
+        partner_help: "Renseignez l'un des deux champs. Un invité n'a pas besoin de compte."
+        teams_count: "équipes"
+        incomplete_team_badge: "Équipe incomplète"
 
     wizard:
         step: "Étape %current% sur %total%"
@@ -769,6 +778,10 @@ tournament:
             question: "Quel format de jeu ?"
             subtitle: "Choisissez comment les joueurs construiront leur deck"
             select_format: "Sélectionnez le format"
+            team_size_question: "Individuel ou en équipe ?"
+            team_size_desc:
+                solo: "Chaque joueur s'inscrit seul et affronte un adversaire."
+                duo: "Les joueurs s'inscrivent par équipe de 2, chacun avec son propre deck."
             format_desc:
                 constructed_standard: "Les joueurs viennent avec leur propre deck. 39 cartes + Héros minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
                 constructed_singleton: "Les joueurs viennent avec leur propre deck. Exemplaire unique par rareté. Deck de 59 cartes + Héros."
@@ -891,6 +904,7 @@ tournament:
             location: "Lieu"
             configuration: "Configuration"
             format: "Format"
+            team_size: "Type"
             structure: "Structure"
             swiss_matches: "Matchs Suisses"
             elim_matches: "Matchs Élim."
@@ -920,6 +934,8 @@ tournament:
 # ----------------------------------------------------------------------------
 # Dashboard
 # ----------------------------------------------------------------------------
+    capacity:
+        teams_registered: "{0} Aucune équipe inscrite|{1} 1 équipe inscrite|]1,Inf[ %count% équipes inscrites"
 dashboard:
     title: "Dashboard"
     title_organizer: "Dashboard Organisateur"
@@ -1320,6 +1336,7 @@ email:
     registration_confirmation:
         subject: "Inscription confirmée - %tournament%"
         body: "Votre inscription au tournoi %tournament% a été confirmée."
+        teammate: "Coéquipier"
 
     registration_removal:
         subject: "Inscription annulée - %tournament%"
@@ -1449,6 +1466,13 @@ flash:
         player_already_checked_in: "Ce joueur est déjà marqué présent."
         player_not_checked_in: "Ce joueur n'est pas marqué présent."
         registration_not_found: "Inscription introuvable."
+        team:
+            partner_required: "Un tournoi 2v2 se joue en équipe : indiquez un partenaire."
+            partner_not_allowed: "Ce tournoi se joue en individuel : aucun partenaire possible."
+            partner_is_player: "Vous ne pouvez pas être votre propre partenaire."
+            partner_already_registered: "Ce partenaire est déjà inscrit à ce tournoi."
+            partner_not_found: "Aucun joueur ne correspond à ce pseudo."
+        import_not_available_for_teams: "L'import CSV n'est pas disponible pour les tournois 2v2."
 
     warning:
         match_not_in_dispute: "Ce match n'est pas en litige."
@@ -1512,6 +1536,7 @@ validation:
 # ----------------------------------------------------------------------------
 # Form Labels
 # ----------------------------------------------------------------------------
+    partner_required: "Indiquez le pseudo de votre partenaire"
 form:
     common:
         select: "Sélectionner..."
@@ -1524,6 +1549,8 @@ form:
         location: "Lieu"
         location_placeholder: "Adresse ou nom du lieu"
         format: "Format de jeu"
+        team_size: "Type de tournoi"
+        team_size_locked_help: "Ne peut plus être modifié une fois des inscriptions enregistrées"
         structure: "Structure du tournoi"
         visibility: "Visibilité"
         max_players: "Joueurs max"
@@ -1562,6 +1589,7 @@ form:
         rounds_per_group: "Rondes/groupe"
         total_qualifiers: "Total qualifiés"
         bracket_size: "Bracket"
+        expected_players_team_help: "En 2v2, indiquez le nombre d'équipes attendues."
 
     registration:
         faction: "Faction"
@@ -1575,6 +1603,14 @@ form:
         select_hero: "Sélectionnez un héros"
         select_faction_first: "Sélectionnez d'abord une faction"
         select_both_factions: "Sélectionnez d'abord vos deux factions"
+        partner_pseudo: "Pseudo de votre partenaire"
+        partner_pseudo_help: "Votre partenaire doit avoir un compte. Il recevra un email de confirmation et pourra désinscrire l'équipe."
+        partner_section_title: "Équipe"
+        partner_deck_title: "Deck de votre partenaire"
+        member_deck_title: "Deck de %name%"
+        your_deck_title: "Votre deck"
+        team_members: "Équipe : %captain% & %partner%"
+        incomplete_team_notice: "Votre partenaire a supprimé son compte : indiquez un nouveau partenaire pour compléter l'équipe."
 
     user:
         email: "Adresse email"

@@ -28,7 +28,7 @@
                                     {% else %}
                                         bg-purple-500/20 text-purple-800 dark:text-purple-300
                                     {% endif %}">
-                                    {{ tournament.format.label|trans }}
+                                    {{ tournament.format.label|trans }}{% if tournament.teamTournament %} · 2v2{% endif %}
                                 </span>
                                 {% if tournament.isTumult %}
                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-orange-500/20 text-orange-800 dark:text-orange-300">
@@ -69,7 +69,7 @@
                         {# Registered players #}
                         <div class="flex items-center text-sm" style="color: var(--text-secondary);">
                             {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-2', style: 'color: var(--text-muted);'}) }}
-                            <span>{{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}</span>
+                            {% if tournament.teamTournament %}<span>{{ 'tournament.capacity.teams_registered'|trans({'%count%': tournament.registrationCount}) }}</span>{% else %}<span>{{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}</span>{% endif %}
                             {% if tournament.maxPlayers %}
                                 <span class="ml-1" style="color: var(--text-muted);">/ {{ tournament.maxPlayers }}</span>
                             {% endif %}

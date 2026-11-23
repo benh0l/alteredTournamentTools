@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Form\Wizard;
 
+use App\Entity\Tournament;
 use App\Enum\TournamentFormat;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -26,6 +28,16 @@ final class GameFormatType extends AbstractType
                 'choice_label' => fn (TournamentFormat $format) => $format->getLabel(),
                 'constraints' => [
                     new Assert\NotNull(message: 'Le format de jeu est requis'),
+                ],
+            ])
+            ->add('teamSize', ChoiceType::class, [
+                'label' => 'tournament.wizard.step3.team_size_question',
+                'choices' => Tournament::TEAM_SIZE_CHOICES,
+                'expanded' => true,
+                'data' => $options['data']['teamSize'] ?? 1,
+                'constraints' => [
+                    new Assert\NotNull(),
+                    new Assert\Choice(choices: Tournament::TEAM_SIZE_CHOICES),
                 ],
             ]);
     }

@@ -196,11 +196,11 @@ class MatchSubmission
         $player1 = $this->match->getPlayer1();
         $player2 = $this->match->getPlayer2();
 
-        if ($player1 !== null && $player1->getPlayer() === $this->submittedBy) {
+        if ($player1 !== null && $player1->hasMember($this->submittedBy)) {
             return $player1;
         }
 
-        if ($player2 !== null && $player2->getPlayer() === $this->submittedBy) {
+        if ($player2 !== null && $player2->hasMember($this->submittedBy)) {
             return $player2;
         }
 

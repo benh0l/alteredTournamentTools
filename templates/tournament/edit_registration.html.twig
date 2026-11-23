@@ -24,7 +24,7 @@
             {% endif %}
             <div>
                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.format'|trans }}</dt>
-                <dd class="font-medium">{{ tournament.format.label|trans }}</dd>
+                <dd class="font-medium">{{ tournament.format.label|trans }}{% if tournament.teamTournament %} · 2v2{% endif %}</dd>
             </div>
             <div>
                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.structure'|trans }}</dt>
@@ -55,6 +55,16 @@
             </div>
         {% endif %}
 
+        {% if registration.incompleteTeam %}
+            <div class="flex items-start p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                {{ ux_icon('lucide:user-x', {class: 'w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5'}) }}
+                <p class="text-sm" style="color: var(--text-secondary);">{{ 'form.registration.incomplete_team_notice'|trans }}</p>
+            </div>
+        {% endif %}
+
+        {% if tournament.teamTournament and tournament.format.isConstructed %}
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">{{ 'form.registration.member_deck_title'|trans({'%name%': registration.player.displayName}) }}</h2>
+        {% endif %}
         {% if tournament.format.isConstructed %}
             {# Faction & Hero Selection Card - Only for Constructed formats #}
             <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
@@ -233,6 +243,10 @@
         {# Hidden faction2 field for non-Bifaction constructed formats #}
         {% if tournament.format.isConstructed and not tournament.format.isBifaction %}
             {{ form_widget(form.faction2, {'attr': {'class': 'hidden'}}) }}
+        {% endif %}
+
+        {% if tournament.teamTournament %}
+            {{ include('tournament/_partner_registration_fields.html.twig', {captain: registration.player, partner: registration.partner}) }}
         {% endif %}
 
         <div class="flex justify-between items-center">

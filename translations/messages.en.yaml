@@ -87,6 +87,9 @@ common:
 # Enums - Tournament Status
 # ----------------------------------------------------------------------------
 enum:
+    team_size:
+        solo: "1v1 (individual)"
+        duo: "2v2 (teams of 2)"
     tournament_status:
         draft: "Draft"
         published: "Published"
@@ -571,6 +574,7 @@ tournament:
         players_card:
             title: "Players"
             no_players: "No registered players"
+            title_teams: "Teams"
         prizes: "Prizes"
         view_on_altered: "View on Altered.gg"
         entry_fee: "Entry fee"
@@ -736,6 +740,11 @@ tournament:
         closed_badge: "Registrations closed"
         player_count: "%count% player|%count% players"
         export: "Export list"
+        partner_pseudo_label: "Partner username (existing account)"
+        partner_guest_name_label: "…or guest partner name"
+        partner_help: "Fill in one of the two fields. A guest doesn't need an account."
+        teams_count: "teams"
+        incomplete_team_badge: "Incomplete team"
 
     wizard:
         step: "Step %current% of %total%"
@@ -766,6 +775,10 @@ tournament:
             question: "What game format?"
             subtitle: "Choose how players will build their deck"
             select_format: "Select format"
+            team_size_question: "Individual or team?"
+            team_size_desc:
+                solo: "Each player registers alone and faces one opponent."
+                duo: "Players register in teams of 2, each with their own deck."
             format_desc:
                 constructed_standard: "Players come with their own deck. 39 cards + Hero minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
                 constructed_singleton: "Players come with their own deck. Single copy per rarity. Deck of 59 cards + Hero."
@@ -888,6 +901,7 @@ tournament:
             location: "Location"
             configuration: "Configuration"
             format: "Format"
+            team_size: "Type"
             structure: "Structure"
             swiss_matches: "Swiss Matches"
             elim_matches: "Elim. Matches"
@@ -917,6 +931,8 @@ tournament:
 # ----------------------------------------------------------------------------
 # Dashboard
 # ----------------------------------------------------------------------------
+    capacity:
+        teams_registered: "{0} No team registered|{1} 1 team registered|]1,Inf[ %count% teams registered"
 dashboard:
     title: "Dashboard"
     title_organizer: "Organizer Dashboard"
@@ -1317,6 +1333,7 @@ email:
     registration_confirmation:
         subject: "Registration confirmed - %tournament%"
         body: "Your registration for %tournament% has been confirmed."
+        teammate: "Teammate"
 
     registration_removal:
         subject: "Registration cancelled - %tournament%"
@@ -1446,6 +1463,13 @@ flash:
         player_already_checked_in: "This player is already marked as present."
         player_not_checked_in: "This player is not marked as present."
         registration_not_found: "Registration not found."
+        team:
+            partner_required: "2v2 tournaments are played in teams: please provide a partner."
+            partner_not_allowed: "This tournament is individual: no partner allowed."
+            partner_is_player: "You cannot be your own partner."
+            partner_already_registered: "This partner is already registered in this tournament."
+            partner_not_found: "No player matches this username."
+        import_not_available_for_teams: "CSV import is not available for 2v2 tournaments."
 
     warning:
         match_not_in_dispute: "This match is not in dispute."
@@ -1509,6 +1533,7 @@ validation:
 # ----------------------------------------------------------------------------
 # Form Labels
 # ----------------------------------------------------------------------------
+    partner_required: "Please enter your partner's username"
 form:
     common:
         select: "Select..."
@@ -1521,6 +1546,8 @@ form:
         location: "Location"
         location_placeholder: "Address or venue name"
         format: "Game format"
+        team_size: "Tournament type"
+        team_size_locked_help: "Can no longer be changed once registrations exist"
         structure: "Tournament structure"
         visibility: "Visibility"
         max_players: "Max players"
@@ -1559,6 +1586,7 @@ form:
         rounds_per_group: "Rounds/group"
         total_qualifiers: "Total qualifiers"
         bracket_size: "Bracket"
+        expected_players_team_help: "For 2v2, enter the expected number of teams."
 
     registration:
         faction: "Faction"
@@ -1572,6 +1600,14 @@ form:
         select_hero: "Select a hero"
         select_faction_first: "Select a faction first"
         select_both_factions: "Select both factions first"
+        partner_pseudo: "Your partner's username"
+        partner_pseudo_help: "Your partner needs an account. They will receive a confirmation email and can unregister the team."
+        partner_section_title: "Team"
+        partner_deck_title: "Your partner's deck"
+        member_deck_title: "%name%'s deck"
+        your_deck_title: "Your deck"
+        team_members: "Team: %captain% & %partner%"
+        incomplete_team_notice: "Your partner deleted their account: enter a new partner to complete the team."
 
     user:
         email: "Email address"

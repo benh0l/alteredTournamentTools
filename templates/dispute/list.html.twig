@@ -52,7 +52,7 @@
                                 {{ 'common.table'|trans }} {{ dispute.tableNumber }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: var(--text-primary);">
-                                {{ dispute.player1.player.displayName }} vs {{ dispute.player2.player.displayName }}
+                                {{ dispute.player1.displayName }} vs {{ dispute.player2.displayName }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                 <a href="{{ path('dispute_show', {tournamentId: tournament.id, matchId: dispute.id}) }}"

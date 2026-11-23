@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Entity;
 use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Entity\User;
+use App\Enum\Faction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -224,5 +225,197 @@ final class RegistrationTest extends TestCase
         $registration->drop();
         $this->assertTrue($registration->isDropped());
         $this->assertNotNull($registration->getDroppedAt());
+    }
+
+    public function testGetMembersReturnsPlayer(): void
+    {
+        $player = $this->createMock(User::class);
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertSame([$player], $registration->getMembers());
+    }
+
+    public function testHasMemberMatchesSameInstance(): void
+    {
+        $player = $this->createMock(User::class);
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertTrue($registration->hasMember($player));
+    }
+
+    public function testHasMemberMatchesSameIdOnDifferentInstance(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(42);
+        $sameUser = $this->createMock(User::class);
+        $sameUser->method('getId')->willReturn(42);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertTrue($registration->hasMember($sameUser));
+    }
+
+    public function testHasMemberRejectsOtherUser(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(42);
+        $other = $this->createMock(User::class);
+        $other->method('getId')->willReturn(7);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertFalse($registration->hasMember($other));
+    }
+
+    public function testHasMemberRejectsUnpersistedOtherUser(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(null);
+        $other = $this->createMock(User::class);
+        $other->method('getId')->willReturn(null);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertFalse($registration->hasMember($other));
+    }
+
+    public function testHasMemberReturnsFalseForNull(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+
+        $this->assertFalse($registration->hasMember(null));
+    }
+
+    public function testGetDisplayNameDelegatesToPlayer(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getDisplayName')->willReturn('[TAG] Pseudo');
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertSame('[TAG] Pseudo', $registration->getDisplayName());
+    }
+
+    public function testPartnerIsNullByDefault(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+
+        $this->assertNull($registration->getPartner());
+        $this->assertCount(1, $registration->getMembers());
+    }
+
+    public function testPartnerIsMember(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $registration = (new Registration($this->createMock(Tournament::class), $captain))->setPartner($partner);
+
+        $this->assertSame([$captain, $partner], $registration->getMembers());
+        $this->assertTrue($registration->hasMember($captain));
+        $this->assertTrue($registration->hasMember($partner));
+    }
+
+    public function testTeamDisplayNameJoinsMembers(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $registration = (new Registration($this->createMock(Tournament::class), $captain))->setPartner($partner);
+
+        $this->assertSame('Alice & Bob', $registration->getDisplayName());
+    }
+
+    public function testPlayerCannotBeTheirOwnPartner(): void
+    {
+        $captain = $this->createMock(User::class);
+        $registration = new Registration($this->createMock(Tournament::class), $captain);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $registration->setPartner($captain);
+    }
+
+    public function testPartnerCanBeRemoved(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $registration = (new Registration($this->createMock(Tournament::class), $captain))->setPartner($partner);
+        $registration->setPartner(null);
+
+        $this->assertFalse($registration->hasMember($partner));
+    }
+
+    public function testPartnerDeckFields(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+        $registration
+            ->setPartnerFaction(Faction::AXIOM)
+            ->setPartnerFaction2(Faction::BRAVOS)
+            ->setPartnerHero('sierra')
+            ->setPartnerDecklistUrl('https://altered.gg/deck/xyz');
+
+        $this->assertSame(Faction::AXIOM, $registration->getPartnerFaction());
+        $this->assertSame(Faction::BRAVOS, $registration->getPartnerFaction2());
+        $this->assertSame('sierra', $registration->getPartnerHero());
+        $this->assertSame('https://altered.gg/deck/xyz', $registration->getPartnerDecklistUrl());
+    }
+
+    public function testPromotePartnerHandsRegistrationAndDeckToPartner(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $registration = (new Registration($this->createMock(Tournament::class), $captain))
+            ->setFaction(Faction::AXIOM)
+            ->setPartner($partner)
+            ->setPartnerFaction(Faction::LYRA)
+            ->setPartnerHero('nevenka-blotch');
+
+        $registration->promotePartner();
+
+        $this->assertSame($partner, $registration->getPlayer());
+        $this->assertSame(Faction::LYRA, $registration->getFaction());
+        $this->assertSame('nevenka-blotch', $registration->getHero());
+        $this->assertNull($registration->getPartner());
+        $this->assertNull($registration->getPartnerFaction());
+    }
+
+    public function testPromotePartnerWithoutPartnerFails(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+
+        $this->expectException(\LogicException::class);
+        $registration->promotePartner();
+    }
+
+    public function testIncompleteTeamOnlyInTeamTournament(): void
+    {
+        $team = (new Tournament())->setTeamSize(2);
+        $solo = new Tournament();
+
+        $this->assertTrue((new Registration($team, $this->createMock(User::class)))->isIncompleteTeam());
+        $this->assertFalse((new Registration($solo, $this->createMock(User::class)))->isIncompleteTeam());
+    }
+
+    public function testDecksListsEachMember(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $solo = (new Registration($this->createMock(Tournament::class), $captain))->setHero('nevenka-blotch');
+        $team = (clone $solo)->setPartner($partner)->setPartnerHero('nevenka-blotch')->setPartnerFaction(Faction::LYRA);
+
+        $this->assertCount(1, $solo->getDecks());
+        $this->assertSame($captain, $solo->getDecks()[0]['member']);
+        $this->assertCount(2, $team->getDecks());
+        $this->assertSame($partner, $team->getDecks()[1]['member']);
+        $this->assertSame(Faction::LYRA, $team->getDecks()[1]['faction']);
+        $this->assertSame('Nevenka & Blotch', $team->getDecks()[1]['heroLabel']);
+    }
+
+    /**
+     * @return array{User, User}
+     */
+    private function createTeamUsers(): array
+    {
+        $captain = $this->createMock(User::class);
+        $captain->method('getId')->willReturn(1);
+        $captain->method('getDisplayName')->willReturn('Alice');
+        $partner = $this->createMock(User::class);
+        $partner->method('getId')->willReturn(2);
+        $partner->method('getDisplayName')->willReturn('Bob');
+
+        return [$captain, $partner];
     }
 }

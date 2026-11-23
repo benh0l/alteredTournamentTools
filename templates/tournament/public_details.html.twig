@@ -60,6 +60,9 @@
                         <span class="px-3 py-1 rounded-full text-sm font-medium bg-white/20">
                             {{ tournament.structure.label|trans }}
                         </span>
+                        {% if tournament.teamTournament %}
+                            <span class="px-3 py-1 rounded-full text-sm font-medium bg-white/20">2v2</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="text-right">
@@ -103,7 +106,11 @@
                 <div>
                     <h3 class="font-medium" style="color: var(--text-primary);">Inscriptions</h3>
                     <p style="color: var(--text-secondary);">
+                        {% if tournament.teamTournament %}
+                            {{ 'tournament.capacity.teams_registered'|trans({'%count%': tournament.registrationCount}) }}
+                        {% else %}
                         {{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}
+                        {% endif %}
                         {% if tournament.maxPlayers %}
                             / {{ tournament.maxPlayers }} places
                         {% endif %}
