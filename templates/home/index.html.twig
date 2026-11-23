@@ -22,7 +22,7 @@
 
                     <div class="flex items-center justify-between bg-white/10 backdrop-blur rounded-xl p-5 mb-6">
                         {# Player 1 (current user side) #}
-                        {% set isPlayer1 = current_match.player1.player.id == app.user.id %}
+                        {% set isPlayer1 = current_match.player1.hasMember(app.user) %}
                         {% set opponent = isPlayer1 ? current_match.player2 : current_match.player1 %}
 
                         <div class="text-center flex-1">

@@ -50,10 +50,7 @@ final class TournamentPublicController extends AbstractController
         $isRegistered = false;
         $user = $this->getUser();
         if ($user !== null) {
-            $registration = $this->registrationRepository->findOneBy([
-                'player' => $user,
-                'tournament' => $tournament,
-            ]);
+            $registration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
             $isRegistered = $registration !== null;
         }
 

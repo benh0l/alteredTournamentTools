@@ -225,4 +225,73 @@ final class RegistrationTest extends TestCase
         $this->assertTrue($registration->isDropped());
         $this->assertNotNull($registration->getDroppedAt());
     }
+
+    public function testGetMembersReturnsPlayer(): void
+    {
+        $player = $this->createMock(User::class);
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertSame([$player], $registration->getMembers());
+    }
+
+    public function testHasMemberMatchesSameInstance(): void
+    {
+        $player = $this->createMock(User::class);
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertTrue($registration->hasMember($player));
+    }
+
+    public function testHasMemberMatchesSameIdOnDifferentInstance(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(42);
+        $sameUser = $this->createMock(User::class);
+        $sameUser->method('getId')->willReturn(42);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertTrue($registration->hasMember($sameUser));
+    }
+
+    public function testHasMemberRejectsOtherUser(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(42);
+        $other = $this->createMock(User::class);
+        $other->method('getId')->willReturn(7);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertFalse($registration->hasMember($other));
+    }
+
+    public function testHasMemberRejectsUnpersistedOtherUser(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getId')->willReturn(null);
+        $other = $this->createMock(User::class);
+        $other->method('getId')->willReturn(null);
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertFalse($registration->hasMember($other));
+    }
+
+    public function testHasMemberReturnsFalseForNull(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+
+        $this->assertFalse($registration->hasMember(null));
+    }
+
+    public function testGetDisplayNameDelegatesToPlayer(): void
+    {
+        $player = $this->createMock(User::class);
+        $player->method('getDisplayName')->willReturn('[TAG] Pseudo');
+
+        $registration = new Registration($this->createMock(Tournament::class), $player);
+
+        $this->assertSame('[TAG] Pseudo', $registration->getDisplayName());
+    }
 }

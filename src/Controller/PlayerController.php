@@ -48,10 +48,7 @@ final class PlayerController extends AbstractController
         // Find the current user's registration for highlighting
         $user = $this->getUser();
         if ($user !== null) {
-            $playerRegistration = $this->registrationRepository->findOneBy([
-                'player' => $user,
-                'tournament' => $tournament,
-            ]);
+            $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
         }
 
         return $this->render('player/pairings.html.twig', [
@@ -75,10 +72,7 @@ final class PlayerController extends AbstractController
         $playerRegistration = null;
 
         if ($user !== null) {
-            $playerRegistration = $this->registrationRepository->findOneBy([
-                'player' => $user,
-                'tournament' => $tournament,
-            ]);
+            $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
         }
 
         return $this->render('player/standings.html.twig', [
@@ -111,10 +105,7 @@ final class PlayerController extends AbstractController
         $playerRegistration = null;
 
         if ($user !== null) {
-            $playerRegistration = $this->registrationRepository->findOneBy([
-                'player' => $user,
-                'tournament' => $tournament,
-            ]);
+            $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
         }
 
         return $this->render('player/results.html.twig', [

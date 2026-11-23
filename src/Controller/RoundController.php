@@ -300,7 +300,7 @@ final class RoundController extends AbstractController
 
             // Find user's registration if they're a player
             foreach ($tournament->getRegistrations() as $registration) {
-                if ($registration->getPlayer()->getId() === $user->getId()) {
+                if ($registration->hasMember($user)) {
                     $userRegistrationId = $registration->getId();
                     break;
                 }

@@ -1034,7 +1034,7 @@ class Tournament
     public function isPlayerRegistered(User $player): bool
     {
         return $this->registrations->exists(
-            fn (int $key, Registration $registration): bool => $registration->getPlayer() === $player
+            fn (int $key, Registration $registration): bool => $registration->hasMember($player)
         );
     }
 

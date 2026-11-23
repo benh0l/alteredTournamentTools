@@ -81,8 +81,8 @@ class PlayerStatsService
 
             // Win/Loss/Draw
             $winner = $match->getWinner();
-            $won = $winner !== null && $winner->getPlayer()->getId() === $user->getId();
-            $lost = $winner !== null && $winner->getPlayer()->getId() !== $user->getId();
+            $won = $winner !== null && $winner->hasMember($user);
+            $lost = $winner !== null && !$winner->hasMember($user);
 
             if ($won) {
                 $stats['wins']++;
@@ -154,7 +154,7 @@ class PlayerStatsService
             $userRegistration = $this->getUserRegistration($match, $user);
             $opponent = $match->getOpponent($userRegistration);
             $winner = $match->getWinner();
-            $won = $winner !== null && $winner->getPlayer()->getId() === $user->getId();
+            $won = $winner !== null && $winner->hasMember($user);
 
             $score = $this->formatScore($match, $userRegistration);
 
@@ -190,11 +190,11 @@ class PlayerStatsService
      */
     private function getUserRegistration(TournamentMatch $match, User $user): ?Registration
     {
-        if ($match->getPlayer1()->getPlayer()->getId() === $user->getId()) {
+        if ($match->getPlayer1()->hasMember($user)) {
             return $match->getPlayer1();
         }
 
-        if ($match->getPlayer2()?->getPlayer()->getId() === $user->getId()) {
+        if ($match->getPlayer2()?->hasMember($user)) {
             return $match->getPlayer2();
         }
 
@@ -341,15 +341,15 @@ class PlayerStatsService
             }
 
             // Check if this match is against the specified opponent
-            if ($opponentRegistration->getPlayer()->getId() !== $opponent->getId()) {
+            if (!$opponentRegistration->hasMember($opponent)) {
                 continue;
             }
 
             $stats['totalMatches']++;
 
             $winner = $match->getWinner();
-            $won = $winner !== null && $winner->getPlayer()->getId() === $user->getId();
-            $lost = $winner !== null && $winner->getPlayer()->getId() !== $user->getId();
+            $won = $winner !== null && $winner->hasMember($user);
+            $lost = $winner !== null && !$winner->hasMember($user);
 
             if ($won) {
                 $stats['wins']++;

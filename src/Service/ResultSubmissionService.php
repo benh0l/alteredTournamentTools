@@ -212,12 +212,12 @@ class ResultSubmissionService
     private function findPlayerRegistration(TournamentMatch $match, User $user): ?Registration
     {
         $player1 = $match->getPlayer1();
-        if ($player1->getPlayer() === $user) {
+        if ($player1->hasMember($user)) {
             return $player1;
         }
 
         $player2 = $match->getPlayer2();
-        if ($player2 !== null && $player2->getPlayer() === $user) {
+        if ($player2 !== null && $player2->hasMember($user)) {
             return $player2;
         }
 

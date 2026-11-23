@@ -338,7 +338,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
             if ($isDispute) {
                 $opponent = null;
-                if ($match->getPlayer1()?->getPlayer() === $user) {
+                if ($match->getPlayer1()?->hasMember($user)) {
                     $opponent = $match->getPlayer2()?->getPlayer();
                 } else {
                     $opponent = $match->getPlayer1()?->getPlayer();

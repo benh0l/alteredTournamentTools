@@ -8,6 +8,7 @@ use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -41,15 +42,23 @@ class RegistrationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Restrict a query to registrations where the user is a member (see Registration::getMembers()).
+     */
+    private function andWhereMember(QueryBuilder $qb, User $user, string $alias = 'r'): QueryBuilder
+    {
+        return $qb
+            ->andWhere(sprintf('%s.player = :member', $alias))
+            ->setParameter('member', $user);
+    }
+
+    /**
      * Find all registrations for a player, ordered by registration date (most recent first).
      *
      * @return Registration[]
      */
     public function findByPlayer(User $player): array
     {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.player = :player')
-            ->setParameter('player', $player)
+        return $this->andWhereMember($this->createQueryBuilder('r'), $player)
             ->orderBy('r.registeredAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -60,11 +69,9 @@ class RegistrationRepository extends ServiceEntityRepository
      */
     public function findOneByTournamentAndPlayer(Tournament $tournament, User $player): ?Registration
     {
-        return $this->createQueryBuilder('r')
+        return $this->andWhereMember($this->createQueryBuilder('r'), $player)
             ->andWhere('r.tournament = :tournament')
-            ->andWhere('r.player = :player')
             ->setParameter('tournament', $tournament)
-            ->setParameter('player', $player)
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -97,11 +104,9 @@ class RegistrationRepository extends ServiceEntityRepository
      */
     public function findUpcomingByPlayer(User $player): array
     {
-        return $this->createQueryBuilder('r')
+        return $this->andWhereMember($this->createQueryBuilder('r'), $player)
             ->join('r.tournament', 't')
-            ->andWhere('r.player = :player')
             ->andWhere('t.date >= :today')
-            ->setParameter('player', $player)
             ->setParameter('today', new \DateTimeImmutable('today'))
             ->orderBy('t.date', 'ASC')
             ->getQuery()
@@ -115,11 +120,9 @@ class RegistrationRepository extends ServiceEntityRepository
      */
     public function findPastByPlayer(User $player): array
     {
-        return $this->createQueryBuilder('r')
+        return $this->andWhereMember($this->createQueryBuilder('r'), $player)
             ->join('r.tournament', 't')
-            ->andWhere('r.player = :player')
             ->andWhere('t.date < :today')
-            ->setParameter('player', $player)
             ->setParameter('today', new \DateTimeImmutable('today'))
             ->orderBy('t.date', 'DESC')
             ->getQuery()
@@ -142,13 +145,11 @@ class RegistrationRepository extends ServiceEntityRepository
      */
     public function findByPlayerWithTournament(User $player): array
     {
-        return $this->createQueryBuilder('r')
+        return $this->andWhereMember($this->createQueryBuilder('r'), $player)
             ->leftJoin('r.tournament', 't')
             ->addSelect('t')
             ->leftJoin('t.organizer', 'o')
             ->addSelect('o')
-            ->where('r.player = :player')
-            ->setParameter('player', $player)
             ->orderBy('t.date', 'DESC')
             ->getQuery()
             ->getResult();

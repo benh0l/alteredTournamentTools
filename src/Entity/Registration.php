@@ -83,6 +83,46 @@ class Registration
         return $this->player;
     }
 
+    /**
+     * All users competing under this registration.
+     *
+     * A registration is the competitor unit used by pairings, standings and brackets.
+     * Always use this (or hasMember()) instead of getPlayer() when the question is
+     * "which users are behind this competitor?".
+     *
+     * @return User[]
+     */
+    public function getMembers(): array
+    {
+        return [$this->player];
+    }
+
+    /**
+     * Check whether the given user competes under this registration.
+     */
+    public function hasMember(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        foreach ($this->getMembers() as $member) {
+            if ($member === $user || ($member->getId() !== null && $member->getId() === $user->getId())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Name of the competitor as shown in pairings, standings and brackets.
+     */
+    public function getDisplayName(): string
+    {
+        return $this->player->getDisplayName();
+    }
+
     public function getDecklistUrl(): ?string
     {
         return $this->decklistUrl;
