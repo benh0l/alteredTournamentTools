@@ -10,7 +10,6 @@ use App\Entity\TournamentMatch;
 use App\Entity\User;
 use App\Enum\MatchStatus;
 use App\Exception\InvalidSubmissionException;
-use App\Repository\MatchSubmissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -25,7 +24,6 @@ class ResultSubmissionService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MatchSubmissionRepository $submissionRepository,
         private StandingsService $standingsService,
     ) {
     }
@@ -109,8 +107,8 @@ class ResultSubmissionService
             throw InvalidSubmissionException::notAParticipant();
         }
 
-        // User must not have already submitted
-        if ($this->submissionRepository->hasUserSubmitted($match, $submitter)) {
+        // User's side (the user, or their team in 2v2) must not have already submitted
+        if ($match->findSubmissionFor($registration) !== null) {
             throw InvalidSubmissionException::alreadySubmitted();
         }
     }
@@ -134,7 +132,7 @@ class ResultSubmissionService
             $submitter = $submission->getSubmittedBy();
             $opponent = $this->getOpponent($match, $submitter);
 
-            if ($opponent !== null && $opponent->isGuest()) {
+            if ($opponent !== null && $this->isGuestSide($opponent)) {
                 // Guest opponent - auto-validate with single submission
                 $this->validateMatchWithGuestOpponent($match, $submission);
             }
@@ -225,14 +223,27 @@ class ResultSubmissionService
     }
 
     /**
-     * Get the opponent user for a given submitter in a match.
+     * Get the opposing side (player or team) for a given submitter in a match.
      */
-    private function getOpponent(TournamentMatch $match, User $submitter): ?User
+    private function getOpponent(TournamentMatch $match, User $submitter): ?Registration
     {
-        $player1 = $match->getPlayer1()->getPlayer();
-        $player2 = $match->getPlayer2()?->getPlayer();
+        $player1 = $match->getPlayer1();
 
-        return ($player1 === $submitter) ? $player2 : $player1;
+        return $player1->hasMember($submitter) ? $match->getPlayer2() : $player1;
+    }
+
+    /**
+     * A side counts as guest when none of its members can log in to submit a result.
+     */
+    private function isGuestSide(Registration $side): bool
+    {
+        foreach ($side->getMembers() as $member) {
+            if (!$member->isGuest()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -260,7 +271,9 @@ class ResultSubmissionService
      */
     public function getPlayerSubmission(TournamentMatch $match, User $user): ?MatchSubmission
     {
-        return $this->submissionRepository->findByMatchAndUser($match, $user);
+        $registration = $this->findPlayerRegistration($match, $user);
+
+        return $registration !== null ? $match->findSubmissionFor($registration) : null;
     }
 
     /**

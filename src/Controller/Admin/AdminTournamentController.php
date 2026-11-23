@@ -149,28 +149,17 @@ Resultat: {$winnerName} gagne
 Si vous avez des questions, veuillez contacter le support.
 BODY;
 
-        // Notify Player 1
-        if ($match->getPlayer1()) {
-            $player1 = $match->getPlayer1()->getPlayer();
-            $this->messageBus->dispatch(new SendAdminEmailMessage(
-                $player1->getEmail(),
-                $player1->getPseudo(),
-                $subject,
-                $playerBody,
-                $admin->getPseudo()
-            ));
-        }
-
-        // Notify Player 2
-        if ($match->getPlayer2()) {
-            $player2 = $match->getPlayer2()->getPlayer();
-            $this->messageBus->dispatch(new SendAdminEmailMessage(
-                $player2->getEmail(),
-                $player2->getPseudo(),
-                $subject,
-                $playerBody,
-                $admin->getPseudo()
-            ));
+        // Notify every member of both sides (both teammates in 2v2)
+        foreach ([$match->getPlayer1(), $match->getPlayer2()] as $side) {
+            foreach ($side?->getMembers() ?? [] as $member) {
+                $this->messageBus->dispatch(new SendAdminEmailMessage(
+                    $member->getEmail(),
+                    $member->getPseudo(),
+                    $subject,
+                    $playerBody,
+                    $admin->getPseudo()
+                ));
+            }
         }
 
         // Notify Organizer

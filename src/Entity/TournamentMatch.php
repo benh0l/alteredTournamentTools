@@ -307,6 +307,21 @@ class TournamentMatch
     }
 
     /**
+     * Submission made on behalf of one side of the match (by any member of that registration).
+     * In 2v2, only one teammate submits for the team.
+     */
+    public function findSubmissionFor(Registration $side): ?MatchSubmission
+    {
+        foreach ($this->submissions as $submission) {
+            if ($side->hasMember($submission->getSubmittedBy())) {
+                return $submission;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Check if this is a BYE match (player2 is null or isBye flag is set).
      */
     public function isByeMatch(): bool

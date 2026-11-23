@@ -143,6 +143,25 @@ final class TeamRegistrationControllerTest extends WebTestCase
         $this->assertResponseRedirects('/tournaments/' . $tournament->getId() . '/registrations');
     }
 
+    public function testPartnerCanCheckInTheTeam(): void
+    {
+        $tournament = $this->createTournament($this->em, $this->createUser($this->em, 'Orga'), 2);
+        $tournament->setCheckInEnabled(true)->setCheckInOpen(true);
+        $partner = $this->createUser($this->em, 'Bob');
+        $registration = (new \App\Entity\Registration($tournament, $this->createUser($this->em, 'Alice')))->setPartner($partner);
+        $this->em->persist($registration);
+        $this->em->flush();
+
+        $this->client->loginUser($partner);
+        $crawler = $this->client->request('GET', '/tournaments/' . $tournament->getId());
+        $this->assertResponseIsSuccessful();
+
+        $this->client->submit($crawler->filter('form[action$="/check-in"]')->form());
+
+        $this->em->clear();
+        $this->assertTrue(static::getContainer()->get(RegistrationRepository::class)->find($registration->getId())?->isCheckedIn());
+    }
+
     private function trans(string $key): string
     {
         return static::getContainer()->get('translator')->trans($key, [], null, $this->client->getRequest()->getLocale());

@@ -38,33 +38,35 @@ final class PlayerDroppedSubscriber implements EventSubscriberInterface
         }
 
         $registration = $event->getRegistration();
-        $player = $registration->getPlayer();
         $tournament = $registration->getTournament();
 
-        $this->logger->info('Player dropped by organizer, sending notification', [
-            'player_id' => $player->getId(),
-            'tournament_id' => $tournament->getId(),
-            'reason' => $event->getReason(),
-        ]);
-
-        try {
-            $this->emailService->sendPlayerDroppedNotification(
-                $player->getEmail(),
-                $player->getDisplayName(),
-                $tournament->getName(),
-                $event->getReason()
-            );
-
-            $this->logger->info('Player drop notification sent', [
+        // In 2v2 the whole team is dropped: notify every member
+        foreach ($registration->getMembers() as $player) {
+            $this->logger->info('Player dropped by organizer, sending notification', [
                 'player_id' => $player->getId(),
                 'tournament_id' => $tournament->getId(),
+                'reason' => $event->getReason(),
             ]);
-        } catch (\Throwable $e) {
-            $this->logger->error('Failed to send player drop notification', [
-                'player_id' => $player->getId(),
-                'tournament_id' => $tournament->getId(),
-                'error' => $e->getMessage(),
-            ]);
+
+            try {
+                $this->emailService->sendPlayerDroppedNotification(
+                    $player->getEmail(),
+                    $player->getDisplayName(),
+                    $tournament->getName(),
+                    $event->getReason()
+                );
+
+                $this->logger->info('Player drop notification sent', [
+                    'player_id' => $player->getId(),
+                    'tournament_id' => $tournament->getId(),
+                ]);
+            } catch (\Throwable $e) {
+                $this->logger->error('Failed to send player drop notification', [
+                    'player_id' => $player->getId(),
+                    'tournament_id' => $tournament->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 }

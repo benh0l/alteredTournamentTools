@@ -152,28 +152,29 @@ class NotificationService
         $preferenceKey = $this->getPreferenceKeyForType($type);
 
         foreach ($registrations as $registration) {
-            $player = $registration->getPlayer();
+            // Every member of a team gets their own notification
+            foreach ($registration->getMembers() as $player) {
+                // Check if notification was already sent
+                if ($this->notificationRepository->hasBeenSent($player, $tournament, $type)) {
+                    $stats['skipped']++;
+                    continue;
+                }
 
-            // Check if notification was already sent
-            if ($this->notificationRepository->hasBeenSent($player, $tournament, $type)) {
-                $stats['skipped']++;
-                continue;
+                // Check user preferences (FR67)
+                if (!$this->isNotificationEnabledForUser($player, $preferenceKey)) {
+                    $this->logger->debug('Notification skipped due to user preferences', [
+                        'user_id' => $player->getId(),
+                        'type' => $type->value,
+                    ]);
+                    $stats['disabled']++;
+                    continue;
+                }
+
+                // Create and dispatch notification
+                $notification = $this->createNotification($player, $tournament, $type, $roundNumber);
+                $this->dispatchNotification($notification, $roundNumber);
+                $stats['queued']++;
             }
-
-            // Check user preferences (FR67)
-            if (!$this->isNotificationEnabledForUser($player, $preferenceKey)) {
-                $this->logger->debug('Notification skipped due to user preferences', [
-                    'user_id' => $player->getId(),
-                    'type' => $type->value,
-                ]);
-                $stats['disabled']++;
-                continue;
-            }
-
-            // Create and dispatch notification
-            $notification = $this->createNotification($player, $tournament, $type, $roundNumber);
-            $this->dispatchNotification($notification, $roundNumber);
-            $stats['queued']++;
         }
 
         return $stats;

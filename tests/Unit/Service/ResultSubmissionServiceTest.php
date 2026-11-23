@@ -15,7 +15,6 @@ use App\Enum\TournamentFormat;
 use App\Enum\TournamentStructure;
 use App\Enum\TournamentVisibility;
 use App\Exception\InvalidSubmissionException;
-use App\Repository\MatchSubmissionRepository;
 use App\Service\ResultSubmissionService;
 use App\Service\StandingsService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,18 +25,15 @@ final class ResultSubmissionServiceTest extends TestCase
 {
     private ResultSubmissionService $service;
     private EntityManagerInterface&MockObject $entityManager;
-    private MatchSubmissionRepository&MockObject $submissionRepository;
     private StandingsService&MockObject $standingsService;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->submissionRepository = $this->createMock(MatchSubmissionRepository::class);
         $this->standingsService = $this->createMock(StandingsService::class);
 
         $this->service = new ResultSubmissionService(
             $this->entityManager,
-            $this->submissionRepository,
             $this->standingsService
         );
     }
@@ -47,7 +43,6 @@ final class ResultSubmissionServiceTest extends TestCase
         $match = $this->createMatch();
         $user = $match->getPlayer1()->getPlayer();
 
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
         $this->entityManager->expects($this->once())->method('persist');
         $this->entityManager->expects($this->atLeastOnce())->method('flush');
 
@@ -71,8 +66,6 @@ final class ResultSubmissionServiceTest extends TestCase
     {
         $match = $this->createMatch();
         $user = $match->getPlayer1()->getPlayer();
-
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
 
         $this->service->submitResult(
             $match,
@@ -144,7 +137,9 @@ final class ResultSubmissionServiceTest extends TestCase
         $match = $this->createMatch();
         $user = $match->getPlayer1()->getPlayer();
 
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(true);
+        $previous = new MatchSubmission();
+        $previous->setSubmittedBy($user);
+        $match->addSubmission($previous);
 
         $this->expectException(InvalidSubmissionException::class);
         $this->expectExceptionMessage('deja soumis');
@@ -163,8 +158,6 @@ final class ResultSubmissionServiceTest extends TestCase
         $match = $this->createMatch();
         $player1User = $match->getPlayer1()->getPlayer();
         $player2User = $match->getPlayer2()->getPlayer();
-
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
 
         // First submission
         $this->service->submitResult(
@@ -197,8 +190,6 @@ final class ResultSubmissionServiceTest extends TestCase
         $player1User = $match->getPlayer1()->getPlayer();
         $player2User = $match->getPlayer2()->getPlayer();
 
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
-
         // First submission - player1 claims win
         $this->service->submitResult(
             $match,
@@ -226,8 +217,6 @@ final class ResultSubmissionServiceTest extends TestCase
     {
         $match = $this->createMatch();
         $user = $match->getPlayer1()->getPlayer();
-
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
 
         $this->assertTrue($this->service->canUserSubmit($match, $user));
     }
@@ -325,8 +314,6 @@ final class ResultSubmissionServiceTest extends TestCase
         $player1User = $match->getPlayer1()->getPlayer();
         $player2User = $match->getPlayer2()->getPlayer();
 
-        $this->submissionRepository->method('hasUserSubmitted')->willReturn(false);
-
         // Create a dispute
         $this->service->submitResult(
             $match,
@@ -352,10 +339,86 @@ final class ResultSubmissionServiceTest extends TestCase
     // Helper methods
     // =========================================================================
 
-    private function createMockUser(int $id): User
+    public function testTeammateCannotSubmitAfterPartnerAlreadyDid(): void
+    {
+        $match = $this->createTeamMatch();
+        $captain = $match->getPlayer1()->getPlayer();
+        $teammate = $match->getPlayer1()->getPartner();
+
+        $this->service->submitResult($match, $captain, $match->getPlayer1()->getId(), 2, 0);
+
+        $this->expectException(InvalidSubmissionException::class);
+        $this->service->submitResult($match, $teammate, $match->getPlayer1()->getId(), 2, 0);
+    }
+
+    public function testTeamMatchValidatedWhenEachTeamSubmitsOnce(): void
+    {
+        $match = $this->createTeamMatch();
+
+        // The partner (not the captain) of each team submits
+        $this->service->submitResult($match, $match->getPlayer1()->getPartner(), $match->getPlayer2()->getId(), 0, 2);
+        $this->assertFalse($match->isCompleted());
+        $this->service->submitResult($match, $match->getPlayer2()->getPartner(), $match->getPlayer2()->getId(), 0, 2);
+
+        $this->assertTrue($match->isCompleted());
+        $this->assertSame($match->getPlayer2()->getId(), $match->getResult()['winnerId']);
+    }
+
+    public function testTeammateSeesTheTeamSubmission(): void
+    {
+        $match = $this->createTeamMatch();
+        $this->service->submitResult($match, $match->getPlayer1()->getPlayer(), $match->getPlayer1()->getId(), 2, 1);
+
+        $submission = $this->service->getPlayerSubmission($match, $match->getPlayer1()->getPartner());
+
+        $this->assertNotNull($submission);
+        $this->assertNull($this->service->getPlayerSubmission($match, $match->getPlayer2()->getPartner()));
+    }
+
+    public function testSingleSubmissionValidatesAgainstAllGuestTeam(): void
+    {
+        $match = $this->createTeamMatch(opponentGuests: [true, true]);
+
+        $this->service->submitResult($match, $match->getPlayer1()->getPlayer(), $match->getPlayer1()->getId(), 2, 0);
+
+        $this->assertTrue($match->isCompleted());
+    }
+
+    public function testSingleSubmissionWaitsWhenOpponentTeamHasARealAccount(): void
+    {
+        $match = $this->createTeamMatch(opponentGuests: [true, false]);
+
+        $this->service->submitResult($match, $match->getPlayer1()->getPlayer(), $match->getPlayer1()->getId(), 2, 0);
+
+        $this->assertFalse($match->isCompleted());
+    }
+
+    /**
+     * Team match: (users 1 & 3) vs (users 2 & 4).
+     *
+     * @param array{bool, bool} $opponentGuests whether users 2 and 4 are guests
+     */
+    private function createTeamMatch(array $opponentGuests = [false, false]): TournamentMatch
+    {
+        $match = $this->createMatch();
+        $match->getRound()->getTournament()->setTeamSize(2);
+        $match->getPlayer1()->setPartner($this->createMockUser(3));
+        $match->getPlayer2()->setPartner($this->createMockUser(4, $opponentGuests[1]));
+
+        if ($opponentGuests[0]) {
+            $guestCaptain = $this->createMockUser(2, true);
+            $reflection = new \ReflectionProperty(Registration::class, 'player');
+            $reflection->setValue($match->getPlayer2(), $guestCaptain);
+        }
+
+        return $match;
+    }
+
+    private function createMockUser(int $id, bool $guest = false): User
     {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn($id);
+        $user->method('isGuest')->willReturn($guest);
         $user->method('getPseudo')->willReturn("Player{$id}");
 
         return $user;
