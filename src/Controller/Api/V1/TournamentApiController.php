@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Enum\TournamentFormat;
 use App\Enum\TournamentVisibility;
@@ -355,10 +356,7 @@ class TournamentApiController extends AbstractController
 
         $data = array_map(fn (array $standing, int $index) => [
             'rank' => $index + 1,
-            'player' => [
-                'id' => $standing['registration']->getPlayer()->getId(),
-                'pseudo' => $standing['registration']->getPlayer()->getPseudo(),
-            ],
+            'player' => $this->serializeCompetitor($standing['registration']),
             'points' => $standing['matchPoints'],
             'matchWins' => $standing['wins'],
             'matchLosses' => $standing['losses'],
@@ -465,14 +463,8 @@ class TournamentApiController extends AbstractController
             'tableNumber' => $match->getTableNumber(),
             'status' => $match->getStatus()->value,
             'isBye' => $match->isBye(),
-            'player1' => $match->getPlayer1() ? [
-                'id' => $match->getPlayer1()->getPlayer()->getId(),
-                'pseudo' => $match->getPlayer1()->getPlayer()->getPseudo(),
-            ] : null,
-            'player2' => $match->getPlayer2() ? [
-                'id' => $match->getPlayer2()->getPlayer()->getId(),
-                'pseudo' => $match->getPlayer2()->getPlayer()->getPseudo(),
-            ] : null,
+            'player1' => $match->getPlayer1() ? $this->serializeCompetitor($match->getPlayer1()) : null,
+            'player2' => $match->getPlayer2() ? $this->serializeCompetitor($match->getPlayer2()) : null,
             'result' => $match->isCompleted() ? $match->getResult() : null,
         ], $matches);
 
@@ -497,6 +489,7 @@ class TournamentApiController extends AbstractController
             'date' => $date->format(\DateTimeInterface::ATOM),
             'location' => $tournament->getLocation(),
             'format' => $tournament->getFormat()->value,
+            'teamSize' => $tournament->getTeamSize(),
             'structure' => $tournament->getStructure()->value,
             'status' => $tournament->getStatus()->value,
             'playerCount' => $tournament->getRegistrations()->count(),
@@ -529,5 +522,21 @@ class TournamentApiController extends AbstractController
             'createdAt' => $tournament->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'completedAt' => $tournament->getCompletedAt()?->format(\DateTimeInterface::ATOM),
         ]);
+    }
+
+    /**
+     * A competitor: id/pseudo of the player (team captain in 2v2) and the partner, if any.
+     *
+     * @return array{id: int|null, pseudo: string, partner: array{id: int|null, pseudo: string}|null}
+     */
+    private function serializeCompetitor(Registration $registration): array
+    {
+        $partner = $registration->getPartner();
+
+        return [
+            'id' => $registration->getPlayer()->getId(),
+            'pseudo' => $registration->getPlayer()->getPseudo(),
+            'partner' => $partner !== null ? ['id' => $partner->getId(), 'pseudo' => $partner->getPseudo()] : null,
+        ];
     }
 }

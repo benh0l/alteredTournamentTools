@@ -105,7 +105,7 @@
                              data-player-id="{{ match.player1.id }}"
                              {% endif %}>
                             <div class="text-sm font-medium truncate {% if match.winner and match.winner == match.player1 %}text-green-600{% endif %}" style="{% if not (match.winner and match.winner == match.player1) %}color: var(--text-primary);{% endif %}">
-                                {{ match.player1.player.displayName }}
+                                {{ match.player1.displayName }}
                                 {% if user_registration_id and match.player1.id == user_registration_id %}
                                     <span class="text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
                                 {% endif %}
@@ -142,7 +142,7 @@
                              {% endif %}>
                             {% if match.player2 %}
                                 <div class="text-sm font-medium truncate {% if match.winner and match.player2 and match.winner == match.player2 %}text-green-600{% endif %}" style="{% if not (match.winner and match.player2 and match.winner == match.player2) %}color: var(--text-primary);{% endif %}">
-                                    {{ match.player2.player.displayName }}
+                                    {{ match.player2.displayName }}
                                     {% if user_registration_id and match.player2.id == user_registration_id %}
                                         <span class="text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
                                     {% endif %}
@@ -244,7 +244,7 @@
                                       data-pairing-editor-target="playerCard"
                                       data-player-id="{{ match.player1.id }}"
                                       {% endif %}>
-                                    {{ match.player1.player.displayName }}
+                                    {{ match.player1.displayName }}
                                     {% if user_registration_id and match.player1.id == user_registration_id %}
                                         <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
                                     {% endif %}
@@ -270,7 +270,7 @@
                                           data-pairing-editor-target="playerCard"
                                           data-player-id="{{ match.player2.id }}"
                                           {% endif %}>
-                                        {{ match.player2.player.displayName }}
+                                        {{ match.player2.displayName }}
                                         {% if user_registration_id and match.player2.id == user_registration_id %}
                                             <span class="ml-1 text-xs" style="color: var(--color-primary-600);">({{ 'common.you'|trans }})</span>
                                         {% endif %}

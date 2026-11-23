@@ -104,7 +104,7 @@
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-primary);">
                                                     {% if match.player1 %}
-                                                        {{ match.player1.player.pseudo }}
+                                                        {{ match.player1.pseudo }}
                                                         {% if match.winner == match.player1 %}
                                                             <span class="ml-1 text-green-600 font-bold">*</span>
                                                         {% endif %}
@@ -116,7 +116,7 @@
                                                     {% if match.isBye %}
                                                         <span class="italic" style="color: var(--text-muted);">BYE</span>
                                                     {% elseif match.player2 %}
-                                                        {{ match.player2.player.pseudo }}
+                                                        {{ match.player2.pseudo }}
                                                         {% if match.winner == match.player2 %}
                                                             <span class="ml-1 text-green-600 font-bold">*</span>
                                                         {% endif %}
@@ -146,7 +146,7 @@
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm" style="color: var(--text-muted);">
                                                     {% if match.winner %}
                                                         <span class="text-green-600 font-medium">
-                                                            {{ match.winner.player.pseudo }}
+                                                            {{ match.winner.pseudo }}
                                                         </span>
                                                     {% elseif match.isBye %}
                                                         <span class="italic" style="color: var(--text-muted);">Auto</span>
@@ -160,8 +160,8 @@
                                                                 class="hover:underline" style="color: var(--color-primary-600);"
                                                                 data-action="click->admin-override#openModal"
                                                                 data-match-id="{{ match.id }}"
-                                                                data-player1-name="{{ match.player1 ? match.player1.player.pseudo : '' }}"
-                                                                data-player2-name="{{ match.player2 ? match.player2.player.pseudo : '' }}"
+                                                                data-player1-name="{{ match.player1 ? match.player1.pseudo : '' }}"
+                                                                data-player2-name="{{ match.player2 ? match.player2.pseudo : '' }}"
                                                                 data-table-number="{{ match.tableNumber }}">
                                                             Modifier
                                                         </button>

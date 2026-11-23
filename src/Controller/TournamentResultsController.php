@@ -534,7 +534,7 @@ final class TournamentResultsController extends AbstractController
             if (!isset($champions[$factionKey])) {
                 $champions[$factionKey] = [
                     'rank' => $rank + 1,
-                    'player' => $registration->getPlayer()->getDisplayName(),
+                    'player' => $registration->getDisplayName(),
                     'playerAvatar' => $registration->getPlayer()->getAvatar(),
                     'faction' => $faction,
                     'hero' => $registration->getHero(),

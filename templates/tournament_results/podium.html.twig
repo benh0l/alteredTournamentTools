@@ -55,7 +55,7 @@
                     </div>
                     <div class="bg-gradient-to-t from-gray-500 to-gray-400 rounded-t-xl w-24 md:w-32 h-32 md:h-40 flex items-center justify-center shadow-lg overflow-hidden">
                         <div class="text-center px-2 w-full">
-                            <p class="text-white font-bold text-base truncate" title="{{ podium[1].registration.player.displayName }}">{{ podium[1].registration.player.displayName }}</p>
+                            <p class="text-white font-bold text-base truncate" title="{{ podium[1].registration.displayName }}">{{ podium[1].registration.displayName }}</p>
                             <p class="text-gray-200 text-sm">{{ podium[1].matchPoints }} pts</p>
                             {% if podium[1].registration.hero %}
                                 <div class="mt-2 flex flex-col items-center">
@@ -84,7 +84,7 @@
                     </div>
                     <div class="bg-gradient-to-t from-yellow-600 via-yellow-500 to-amber-400 rounded-t-xl w-28 md:w-40 h-40 md:h-52 flex items-center justify-center shadow-2xl overflow-hidden">
                         <div class="text-center px-2 w-full">
-                            <p class="text-white font-bold text-lg truncate" title="{{ podium[0].registration.player.displayName }}">{{ podium[0].registration.player.displayName }}</p>
+                            <p class="text-white font-bold text-lg truncate" title="{{ podium[0].registration.displayName }}">{{ podium[0].registration.displayName }}</p>
                             <p class="text-yellow-100 text-sm font-medium">{{ podium[0].matchPoints }} pts</p>
                             <p class="text-yellow-200 text-xs mt-1">{{ podium[0].wins }}V{% if podium[0].draws > 0 %} - {{ podium[0].draws }}N{% endif %} - {{ podium[0].losses }}D</p>
                             {% if podium[0].registration.hero %}
@@ -114,7 +114,7 @@
                     </div>
                     <div class="bg-gradient-to-t from-amber-800 to-amber-600 rounded-t-xl w-20 md:w-28 h-28 md:h-36 flex items-center justify-center shadow-lg overflow-hidden">
                         <div class="text-center px-2 w-full">
-                            <p class="text-white font-bold text-sm truncate" title="{{ podium[2].registration.player.displayName }}">{{ podium[2].registration.player.displayName }}</p>
+                            <p class="text-white font-bold text-sm truncate" title="{{ podium[2].registration.displayName }}">{{ podium[2].registration.displayName }}</p>
                             <p class="text-amber-200 text-sm">{{ podium[2].matchPoints }} pts</p>
                             {% if podium[2].registration.hero %}
                                 <div class="mt-2 flex flex-col items-center">
@@ -145,7 +145,7 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-yellow-900 dark:text-yellow-400">Vainqueur</h2>
-                    <p class="text-2xl font-bold text-gold">{{ podium[0].registration.player.displayName }}</p>
+                    <p class="text-2xl font-bold text-gold">{{ podium[0].registration.displayName }}</p>
                 </div>
                 {% if podium[0].registration.hero %}
                     <div class="ml-6 flex flex-col items-center">
@@ -184,7 +184,7 @@
                     {% elseif loop.index == 3 %}
                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white font-bold mr-3 shadow-md">3</span>
                     {% endif %}
-                    <span class="font-bold text-lg" style="color: var(--text-primary);">{{ entry.registration.player.displayName }}</span>
+                    <span class="font-bold text-lg" style="color: var(--text-primary);">{{ entry.registration.displayName }}</span>
                 </div>
                 {% if entry.registration.hero %}
                     <div class="flex items-center mb-4 p-3 rounded-xl" style="background-color: var(--bg-subtle);">

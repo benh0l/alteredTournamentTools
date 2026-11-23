@@ -68,7 +68,7 @@
                                     {# Player 1 #}
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %} border-bottom: 1px solid #4b5563;">
                                         <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
-                                            {% if match.player1 %}{{ match.player1.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.player1 %}{{ match.player1.displayName }}{% else %}TBD{% endif %}
                                             {% if match.completed and match.winner and match.player1 and match.winner.id == match.player1.id %}
                                                 <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
                                             {% endif %}
@@ -80,7 +80,7 @@
                                     {# Player 2 #}
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}background-color: rgba(34, 197, 94, 0.2);{% endif %}">
                                         <span style="color: #ffffff; font-size: 11px; font-weight: 500; white-space: nowrap; max-width: 130px; position: relative; top: -7px;">
-                                            {% if match.player2 %}{{ match.player2.player.displayName }}{% else %}TBD{% endif %}
+                                            {% if match.player2 %}{{ match.player2.displayName }}{% else %}TBD{% endif %}
                                             {% if match.completed and match.winner and match.player2 and match.winner.id == match.player2.id %}
                                                 <span style="color: #fbbf24; margin-left: 4px;">&#9733;</span>
                                             {% endif %}
@@ -113,7 +113,7 @@
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(217, 119, 6, 0.2)); border-radius: 8px; border: 2px solid #fbbf24;">
                             <span style="font-size: 24px; margin-bottom: 4px;">&#128081;</span>
                             <span style="color: #ffffff; font-size: 12px; font-weight: bold; text-align: center;">
-                                {{ final_match.winner.player.displayName }}
+                                {{ final_match.winner.displayName }}
                             </span>
                         </div>
                     </div>
@@ -148,7 +148,7 @@
 
                 {# Player name and hero #}
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;">
-                    <span style="color: #ffffff; font-size: 14px; font-weight: 500; margin-top: -16px;">{{ entry.registration.player.displayName }}</span>
+                    <span style="color: #ffffff; font-size: 14px; font-weight: 500; margin-top: -16px;">{{ entry.registration.displayName }}</span>
                     {% if entry.registration.heroLabel %}
                         <div style="display: flex; align-items: center; gap: 4px;">
                             {% if entry.registration.heroImage %}

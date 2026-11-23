@@ -138,7 +138,7 @@ class AdminDashboardController extends AbstractController
         foreach ($tournament->getRegistrations() as $reg) {
             $data['registrations'][] = [
                 'player_id' => $reg->getPlayer()->getId(),
-                'pseudo' => $reg->getPlayer()->getPseudo(),
+                'pseudo' => $reg->getPseudo(),
                 'email' => $reg->getPlayer()->getEmail(),
                 'registeredAt' => $reg->getRegisteredAt()->format('c'),
                 'decklistUrl' => $reg->getDecklistUrl(),
@@ -162,9 +162,9 @@ class AdminDashboardController extends AbstractController
                     'tableNumber' => $match->getTableNumber(),
                     'status' => $match->getStatus()->value,
                     'isBye' => $match->isByeMatch(),
-                    'player1' => $match->getPlayer1()?->getPlayer()->getPseudo(),
-                    'player2' => $match->getPlayer2()?->getPlayer()->getPseudo(),
-                    'winner' => $match->getWinner()?->getPlayer()->getPseudo(),
+                    'player1' => $match->getPlayer1()?->getPseudo(),
+                    'player2' => $match->getPlayer2()?->getPseudo(),
+                    'winner' => $match->getWinner()?->getPseudo(),
                     'disputeHistory' => $match->getDisputeHistory(),
                 ];
                 $roundData['matches'][] = $matchData;

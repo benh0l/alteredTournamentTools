@@ -216,8 +216,8 @@ final class DashboardStreamController extends AbstractController
                 $matchData = [
                     'id' => $match->getId(),
                     'table_number' => $match->getTableNumber(),
-                    'player1' => $match->getPlayer1()->getPlayer()->getPseudo(),
-                    'player2' => $match->getPlayer2()?->getPlayer()->getPseudo(),
+                    'player1' => $match->getPlayer1()->getPseudo(),
+                    'player2' => $match->getPlayer2()?->getPseudo(),
                     'status' => $match->getStatus()->value,
                     'status_label' => $this->translator->trans($match->getStatus()->getLabel()),
                     'player1_score' => $match->getPlayer1Score(),

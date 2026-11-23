@@ -149,6 +149,17 @@ class Registration
         ));
     }
 
+    /**
+     * Pseudo(s) of the competitor: the player's pseudo, or "Alice & Bob" for a team.
+     */
+    public function getPseudo(): string
+    {
+        return implode(' & ', array_map(
+            static fn (User $member): string => $member->getPseudo(),
+            $this->getMembers(),
+        ));
+    }
+
     public function getPartner(): ?User
     {
         return $this->partner;

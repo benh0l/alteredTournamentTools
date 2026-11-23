@@ -141,7 +141,7 @@ class DisputeHistoryService
             'matchId' => $match->getId() ?? 0,
             'tournamentName' => $match->getRound()->getTournament()->getName(),
             'roundNumber' => $match->getRound()->getRoundNumber(),
-            'opponent' => $opponent?->getPlayer()->getPseudo() ?? 'BYE',
+            'opponent' => $opponent?->getPseudo() ?? 'BYE',
             'result' => $result,
             'resolvedAt' => $resolvedAt,
             'wasInFavor' => $wasInFavor,

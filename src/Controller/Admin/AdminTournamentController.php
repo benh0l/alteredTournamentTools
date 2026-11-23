@@ -135,9 +135,9 @@ class AdminTournamentController extends AbstractController
         // Determine winner name
         $winnerName = 'Egalite';
         if ($winner === 'player_1' && $match->getPlayer1()) {
-            $winnerName = $match->getPlayer1()->getPlayer()->getPseudo();
+            $winnerName = $match->getPlayer1()->getPseudo();
         } elseif ($winner === 'player_2' && $match->getPlayer2()) {
-            $winnerName = $match->getPlayer2()->getPlayer()->getPseudo();
+            $winnerName = $match->getPlayer2()->getPseudo();
         }
 
         $subject = "Decision administrative - Match Table {$tableNumber}";

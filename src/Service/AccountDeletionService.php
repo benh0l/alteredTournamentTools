@@ -237,7 +237,7 @@ final class AccountDeletionService
             'tournament' => $tournamentName,
             'round' => $match->getRound()->getRoundNumber(),
             'table' => $match->getTableNumber(),
-            'opponent' => $opponent?->getPlayer()->getPseudo(),
+            'opponent' => $opponent?->getPseudo(),
             'is_bye' => $match->isByeMatch(),
             'status' => $match->getStatus()->value,
             'outcome' => $outcome,

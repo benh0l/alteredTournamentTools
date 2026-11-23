@@ -403,12 +403,12 @@ final class TournamentRegistrationsController extends AbstractController
 
         $this->addFlash('success', sprintf(
             $this->translator->trans('flash.success.player_registration_updated'),
-            $registration->getPlayer()->getPseudo()
+            $registration->getPseudo()
         ));
 
         $this->logger->info('Registration updated by organizer', [
             'registration_id' => $registrationId,
-            'player_pseudo' => $registration->getPlayer()->getPseudo(),
+            'player_pseudo' => $registration->getPseudo(),
             'tournament_id' => $tournament->getId(),
             'organizer_id' => $this->getUser()->getId(),
         ]);
@@ -429,7 +429,7 @@ final class TournamentRegistrationsController extends AbstractController
 
         return new JsonResponse([
             'id' => $registration->getId(),
-            'playerPseudo' => $registration->getPlayer()->getPseudo(),
+            'playerPseudo' => $registration->getPseudo(),
             'faction' => $registration->getFaction()?->value,
             'faction2' => $registration->getFaction2()?->value,
             'hero' => $registration->getHero(),

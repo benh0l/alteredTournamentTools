@@ -163,7 +163,7 @@ class PlayerStatsService
                 'tournament' => $match->getRound()->getTournament()->getName(),
                 'tournamentId' => $match->getRound()->getTournament()->getId(),
                 'date' => $match->getCompletedAt(),
-                'opponent' => $opponent?->getPlayer()->getDisplayName(),
+                'opponent' => $opponent?->getDisplayName(),
                 'opponentId' => $opponent?->getPlayer()->getId(),
                 'won' => $won,
                 'isBye' => $match->isByeMatch(),

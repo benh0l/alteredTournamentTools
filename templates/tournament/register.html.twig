@@ -24,7 +24,7 @@
             {% endif %}
             <div>
                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.format'|trans }}</dt>
-                <dd class="font-medium">{{ tournament.format.label|trans }}</dd>
+                <dd class="font-medium">{{ tournament.format.label|trans }}{% if tournament.teamTournament %} · 2v2{% endif %}</dd>
             </div>
             <div>
                 <dt class="text-sm" style="color: var(--text-muted);">{{ 'tournament.edit_registration.structure'|trans }}</dt>

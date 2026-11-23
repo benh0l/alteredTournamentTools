@@ -108,7 +108,7 @@ final class PairingModificationService
         $player = $this->findRegistration($round->getTournament(), $request->playerId);
 
         if ($player->isDropped()) {
-            throw PairingModificationException::playerDropped($player->getPlayer()->getPseudo());
+            throw PairingModificationException::playerDropped($player->getPseudo());
         }
 
         $currentMatch = $this->findMatchForPlayer($round, $player);
@@ -187,7 +187,7 @@ final class PairingModificationService
         $player = $this->findRegistration($round->getTournament(), $playerId);
 
         if ($player->isDropped()) {
-            throw PairingModificationException::playerDropped($player->getPlayer()->getPseudo());
+            throw PairingModificationException::playerDropped($player->getPseudo());
         }
 
         // Find the target BYE match
@@ -261,8 +261,8 @@ final class PairingModificationService
         }
 
         return [
-            'player1' => $player1->getPlayer()->getPseudo(),
-            'player2' => $player2->getPlayer()->getPseudo(),
+            'player1' => $player1->getPseudo(),
+            'player2' => $player2->getPseudo(),
             'previousRound' => $previousRound,
         ];
     }
@@ -297,11 +297,11 @@ final class PairingModificationService
     private function validatePlayersAreActive(Registration $player1, Registration $player2): void
     {
         if ($player1->isDropped()) {
-            throw PairingModificationException::playerDropped($player1->getPlayer()->getPseudo());
+            throw PairingModificationException::playerDropped($player1->getPseudo());
         }
 
         if ($player2->isDropped()) {
-            throw PairingModificationException::playerDropped($player2->getPlayer()->getPseudo());
+            throw PairingModificationException::playerDropped($player2->getPseudo());
         }
     }
 
@@ -368,8 +368,8 @@ final class PairingModificationService
             $previousRound = $this->findPreviousMatchRound($tournament, $player1, $player2Opponent);
             if ($previousRound !== null) {
                 return [
-                    'player1' => $player1->getPlayer()->getPseudo(),
-                    'player2' => $player2Opponent->getPlayer()->getPseudo(),
+                    'player1' => $player1->getPseudo(),
+                    'player2' => $player2Opponent->getPseudo(),
                     'previousRound' => $previousRound,
                 ];
             }
@@ -382,8 +382,8 @@ final class PairingModificationService
             $previousRound = $this->findPreviousMatchRound($tournament, $player2, $player1Opponent);
             if ($previousRound !== null) {
                 return [
-                    'player1' => $player2->getPlayer()->getPseudo(),
-                    'player2' => $player1Opponent->getPlayer()->getPseudo(),
+                    'player1' => $player2->getPseudo(),
+                    'player2' => $player1Opponent->getPseudo(),
                     'previousRound' => $previousRound,
                 ];
             }

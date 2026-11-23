@@ -227,7 +227,7 @@ final class CheckInController extends AbstractController
         $this->entityManager->persist($registration);
         $this->entityManager->flush();
 
-        $playerName = $registration->getPlayer()->getDisplayName();
+        $playerName = $registration->getDisplayName();
 
         $this->logger->info('Organizer checked in player', [
             'organizer_id' => $this->getUser()?->getId(),
@@ -291,7 +291,7 @@ final class CheckInController extends AbstractController
         $this->entityManager->persist($registration);
         $this->entityManager->flush();
 
-        $playerName = $registration->getPlayer()->getDisplayName();
+        $playerName = $registration->getDisplayName();
 
         $this->logger->info('Organizer undid player check-in', [
             'organizer_id' => $this->getUser()?->getId(),
