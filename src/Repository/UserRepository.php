@@ -286,8 +286,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->createQuery(
                 "SELECT COUNT(m.id) FROM App\Entity\TournamentMatch m
                  JOIN m.round r
-                 WHERE (m.player1 IN (SELECT reg.id FROM App\Entity\Registration reg WHERE reg.player = :user)
-                        OR m.player2 IN (SELECT reg2.id FROM App\Entity\Registration reg2 WHERE reg2.player = :user))
+                 WHERE (m.player1 IN (SELECT reg.id FROM App\Entity\Registration reg WHERE reg.player = :user OR reg.partner = :user)
+                        OR m.player2 IN (SELECT reg2.id FROM App\Entity\Registration reg2 WHERE reg2.player = :user OR reg2.partner = :user))
                  AND m.disputeHistory IS NOT NULL"
             )
             ->setParameter('user', $user)
@@ -310,7 +310,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                  LEFT JOIN m.player2 p2
                  LEFT JOIN p1.player u1
                  LEFT JOIN p2.player u2
-                 WHERE (p1.player = :user OR p2.player = :user)
+                 WHERE (p1.player = :user OR p1.partner = :user OR p2.player = :user OR p2.partner = :user)
                  AND m.disputeHistory IS NOT NULL
                  ORDER BY r.roundNumber DESC"
             )

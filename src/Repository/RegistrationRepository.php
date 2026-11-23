@@ -47,7 +47,7 @@ class RegistrationRepository extends ServiceEntityRepository
     private function andWhereMember(QueryBuilder $qb, User $user, string $alias = 'r'): QueryBuilder
     {
         return $qb
-            ->andWhere(sprintf('%s.player = :member', $alias))
+            ->andWhere(sprintf('(%1$s.player = :member OR %1$s.partner = :member)', $alias))
             ->setParameter('member', $user);
     }
 

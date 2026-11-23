@@ -517,4 +517,34 @@ final class TournamentTest extends TestCase
 
         $this->assertTrue($tournament->isOrganizerPlaying());
     }
+
+    public function testTeamSizeDefaultsToOne(): void
+    {
+        $tournament = new Tournament();
+
+        $this->assertSame(1, $tournament->getTeamSize());
+        $this->assertFalse($tournament->isTeamTournament());
+    }
+
+    public function testTeamSizeTwoIsTeamTournament(): void
+    {
+        $tournament = (new Tournament())->setTeamSize(2);
+
+        $this->assertSame(2, $tournament->getTeamSize());
+        $this->assertTrue($tournament->isTeamTournament());
+    }
+
+    public function testIsPlayerRegisteredIncludesPartner(): void
+    {
+        $tournament = new Tournament();
+        $captain = $this->createMock(User::class);
+        $captain->method('getId')->willReturn(1);
+        $partner = $this->createMock(User::class);
+        $partner->method('getId')->willReturn(2);
+
+        $registration = (new Registration($tournament, $captain))->setPartner($partner);
+        $tournament->addRegistration($registration);
+
+        $this->assertTrue($tournament->isPlayerRegistered($partner));
+    }
 }

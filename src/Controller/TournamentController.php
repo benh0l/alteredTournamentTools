@@ -221,6 +221,7 @@ final class TournamentController extends AbstractController
         $tournament->setPrizes($source->getPrizes());
         $tournament->setAlteredGgLink($source->getAlteredGgLink());
         $tournament->setFormat($source->getFormat());
+        $tournament->setTeamSize($source->getTeamSize());
         $tournament->setStructure($source->getStructure());
         $tournament->setVisibility($source->getVisibility());
         $tournament->setDecklistTransparency($source->getDecklistTransparency());

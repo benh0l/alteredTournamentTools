@@ -91,6 +91,13 @@ class Tournament
     #[ORM\Column(name: 'status', type: 'string', length: 15, enumType: TournamentStatus::class)]
     private TournamentStatus $status;
 
+    /**
+     * Number of players per competitor: 1 for 1v1, 2 for 2v2.
+     */
+    #[ORM\Column(name: 'team_size', type: 'smallint', options: ['default' => 1])]
+    #[Assert\Choice(choices: [1, 2])]
+    private int $teamSize = 1;
+
     #[ORM\Column(name: 'swiss_match_format', type: 'string', length: 5, enumType: MatchFormat::class)]
     private MatchFormat $swissMatchFormat;
 
@@ -430,6 +437,23 @@ class Tournament
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getTeamSize(): int
+    {
+        return $this->teamSize;
+    }
+
+    public function setTeamSize(int $teamSize): self
+    {
+        $this->teamSize = $teamSize;
+
+        return $this;
+    }
+
+    public function isTeamTournament(): bool
+    {
+        return $this->teamSize > 1;
     }
 
     public function getSwissMatchFormat(): MatchFormat
