@@ -104,6 +104,13 @@ final class TournamentType extends AbstractType
                     new NotBlank(['message' => 'validation.tournament.format_required']),
                 ],
             ])
+            ->add('teamSize', ChoiceType::class, [
+                'label' => 'form.tournament.team_size',
+                'choices' => Tournament::TEAM_SIZE_CHOICES,
+                'disabled' => $options['team_size_locked'],
+                'help' => $options['team_size_locked'] ? 'form.tournament.team_size_locked_help' : null,
+                'attr' => ['class' => 'form-select'],
+            ])
             ->add('structure', EnumType::class, [
                 'class' => TournamentStructure::class,
                 'label' => 'form.tournament.structure',
@@ -355,6 +362,8 @@ final class TournamentType extends AbstractType
             'csrf_protection' => true,
             'csrf_field_name' => '_token',
             'csrf_token_id' => 'tournament_create',
+            'team_size_locked' => false,
         ]);
+        $resolver->setAllowedTypes('team_size_locked', 'bool');
     }
 }

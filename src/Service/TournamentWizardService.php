@@ -70,6 +70,9 @@ final class TournamentWizardService
                 $tournament->setFormat($format);
             }
         }
+        if (isset($wizardData[3]['teamSize'])) {
+            $tournament->setTeamSize((int) $wizardData[3]['teamSize']);
+        }
 
         // Step 4: Tournament structure
         if (isset($wizardData[4]['structure'])) {
@@ -212,6 +215,8 @@ final class TournamentWizardService
         // Step 3: Format
         $format = $wizardData[3]['format'] ?? null;
         $summary['format'] = $format instanceof TournamentFormat ? $format->getLabel() : '';
+        $teamSize = (int) ($wizardData[3]['teamSize'] ?? 1);
+        $summary['teamSize'] = (string) array_search($teamSize, Tournament::TEAM_SIZE_CHOICES, true);
 
         // Step 4: Structure
         $structure = $wizardData[4]['structure'] ?? null;

@@ -91,6 +91,9 @@ common:
 # Enums - Tournament Status
 # ----------------------------------------------------------------------------
 enum:
+    team_size:
+        solo: "1v1 (individuel)"
+        duo: "2v2 (équipes de 2)"
     tournament_status:
         draft: "Brouillon"
         published: "Publié"
@@ -769,6 +772,10 @@ tournament:
             question: "Quel format de jeu ?"
             subtitle: "Choisissez comment les joueurs construiront leur deck"
             select_format: "Sélectionnez le format"
+            team_size_question: "Individuel ou en équipe ?"
+            team_size_desc:
+                solo: "Chaque joueur s'inscrit seul et affronte un adversaire."
+                duo: "Les joueurs s'inscrivent par équipe de 2, chacun avec son propre deck."
             format_desc:
                 constructed_standard: "Les joueurs viennent avec leur propre deck. 39 cartes + Héros minimum. 3 Uniques max, 3 Exalteds max, 15 Rares max."
                 constructed_singleton: "Les joueurs viennent avec leur propre deck. Exemplaire unique par rareté. Deck de 59 cartes + Héros."
@@ -891,6 +898,7 @@ tournament:
             location: "Lieu"
             configuration: "Configuration"
             format: "Format"
+            team_size: "Type"
             structure: "Structure"
             swiss_matches: "Matchs Suisses"
             elim_matches: "Matchs Élim."
@@ -1524,6 +1532,8 @@ form:
         location: "Lieu"
         location_placeholder: "Adresse ou nom du lieu"
         format: "Format de jeu"
+        team_size: "Type de tournoi"
+        team_size_locked_help: "Ne peut plus être modifié une fois des inscriptions enregistrées"
         structure: "Structure du tournoi"
         visibility: "Visibilité"
         max_players: "Joueurs max"

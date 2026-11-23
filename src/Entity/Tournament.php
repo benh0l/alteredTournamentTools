@@ -92,10 +92,18 @@ class Tournament
     private TournamentStatus $status;
 
     /**
+     * Allowed team sizes, keyed by translation label.
+     */
+    public const TEAM_SIZE_CHOICES = [
+        'enum.team_size.solo' => 1,
+        'enum.team_size.duo' => 2,
+    ];
+
+    /**
      * Number of players per competitor: 1 for 1v1, 2 for 2v2.
      */
     #[ORM\Column(name: 'team_size', type: 'smallint', options: ['default' => 1])]
-    #[Assert\Choice(choices: [1, 2])]
+    #[Assert\Choice(choices: self::TEAM_SIZE_CHOICES)]
     private int $teamSize = 1;
 
     #[ORM\Column(name: 'swiss_match_format', type: 'string', length: 5, enumType: MatchFormat::class)]
@@ -454,6 +462,11 @@ class Tournament
     public function isTeamTournament(): bool
     {
         return $this->teamSize > 1;
+    }
+
+    public function getTeamSizeLabel(): string
+    {
+        return (string) array_search($this->teamSize, self::TEAM_SIZE_CHOICES, true);
     }
 
     public function getSwissMatchFormat(): MatchFormat
