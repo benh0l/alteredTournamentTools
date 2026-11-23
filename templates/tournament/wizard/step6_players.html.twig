@@ -61,6 +61,7 @@
                         }}) }}
                     </div>
                     {{ form_errors(form.expectedPlayers) }}
+                    <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'form.tournament.expected_players_team_help'|trans }}</p>
                 </div>
 
                 <div class="{{ hasSwiss ? '' : 'hidden' }}" data-tournament-form-target="swissRoundsWrapper">

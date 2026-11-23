@@ -328,6 +328,49 @@ final class RegistrationServiceTest extends TestCase
         $this->service->updatePartnerDeck($registration, new DeckChoice());
     }
 
+    public function testAssignPartnerCompletesTeam(): void
+    {
+        $tournament = $this->createTournament(1, TournamentStatus::PUBLISHED)->setTeamSize(2);
+        $registration = new Registration($tournament, $this->createPlayer(1, 'p1@test.com', 'Alice'));
+        $newPartner = $this->createPlayer(3, 'p3@test.com', 'Carol');
+        $this->registrationRepository->method('isPlayerRegistered')->willReturn(false);
+
+        $this->service->assignPartner($registration, $newPartner, new DeckChoice(null, Faction::ORDIS));
+
+        $this->assertSame($newPartner, $registration->getPartner());
+        $this->assertSame(Faction::ORDIS, $registration->getPartnerFaction());
+        $this->assertFalse($registration->isIncompleteTeam());
+    }
+
+    public function testAssignPartnerAfterStartOnlyForOrganizer(): void
+    {
+        $tournament = $this->createTournament(1, TournamentStatus::ONGOING)->setTeamSize(2);
+        $registration = new Registration($tournament, $this->createPlayer(1, 'p1@test.com', 'Alice'));
+        $this->registrationRepository->method('isPlayerRegistered')->willReturn(false);
+
+        $this->service->assignPartner($registration, $this->createPlayer(3, 'p3@test.com', 'Carol'), byOrganizer: true);
+        $this->assertNotNull($registration->getPartner());
+
+        $registration->removePartner();
+        $this->expectException(\RuntimeException::class);
+        $this->service->assignPartner($registration, $this->createPlayer(4, 'p4@test.com', 'Dave'));
+    }
+
+    public function testSelfRegistrationKeepsSecondFaction(): void
+    {
+        $tournament = $this->createTournament(1, TournamentStatus::PUBLISHED);
+        $this->registrationRepository->method('isPlayerRegistered')->willReturn(false);
+
+        $registration = $this->service->registerPlayerToTournament(
+            $this->createPlayer(1, 'p1@test.com', 'Alice'),
+            $tournament,
+            faction: Faction::AXIOM,
+            faction2: Faction::BRAVOS
+        );
+
+        $this->assertSame(Faction::BRAVOS, $registration->getFaction2());
+    }
+
     private function expectTeamError(string $reason): void
     {
         $this->expectException(InvalidTeamException::class);

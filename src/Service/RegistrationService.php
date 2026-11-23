@@ -37,7 +37,8 @@ final class RegistrationService
         ?Faction $faction = null,
         ?string $hero = null,
         ?User $partner = null,
-        ?DeckChoice $partnerDeck = null
+        ?DeckChoice $partnerDeck = null,
+        ?Faction $faction2 = null
     ): Registration {
         // Check tournament is open for registration
         if ($tournament->getStatus() !== TournamentStatus::PUBLISHED) {
@@ -78,6 +79,10 @@ final class RegistrationService
 
         if ($faction !== null) {
             $registration->setFaction($faction);
+        }
+
+        if ($faction2 !== null) {
+            $registration->setFaction2($faction2);
         }
 
         if ($hero !== null && $hero !== '') {
@@ -262,11 +267,11 @@ final class RegistrationService
 
     /**
      * Update the partner's deck (faction, hero, decklist) of a team registration.
-     * Only allowed while the tournament is still PUBLISHED.
+     * Only allowed while the tournament is still PUBLISHED, unless done by the organizer.
      */
-    public function updatePartnerDeck(Registration $registration, DeckChoice $deck): void
+    public function updatePartnerDeck(Registration $registration, DeckChoice $deck, bool $byOrganizer = false): void
     {
-        if ($registration->getTournament()->getStatus() !== TournamentStatus::PUBLISHED) {
+        if (!$byOrganizer && $registration->getTournament()->getStatus() !== TournamentStatus::PUBLISHED) {
             throw new \RuntimeException('Impossible de modifier l\'inscription une fois le tournoi commence.');
         }
 
@@ -276,6 +281,35 @@ final class RegistrationService
 
         $this->applyPartner($registration, $registration->getPartner(), $deck);
         $this->entityManager->flush();
+    }
+
+    /**
+     * Give a new partner to a 2v2 team that lost theirs (see Registration::isIncompleteTeam()).
+     * Only allowed while the tournament is still PUBLISHED, unless done by the organizer.
+     *
+     * @throws InvalidTeamException
+     */
+    public function assignPartner(Registration $registration, User $partner, ?DeckChoice $deck = null, bool $byOrganizer = false): void
+    {
+        $tournament = $registration->getTournament();
+
+        if (!$byOrganizer && $tournament->getStatus() !== TournamentStatus::PUBLISHED) {
+            throw new \RuntimeException('Impossible de modifier l\'inscription une fois le tournoi commence.');
+        }
+
+        $this->assertValidTeam($tournament, $registration->getPlayer(), $partner);
+        $this->applyPartner($registration, $partner, $deck);
+        $this->entityManager->flush();
+
+        $this->logger->info('Partner assigned to incomplete team', [
+            'registration_id' => $registration->getId(),
+            'partner_id' => $partner->getId(),
+            'tournament_id' => $tournament->getId(),
+        ]);
+
+        if ($this->messageBus !== null && $registration->getId() !== null) {
+            $this->messageBus->dispatch(new SendRegistrationConfirmationMessage($registration->getId()));
+        }
     }
 
     /**

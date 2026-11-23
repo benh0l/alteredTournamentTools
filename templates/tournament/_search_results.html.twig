@@ -69,7 +69,7 @@
                         {# Registered players #}
                         <div class="flex items-center text-sm" style="color: var(--text-secondary);">
                             {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-2', style: 'color: var(--text-muted);'}) }}
-                            <span>{{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}</span>
+                            {% if tournament.teamTournament %}<span>{{ 'tournament.capacity.teams_registered'|trans({'%count%': tournament.registrationCount}) }}</span>{% else %}<span>{{ tournament.registrationCount }} joueur{% if tournament.registrationCount > 1 %}s{% endif %} inscrit{% if tournament.registrationCount > 1 %}s{% endif %}</span>{% endif %}
                             {% if tournament.maxPlayers %}
                                 <span class="ml-1" style="color: var(--text-muted);">/ {{ tournament.maxPlayers }}</span>
                             {% endif %}

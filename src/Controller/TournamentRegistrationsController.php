@@ -388,6 +388,22 @@ final class TournamentRegistrationsController extends AbstractController
             return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
         }
 
+        // 2v2: name a new partner for an incomplete team (validated before any change is saved)
+        $newPartnerPseudo = trim($request->request->getString('partner_pseudo', ''));
+        if ($registration->isIncompleteTeam() && $newPartnerPseudo !== '') {
+            try {
+                $newPartner = $this->userRepository->findByPseudo($newPartnerPseudo)
+                    ?? throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_FOUND);
+                $this->registrationService->assignPartner($registration, $newPartner, $this->partnerDeckFromRequest($request), true);
+            } catch (InvalidTeamException $e) {
+                $this->addFlash('error', $this->translator->trans($e->getTranslationKey()));
+
+                return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
+            }
+        } elseif ($registration->getPartner() !== null) {
+            $this->registrationService->updatePartnerDeck($registration, $this->partnerDeckFromRequest($request), true);
+        }
+
         $factionValue = $request->request->getString('faction', '');
         $faction2Value = $request->request->getString('faction2', '');
         $hero = $request->request->getString('hero', '');

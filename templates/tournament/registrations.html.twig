@@ -21,7 +21,7 @@
             {# Player Count Badge #}
             <div class="bg-blue-500/20 text-blue-800 dark:text-blue-400 px-4 py-2 rounded-lg font-medium">
                 <span>{{ registrations|length }}</span>{% if tournament.maxPlayers %}/{{ tournament.maxPlayers }}{% endif %}
-                {{ 'tournament.registrations.players_count'|trans }}
+                {{ (tournament.teamTournament ? 'tournament.registrations.teams_count' : 'tournament.registrations.players_count')|trans }}
             </div>
 
             {# Export Button #}
@@ -513,15 +513,21 @@
                                             {{ 'tournament.registrations.organizer_badge'|trans }}
                                         </span>
                                     {% endif %}
-                                    {% if registration.player.guest %}
+                                    {% if registration.members|filter(m => m.guest)|length > 0 %}
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-500/20 text-orange-800 dark:text-orange-400">
                                             {{ 'tournament.registrations.guest_badge'|trans }}
                                         </span>
                                     {% endif %}
+                                    {% if registration.incompleteTeam %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-800 dark:text-red-400">
+                                            {{ 'tournament.registrations.incomplete_team_badge'|trans }}
+                                        </span>
+                                    {% endif %}
                                 </div>
-                                {% if registration.player.name %}
+                                {% set member_names = registration.members|map(m => m.name)|filter(n => n) %}
+                                {% if member_names|length > 0 %}
                                 <div class="text-sm" style="color: var(--text-muted);">
-                                    {{ registration.player.name }}
+                                    {{ member_names|join(' & ') }}
                                 </div>
                                 {% endif %}
                             </div>
@@ -612,6 +618,12 @@
                                     data-edit-registration-faction2="{{ registration.faction2 ? registration.faction2.value : '' }}"
                                     data-edit-registration-hero="{{ registration.hero ?? '' }}"
                                     data-edit-registration-decklist="{{ registration.decklistUrl ?? '' }}"
+                                    data-edit-registration-captain="{{ registration.player.pseudo }}"
+                                    data-edit-registration-partner="{{ registration.partner ? registration.partner.pseudo : '' }}"
+                                    data-edit-registration-partner-faction="{{ registration.partnerFaction ? registration.partnerFaction.value : '' }}"
+                                    data-edit-registration-partner-faction2="{{ registration.partnerFaction2 ? registration.partnerFaction2.value : '' }}"
+                                    data-edit-registration-partner-hero="{{ registration.partnerHero ?? '' }}"
+                                    data-edit-registration-partner-decklist="{{ registration.partnerDecklistUrl ?? '' }}"
                                     data-edit-registration-csrf="{{ csrf_token('edit_registration' ~ registration.id) }}"
                                     onclick="openEditModal(this)"
                                     title="{{ 'tournament.registrations.edit_player'|trans }}">
@@ -749,6 +761,73 @@
                                class="form-input"
                                placeholder="https://...">
                     </div>
+
+                    {% if tournament.teamTournament %}
+                        {# 2v2: partner (new partner for an incomplete team) and partner's deck #}
+                        <div class="border rounded-lg p-4 space-y-3" style="border-color: var(--border-default);">
+                            <h4 class="text-sm font-medium theme-text-primary flex items-center">
+                                {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-2'}) }}
+                                <span id="edit-partner-title">{{ 'form.registration.partner_section_title'|trans }}</span>
+                            </h4>
+                            <div id="edit-partner-pseudo-row" class="hidden">
+                                <label for="edit-partner-pseudo" class="block text-xs font-medium theme-text-secondary mb-1">
+                                    {{ 'tournament.registrations.partner_pseudo_label'|trans }}
+                                </label>
+                                <input type="text" name="partner_pseudo" id="edit-partner-pseudo" class="form-input text-sm" autocomplete="off">
+                            </div>
+                            {% if tournament.format.isConstructed %}
+                                <div class="grid grid-cols-1 gap-3"
+                                     data-controller="registration-form"
+                                     data-registration-form-heroes-value="{{ heroesData|json_encode }}"
+                                     data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+                                     data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+                                    <div>
+                                        <label for="edit-partner-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                                        </label>
+                                        <select name="partner_faction" id="edit-partner-faction" class="form-select text-sm"
+                                                data-registration-form-target="faction"
+                                                data-action="change->registration-form#factionChanged">
+                                            <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                            {% for label, value in factionChoices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if tournament.format.isBifaction %}
+                                        <div>
+                                            <label for="edit-partner-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                                                {{ 'tournament.registrations.second_faction'|trans }}
+                                            </label>
+                                            <select name="partner_faction2" id="edit-partner-faction2" class="form-select text-sm"
+                                                    data-registration-form-target="faction2"
+                                                    data-action="change->registration-form#factionChanged">
+                                                <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                                                {% for label, value in factionChoices %}
+                                                    <option value="{{ value }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <label for="edit-partner-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                                            {{ 'tournament.registrations.hero_label'|trans }}
+                                        </label>
+                                        <select name="partner_hero" id="edit-partner-hero" class="form-select text-sm"
+                                                data-registration-form-target="hero">
+                                            <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <label for="edit-partner-decklist" class="block text-xs font-medium theme-text-secondary mb-1">
+                                    {{ 'tournament.registrations.decklist_url_label'|trans }}
+                                </label>
+                                <input type="url" name="partner_decklist_url" id="edit-partner-decklist" class="form-input text-sm" placeholder="https://...">
+                            </div>
+                        </div>
+                    {% endif %}
 
                     <div class="flex gap-3 pt-2">
                         <button type="button"
@@ -1012,9 +1091,37 @@
             }
         }, 100);
 
+        fillPartnerFields(button.dataset);
+
         // Show modal
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+    }
+
+    // 2v2: partner deck, or a new partner when the team is incomplete
+    function fillPartnerFields(data) {
+        const title = document.getElementById('edit-partner-title');
+        if (!title) {
+            return;
+        }
+        const hasPartner = (data.editRegistrationPartner || '') !== '';
+        title.textContent = hasPartner ? data.editRegistrationPartner : {{ 'tournament.registrations.incomplete_team_badge'|trans|json_encode|raw }};
+        document.getElementById('edit-partner-pseudo-row').classList.toggle('hidden', hasPartner);
+        document.getElementById('edit-partner-pseudo').value = '';
+
+        const set = (id, value, change) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = value || '';
+                if (change) {
+                    el.dispatchEvent(new Event('change'));
+                }
+            }
+        };
+        set('edit-partner-faction', data.editRegistrationPartnerFaction, true);
+        set('edit-partner-faction2', data.editRegistrationPartnerFaction2, true);
+        set('edit-partner-decklist', data.editRegistrationPartnerDecklist, false);
+        setTimeout(() => set('edit-partner-hero', data.editRegistrationPartnerHero, false), 100);
     }
 
     function closeEditModal() {

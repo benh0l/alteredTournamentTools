@@ -78,6 +78,10 @@ final class TournamentRegistrationController extends AbstractController
                 $factionValue = $form->get('faction')->getData();
                 $faction = $factionValue ? Faction::tryFrom($factionValue) : null;
 
+                // Second faction (bifaction format)
+                $faction2Value = $form->get('faction2')->getData();
+                $faction2 = $faction2Value ? Faction::tryFrom($faction2Value) : null;
+
                 $partner = null;
                 $partnerDeck = null;
                 if ($tournament->isTeamTournament()) {
@@ -93,7 +97,8 @@ final class TournamentRegistrationController extends AbstractController
                     $faction,
                     $form->get('hero')->getData(),
                     $partner,
-                    $partnerDeck
+                    $partnerDeck,
+                    $faction2
                 );
 
                 $this->addFlash('success', $this->translator->trans('flash.success.registration_success'));
@@ -178,7 +183,9 @@ final class TournamentRegistrationController extends AbstractController
             'initial_hero' => $registration->getHero(),
             'initial_decklist_url' => $registration->getDecklistUrl(),
             'tournament_format' => $tournament->getFormat(),
-            'team' => $registration->getPartner() !== null,
+            'team' => $tournament->isTeamTournament(),
+            // A team that lost its partner (account deleted) can name a new one
+            'partner_editable' => $registration->isIncompleteTeam(),
             'initial_partner_faction' => $registration->getPartnerFaction()?->value,
             'initial_partner_faction2' => $registration->getPartnerFaction2()?->value,
             'initial_partner_hero' => $registration->getPartnerHero(),
@@ -193,6 +200,24 @@ final class TournamentRegistrationController extends AbstractController
 
             $faction2Value = $form->get('faction2')->getData();
             $faction2 = $faction2Value ? Faction::tryFrom($faction2Value) : null;
+
+            // Validate a new partner first so that nothing is saved if it is refused
+            if ($registration->isIncompleteTeam()) {
+                try {
+                    $partner = $this->userRepository->findByPseudo(trim((string) $form->get('partnerPseudo')->getData()))
+                        ?? throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_FOUND);
+                    $this->registrationService->assignPartner($registration, $partner, $this->partnerDeckFromForm($form));
+                } catch (InvalidTeamException $e) {
+                    $form->get('partnerPseudo')->addError(new FormError($this->translator->trans($e->getTranslationKey())));
+
+                    return $this->render('tournament/edit_registration.html.twig', [
+                        'tournament' => $tournament,
+                        'registration' => $registration,
+                        'form' => $form,
+                        'heroesData' => Faction::getHeroesGroupedByFaction($tournament->getFormat()),
+                    ], new Response(null, Response::HTTP_UNPROCESSABLE_ENTITY));
+                }
+            }
 
             $this->registrationService->updateRegistration(
                 $registration,

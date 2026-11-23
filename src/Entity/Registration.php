@@ -176,6 +176,47 @@ class Registration
         return $this;
     }
 
+    /**
+     * Remove the partner and their deck (e.g. when the partner deletes their account).
+     */
+    public function removePartner(): self
+    {
+        $this->partner = null;
+        $this->partnerDecklistUrl = null;
+        $this->partnerFaction = null;
+        $this->partnerFaction2 = null;
+        $this->partnerHero = null;
+
+        return $this;
+    }
+
+    /**
+     * The partner takes over the registration, with their own deck (e.g. when the captain
+     * deletes their account): the team keeps its place, pairings and results.
+     */
+    public function promotePartner(): self
+    {
+        if ($this->partner === null) {
+            throw new \LogicException('Cannot promote a partner on a registration without partner.');
+        }
+
+        $this->player = $this->partner;
+        $this->decklistUrl = $this->partnerDecklistUrl;
+        $this->faction = $this->partnerFaction;
+        $this->faction2 = $this->partnerFaction2;
+        $this->hero = $this->partnerHero;
+
+        return $this->removePartner();
+    }
+
+    /**
+     * Team registration that lost its partner (2v2 only).
+     */
+    public function isIncompleteTeam(): bool
+    {
+        return $this->tournament->isTeamTournament() && $this->partner === null;
+    }
+
     public function getPartnerDecklistUrl(): ?string
     {
         return $this->partnerDecklistUrl;

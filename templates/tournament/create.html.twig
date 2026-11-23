@@ -198,6 +198,7 @@
                                 }}) }}
                             </div>
                             {{ form_errors(form.expectedPlayers) }}
+                            <p class="mt-1 text-xs" style="color: var(--text-muted);">{{ 'form.tournament.expected_players_team_help'|trans }}</p>
                         </div>
                         <div data-tournament-form-target="swissRoundsContainer">
                             <label for="{{ form.swissRounds.vars.id }}" class="block form-label mb-2">

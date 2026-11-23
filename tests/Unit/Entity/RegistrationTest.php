@@ -355,6 +355,41 @@ final class RegistrationTest extends TestCase
         $this->assertSame('https://altered.gg/deck/xyz', $registration->getPartnerDecklistUrl());
     }
 
+    public function testPromotePartnerHandsRegistrationAndDeckToPartner(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $registration = (new Registration($this->createMock(Tournament::class), $captain))
+            ->setFaction(Faction::AXIOM)
+            ->setPartner($partner)
+            ->setPartnerFaction(Faction::LYRA)
+            ->setPartnerHero('nevenka-blotch');
+
+        $registration->promotePartner();
+
+        $this->assertSame($partner, $registration->getPlayer());
+        $this->assertSame(Faction::LYRA, $registration->getFaction());
+        $this->assertSame('nevenka-blotch', $registration->getHero());
+        $this->assertNull($registration->getPartner());
+        $this->assertNull($registration->getPartnerFaction());
+    }
+
+    public function testPromotePartnerWithoutPartnerFails(): void
+    {
+        $registration = new Registration($this->createMock(Tournament::class), $this->createMock(User::class));
+
+        $this->expectException(\LogicException::class);
+        $registration->promotePartner();
+    }
+
+    public function testIncompleteTeamOnlyInTeamTournament(): void
+    {
+        $team = (new Tournament())->setTeamSize(2);
+        $solo = new Tournament();
+
+        $this->assertTrue((new Registration($team, $this->createMock(User::class)))->isIncompleteTeam());
+        $this->assertFalse((new Registration($solo, $this->createMock(User::class)))->isIncompleteTeam());
+    }
+
     /**
      * @return array{User, User}
      */

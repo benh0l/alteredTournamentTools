@@ -55,6 +55,13 @@
             </div>
         {% endif %}
 
+        {% if registration.incompleteTeam %}
+            <div class="flex items-start p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                {{ ux_icon('lucide:user-x', {class: 'w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5'}) }}
+                <p class="text-sm" style="color: var(--text-secondary);">{{ 'form.registration.incomplete_team_notice'|trans }}</p>
+            </div>
+        {% endif %}
+
         {% if tournament.teamTournament and tournament.format.isConstructed %}
             <h2 class="text-lg font-semibold" style="color: var(--text-primary);">{{ 'form.registration.member_deck_title'|trans({'%name%': registration.player.displayName}) }}</h2>
         {% endif %}

@@ -574,6 +574,7 @@ tournament:
         players_card:
             title: "Players"
             no_players: "No registered players"
+            title_teams: "Teams"
         prizes: "Prizes"
         view_on_altered: "View on Altered.gg"
         entry_fee: "Entry fee"
@@ -742,6 +743,8 @@ tournament:
         partner_pseudo_label: "Partner username (existing account)"
         partner_guest_name_label: "…or guest partner name"
         partner_help: "Fill in one of the two fields. A guest doesn't need an account."
+        teams_count: "teams"
+        incomplete_team_badge: "Incomplete team"
 
     wizard:
         step: "Step %current% of %total%"
@@ -928,6 +931,8 @@ tournament:
 # ----------------------------------------------------------------------------
 # Dashboard
 # ----------------------------------------------------------------------------
+    capacity:
+        teams_registered: "{0} No team registered|{1} 1 team registered|]1,Inf[ %count% teams registered"
 dashboard:
     title: "Dashboard"
     title_organizer: "Organizer Dashboard"
@@ -1581,6 +1586,7 @@ form:
         rounds_per_group: "Rounds/group"
         total_qualifiers: "Total qualifiers"
         bracket_size: "Bracket"
+        expected_players_team_help: "For 2v2, enter the expected number of teams."
 
     registration:
         faction: "Faction"
@@ -1601,6 +1607,7 @@ form:
         member_deck_title: "%name%'s deck"
         your_deck_title: "Your deck"
         team_members: "Team: %captain% & %partner%"
+        incomplete_team_notice: "Your partner deleted their account: enter a new partner to complete the team."
 
     user:
         email: "Email address"

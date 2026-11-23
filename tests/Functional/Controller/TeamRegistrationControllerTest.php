@@ -162,6 +162,97 @@ final class TeamRegistrationControllerTest extends WebTestCase
         $this->assertTrue(static::getContainer()->get(RegistrationRepository::class)->find($registration->getId())?->isCheckedIn());
     }
 
+    public function testOrganizerEditsPartnerDeckFromModal(): void
+    {
+        $organizer = $this->createUser($this->em, 'Orga');
+        $tournament = $this->createTournament($this->em, $organizer, 2);
+        $registration = (new \App\Entity\Registration($tournament, $this->createUser($this->em, 'Alice')))
+            ->setPartner($this->createUser($this->em, 'Bob'));
+        $this->em->persist($registration);
+        $this->em->flush();
+
+        $this->client->loginUser($organizer);
+        $crawler = $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/registrations');
+        $button = $crawler->filter('[data-edit-registration-id="' . $registration->getId() . '"]');
+        $this->assertSame('Bob', substr($button->attr('data-edit-registration-partner'), 0, 3));
+
+        $this->client->request('POST', '/tournaments/' . $tournament->getId() . '/registrations/' . $registration->getId() . '/edit', [
+            '_token' => $button->attr('data-edit-registration-csrf'),
+            'faction' => 'axiom',
+            'partner_faction' => 'muna',
+            'partner_decklist_url' => 'https://altered.gg/deck/bob',
+        ]);
+
+        $this->assertResponseRedirects();
+        $this->em->clear();
+        $reloaded = static::getContainer()->get(RegistrationRepository::class)->find($registration->getId());
+        $this->assertSame('muna', $reloaded?->getPartnerFaction()?->value);
+        $this->assertSame('https://altered.gg/deck/bob', $reloaded?->getPartnerDecklistUrl());
+    }
+
+    public function testIncompleteTeamCanNameANewPartner(): void
+    {
+        $tournament = $this->createTournament($this->em, $this->createUser($this->em, 'Orga'), 2);
+        $captain = $this->createUser($this->em, 'Alice');
+        $newPartner = $this->createUser($this->em, 'Carol');
+        $registration = new \App\Entity\Registration($tournament, $captain);
+        $this->em->persist($registration);
+        $this->em->flush();
+
+        $this->client->loginUser($captain);
+        $crawler = $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/registration/edit');
+        $this->assertResponseIsSuccessful();
+
+        $this->client->submit($crawler->filter('form[name="registration"]')->form([
+            'registration[partnerPseudo]' => $newPartner->getPseudo(),
+        ]));
+
+        $this->assertResponseRedirects();
+        $this->em->clear();
+        $reloaded = static::getContainer()->get(RegistrationRepository::class)->find($registration->getId());
+        $this->assertSame($newPartner->getId(), $reloaded?->getPartner()?->getId());
+    }
+
+    public function testBifactionSelfRegistrationSavesSecondFaction(): void
+    {
+        $tournament = $this->createTournament($this->em, $this->createUser($this->em, 'Orga'));
+        $tournament->setFormat(\App\Enum\TournamentFormat::CONSTRUCTED_BIFACTION);
+        $player = $this->createUser($this->em, 'Alice');
+        $this->em->flush();
+
+        $this->client->loginUser($player);
+        $crawler = $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/register');
+        $this->client->submit($crawler->filter('form[name="registration"]')->form([
+            'registration[faction]' => 'axiom',
+            'registration[faction2]' => 'bravos',
+        ]));
+
+        $this->assertResponseRedirects();
+        $registration = static::getContainer()->get(RegistrationRepository::class)->findOneByTournamentAndPlayer($tournament, $player);
+        $this->assertSame('bravos', $registration?->getFaction2()?->value);
+    }
+
+    public function testPublicPageCountsTeams(): void
+    {
+        $tournament = $this->createTournament($this->em, $this->createUser($this->em, 'Orga'), 2);
+        $this->em->persist((new \App\Entity\Registration($tournament, $this->createUser($this->em, 'Alice')))
+            ->setPartner($this->createUser($this->em, 'Bob')));
+        $this->em->flush();
+        $this->em->refresh($tournament);
+
+        $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/details');
+
+        $this->assertResponseIsSuccessful();
+        $expected = static::getContainer()->get('translator')->trans(
+            'tournament.capacity.teams_registered',
+            ['%count%' => 1],
+            null,
+            $this->client->getRequest()->getLocale()
+        );
+        $this->assertStringContainsString('1', $expected);
+        $this->assertSelectorTextContains('body', $expected);
+    }
+
     private function trans(string $key): string
     {
         return static::getContainer()->get('translator')->trans($key, [], null, $this->client->getRequest()->getLocale());

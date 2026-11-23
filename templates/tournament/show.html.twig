@@ -489,7 +489,7 @@
                     <div class="flex justify-between items-center">
                         <h2 class="text-lg font-bold flex items-center" style="color: var(--text-primary);">
                             {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2 text-rose-500'}) }}
-                            {{ 'tournament.show.players_card.title'|trans }}
+                            {{ (tournament.teamTournament ? 'tournament.show.players_card.title_teams' : 'tournament.show.players_card.title')|trans }}
                         </h2>
                         <span class="bg-rose-500/20 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full text-sm font-bold">
                             {{ tournament.registrations|length }}{% if tournament.maxPlayers %}/{{ tournament.maxPlayers }}{% endif %}

@@ -45,6 +45,9 @@ final class AccountDeletionService
             // 2. TODO: Delete tournament registrations when Registration entity exists
             // $this->registrationRepository->removeAllForUser($user);
 
+            // 2b. 2v2 teams: keep the teammate's registration instead of deleting it with the user
+            $this->detachFromTeams($user);
+
             // 3. TODO: Anonymize match results when Match entity exists
             // $this->anonymizeMatchResults($user);
 
@@ -70,6 +73,36 @@ final class AccountDeletionService
             ]);
 
             throw $e;
+        }
+    }
+
+    /**
+     * Before deleting a user, keep their 2v2 teammates registered:
+     * - captain: the partner takes over the registration (otherwise the cascade would delete it);
+     * - partner: they are removed from the team, with their deck data.
+     */
+    private function detachFromTeams(User $user): void
+    {
+        $changed = false;
+
+        foreach ($this->registrationRepository->findByPlayer($user) as $registration) {
+            $partner = $registration->getPartner();
+            if ($partner === null) {
+                continue;
+            }
+
+            if ($partner->getId() === $user->getId()) {
+                $registration->removePartner();
+            } else {
+                $registration->promotePartner();
+            }
+            $changed = true;
+        }
+
+        if ($changed) {
+            $this->entityManager->flush();
+            // Reload the user so the cascade only sees the registrations still owned by them
+            $this->entityManager->refresh($user);
         }
     }
 
