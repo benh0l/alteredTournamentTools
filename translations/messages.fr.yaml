@@ -742,6 +742,9 @@ tournament:
         closed_badge: "Inscriptions fermées"
         player_count: "%count% joueur|%count% joueurs"
         export: "Exporter la liste"
+        partner_pseudo_label: "Pseudo du partenaire (compte existant)"
+        partner_guest_name_label: "…ou nom d'un partenaire invité"
+        partner_help: "Renseignez l'un des deux champs. Un invité n'a pas besoin de compte."
 
     wizard:
         step: "Étape %current% sur %total%"
@@ -1328,6 +1331,7 @@ email:
     registration_confirmation:
         subject: "Inscription confirmée - %tournament%"
         body: "Votre inscription au tournoi %tournament% a été confirmée."
+        teammate: "Coéquipier"
 
     registration_removal:
         subject: "Inscription annulée - %tournament%"
@@ -1457,6 +1461,13 @@ flash:
         player_already_checked_in: "Ce joueur est déjà marqué présent."
         player_not_checked_in: "Ce joueur n'est pas marqué présent."
         registration_not_found: "Inscription introuvable."
+        team:
+            partner_required: "Un tournoi 2v2 se joue en équipe : indiquez un partenaire."
+            partner_not_allowed: "Ce tournoi se joue en individuel : aucun partenaire possible."
+            partner_is_player: "Vous ne pouvez pas être votre propre partenaire."
+            partner_already_registered: "Ce partenaire est déjà inscrit à ce tournoi."
+            partner_not_found: "Aucun joueur ne correspond à ce pseudo."
+        import_not_available_for_teams: "L'import CSV n'est pas disponible pour les tournois 2v2."
 
     warning:
         match_not_in_dispute: "Ce match n'est pas en litige."
@@ -1520,6 +1531,7 @@ validation:
 # ----------------------------------------------------------------------------
 # Form Labels
 # ----------------------------------------------------------------------------
+    partner_required: "Indiquez le pseudo de votre partenaire"
 form:
     common:
         select: "Sélectionner..."
@@ -1585,6 +1597,13 @@ form:
         select_hero: "Sélectionnez un héros"
         select_faction_first: "Sélectionnez d'abord une faction"
         select_both_factions: "Sélectionnez d'abord vos deux factions"
+        partner_pseudo: "Pseudo de votre partenaire"
+        partner_pseudo_help: "Votre partenaire doit avoir un compte. Il recevra un email de confirmation et pourra désinscrire l'équipe."
+        partner_section_title: "Équipe"
+        partner_deck_title: "Deck de votre partenaire"
+        member_deck_title: "Deck de %name%"
+        your_deck_title: "Votre deck"
+        team_members: "Équipe : %captain% & %partner%"
 
     user:
         email: "Adresse email"

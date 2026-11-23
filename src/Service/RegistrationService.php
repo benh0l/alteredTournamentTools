@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\DTO\DeckChoice;
 use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\Faction;
 use App\Enum\TournamentStatus;
 use App\Exception\AlreadyRegisteredException;
+use App\Exception\InvalidTeamException;
 use App\Exception\RegistrationClosedException;
 use App\Exception\TournamentNotOpenException;
 use App\Message\SendRegistrationConfirmationMessage;
@@ -33,7 +35,9 @@ final class RegistrationService
         Tournament $tournament,
         ?string $decklistUrl = null,
         ?Faction $faction = null,
-        ?string $hero = null
+        ?string $hero = null,
+        ?User $partner = null,
+        ?DeckChoice $partnerDeck = null
     ): Registration {
         // Check tournament is open for registration
         if ($tournament->getStatus() !== TournamentStatus::PUBLISHED) {
@@ -63,7 +67,10 @@ final class RegistrationService
             throw AlreadyRegisteredException::forTournament($tournament->getId() ?? 0);
         }
 
+        $this->assertValidTeam($tournament, $player, $partner);
+
         $registration = new Registration($tournament, $player);
+        $this->applyPartner($registration, $partner, $partnerDeck);
 
         if ($decklistUrl !== null && $decklistUrl !== '') {
             $registration->setDecklistUrl($decklistUrl);
@@ -115,7 +122,9 @@ final class RegistrationService
         ?Faction $faction = null,
         ?string $hero = null,
         ?Faction $faction2 = null,
-        bool $skipEmail = false
+        bool $skipEmail = false,
+        ?User $partner = null,
+        ?DeckChoice $partnerDeck = null
     ): Registration {
         // Check tournament status allows registration (PUBLISHED, ONGOING or ABANDONED for late additions)
         if (!in_array($tournament->getStatus(), [TournamentStatus::PUBLISHED, TournamentStatus::ONGOING, TournamentStatus::ABANDONED], true)) {
@@ -127,7 +136,10 @@ final class RegistrationService
             throw AlreadyRegisteredException::forTournament($tournament->getId() ?? 0);
         }
 
+        $this->assertValidTeam($tournament, $player, $partner);
+
         $registration = new Registration($tournament, $player);
+        $this->applyPartner($registration, $partner, $partnerDeck);
 
         if ($decklistUrl !== null && $decklistUrl !== '') {
             $registration->setDecklistUrl($decklistUrl);
@@ -246,5 +258,68 @@ final class RegistrationService
             'faction' => $faction?->value,
             'hero' => $hero,
         ]);
+    }
+
+    /**
+     * Update the partner's deck (faction, hero, decklist) of a team registration.
+     * Only allowed while the tournament is still PUBLISHED.
+     */
+    public function updatePartnerDeck(Registration $registration, DeckChoice $deck): void
+    {
+        if ($registration->getTournament()->getStatus() !== TournamentStatus::PUBLISHED) {
+            throw new \RuntimeException('Impossible de modifier l\'inscription une fois le tournoi commence.');
+        }
+
+        if ($registration->getPartner() === null) {
+            throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_ALLOWED);
+        }
+
+        $this->applyPartner($registration, $registration->getPartner(), $deck);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Check that the partner given for a registration matches the tournament's team size
+     * and that nobody ends up in two teams of the same tournament.
+     *
+     * @throws InvalidTeamException
+     */
+    public function assertValidTeam(Tournament $tournament, User $player, ?User $partner): void
+    {
+        if (!$tournament->isTeamTournament()) {
+            if ($partner !== null) {
+                throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_ALLOWED);
+            }
+
+            return;
+        }
+
+        if ($partner === null) {
+            throw InvalidTeamException::because(InvalidTeamException::PARTNER_REQUIRED);
+        }
+
+        if ($partner === $player || ($partner->getId() !== null && $partner->getId() === $player->getId())) {
+            throw InvalidTeamException::because(InvalidTeamException::PARTNER_IS_PLAYER);
+        }
+
+        if ($this->isPlayerRegistered($partner, $tournament)) {
+            throw InvalidTeamException::because(InvalidTeamException::PARTNER_ALREADY_REGISTERED);
+        }
+    }
+
+    private function applyPartner(Registration $registration, ?User $partner, ?DeckChoice $deck): void
+    {
+        $registration->setPartner($partner);
+
+        if ($partner === null) {
+            return;
+        }
+
+        $deck ??= new DeckChoice();
+        $registration
+            ->setPartnerDecklistUrl($deck->decklistUrl)
+            ->setPartnerFaction($deck->faction)
+            ->setPartnerFaction2($deck->faction2)
+            ->setPartnerHero($deck->hero);
     }
 }

@@ -60,6 +60,9 @@
             </div>
         {% endif %}
 
+        {% if tournament.teamTournament and tournament.format.isConstructed %}
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">{{ 'form.registration.your_deck_title'|trans }}</h2>
+        {% endif %}
         {% if tournament.format.isConstructed %}
             {# Faction & Hero Selection Card - Only for Constructed formats #}
             <div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
@@ -239,6 +242,10 @@
         {# Hidden faction2 field for non-Bifaction constructed formats #}
         {% if tournament.format.isConstructed and not tournament.format.isBifaction %}
             {{ form_widget(form.faction2, {'attr': {'class': 'hidden'}}) }}
+        {% endif %}
+
+        {% if tournament.teamTournament %}
+            {{ include('tournament/_partner_registration_fields.html.twig') }}
         {% endif %}
 
         <div class="flex justify-between items-center">

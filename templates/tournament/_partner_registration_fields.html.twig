@@ -1,0 +1,73 @@
+{#
+    Partner section of the registration form for 2v2 tournaments.
+    Expects: form (RegistrationType with team=true), tournament, heroesData,
+             captain (User|null) and partner (User|null) when editing an existing team.
+    The partner's deck fields get their own registration-form controller so that
+    faction → hero filtering works independently from the captain's deck.
+#}
+{% set label_attr = {'class': 'block text-sm font-medium mb-2', 'style': 'color: var(--text-secondary);'} %}
+<div class="shadow rounded-lg p-6" style="background-color: var(--card-bg);">
+    <h3 class="text-lg font-medium mb-4 flex items-center" style="color: var(--text-primary);">
+        {{ ux_icon('lucide:users', {class: 'w-5 h-5 mr-2', style: 'color: var(--text-muted);'}) }}
+        {{ 'form.registration.partner_section_title'|trans }}
+    </h3>
+
+    {% if form.children.partnerPseudo is defined %}
+        <div class="mb-4">
+            {{ form_label(form.partnerPseudo, null, {'label_attr': label_attr}) }}
+            {{ form_widget(form.partnerPseudo) }}
+            {{ form_help(form.partnerPseudo, {'help_attr': {'class': 'mt-1 text-sm', 'style': 'color: var(--text-muted);'}}) }}
+            {% if form.partnerPseudo.vars.errors|length > 0 %}
+                <p class="mt-1 text-sm text-red-600 font-medium">{{ form.partnerPseudo.vars.errors[0].message }}</p>
+            {% endif %}
+        </div>
+    {% elseif captain is defined and partner is defined and partner is not null %}
+        <p class="mb-4 text-sm" style="color: var(--text-secondary);">
+            {{ 'form.registration.team_members'|trans({'%captain%': captain.displayName, '%partner%': partner.displayName}) }}
+        </p>
+    {% endif %}
+
+    {% if tournament.format.isConstructed %}
+        <h4 class="text-sm font-medium mb-3" style="color: var(--text-primary);">
+            {% if partner is defined and partner is not null %}
+                {{ 'form.registration.member_deck_title'|trans({'%name%': partner.displayName}) }}
+            {% else %}
+                {{ 'form.registration.partner_deck_title'|trans }}
+            {% endif %}
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4"
+             data-controller="registration-form"
+             data-registration-form-heroes-value="{{ heroesData|json_encode }}"
+             data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+             data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+            <div>
+                {{ form_label(form.partnerFaction, tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : null, {'label_attr': label_attr}) }}
+                {{ form_widget(form.partnerFaction) }}
+            </div>
+            {% if tournament.format.isBifaction %}
+                <div>
+                    {{ form_label(form.partnerFaction2, null, {'label_attr': label_attr}) }}
+                    {{ form_widget(form.partnerFaction2) }}
+                </div>
+            {% else %}
+                {{ form_widget(form.partnerFaction2, {'attr': {'class': 'hidden'}}) }}
+            {% endif %}
+            <div>
+                {{ form_label(form.partnerHero, null, {'label_attr': label_attr}) }}
+                {{ form_widget(form.partnerHero) }}
+            </div>
+            <div class="md:col-span-2">
+                {{ form_label(form.partnerDecklistUrl, null, {'label_attr': label_attr}) }}
+                {{ form_widget(form.partnerDecklistUrl) }}
+                {% if form.partnerDecklistUrl.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600 font-medium">{{ form.partnerDecklistUrl.vars.errors[0].message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        {{ form_widget(form.partnerFaction, {'attr': {'class': 'hidden'}}) }}
+        {{ form_widget(form.partnerFaction2, {'attr': {'class': 'hidden'}}) }}
+        {{ form_widget(form.partnerHero, {'attr': {'class': 'hidden'}}) }}
+        {{ form_widget(form.partnerDecklistUrl, {'attr': {'class': 'hidden'}}) }}
+    {% endif %}
+</div>

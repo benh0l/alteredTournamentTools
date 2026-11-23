@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTO\DeckChoice;
 use App\Entity\Tournament;
 use App\Entity\User;
 use App\Enum\Faction;
 use App\Exception\AlreadyRegisteredException;
+use App\Exception\InvalidTeamException;
 use App\Exception\TournamentNotOpenException;
 use App\Message\SendRegistrationRemovalMessage;
 use App\Repository\RegistrationRepository;
@@ -80,17 +82,27 @@ final class TournamentRegistrationsController extends AbstractController
 
         $registrations = $this->registrationRepository->findByTournamentWithPlayer($tournament);
 
-        $csv = "Pseudo,Nom,Email,Decklist,Date d'inscription\n";
+        $isTeam = $tournament->isTeamTournament();
+        $csv = $isTeam
+            ? "Pseudo,Nom,Email,Decklist,Pseudo partenaire,Nom partenaire,Email partenaire,Decklist partenaire,Date d'inscription\n"
+            : "Pseudo,Nom,Email,Decklist,Date d'inscription\n";
         foreach ($registrations as $registration) {
             $player = $registration->getPlayer();
-            $csv .= sprintf(
-                "%s,%s,%s,%s,%s\n",
+            $columns = [
                 $this->escapeCsv($player->getPseudo()),
                 $this->escapeCsv($player->getName() ?? ''),
                 $this->escapeCsv($player->getEmail()),
                 $this->escapeCsv($registration->getDecklistUrl() ?? ''),
-                $registration->getRegisteredAt()->format('Y-m-d H:i:s')
-            );
+            ];
+            if ($isTeam) {
+                $partner = $registration->getPartner();
+                $columns[] = $this->escapeCsv($partner?->getPseudo() ?? '');
+                $columns[] = $this->escapeCsv($partner?->getName() ?? '');
+                $columns[] = $this->escapeCsv($partner?->getEmail() ?? '');
+                $columns[] = $this->escapeCsv($registration->getPartnerDecklistUrl() ?? '');
+            }
+            $columns[] = $registration->getRegisteredAt()->format('Y-m-d H:i:s');
+            $csv .= implode(',', $columns) . "\n";
         }
 
         $response = new Response($csv);
@@ -147,50 +159,48 @@ final class TournamentRegistrationsController extends AbstractController
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
     }
 
-    #[Route('/{id}/registrations/{playerId}/remove', name: 'tournament_remove_player', methods: ['POST'], requirements: ['id' => '\d+', 'playerId' => '\d+'])]
+    #[Route('/{id}/registrations/{registrationId}/remove', name: 'tournament_remove_player', methods: ['POST'], requirements: ['id' => '\d+', 'registrationId' => '\d+'])]
     public function removePlayer(
         Request $request,
         Tournament $tournament,
-        int $playerId
+        int $registrationId
     ): Response {
         $this->denyAccessUnlessGranted(TournamentVoter::MANAGE_REGISTRATIONS, $tournament);
 
-        if (!$this->isCsrfTokenValid('remove_player' . $playerId, $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('remove_registration' . $registrationId, $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF invalide.');
         }
 
-        $registration = $this->registrationRepository->findOneBy([
-            'tournament' => $tournament,
-            'player' => $playerId,
-        ]);
+        $registration = $this->registrationRepository->find($registrationId);
 
-        if ($registration === null) {
+        if ($registration === null || $registration->getTournament()->getId() !== $tournament->getId()) {
             $this->addFlash('error', $this->translator->trans('flash.error.player_not_registered'));
 
             return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
         }
 
-        $player = $registration->getPlayer();
-        $playerPseudo = $player->getPseudo();
-        $playerEmail = $player->getEmail();
+        $members = $registration->getMembers();
+        $displayName = $registration->getDisplayName();
 
         try {
-            $this->registrationService->unregisterPlayer($player, $tournament);
-            $this->addFlash('success', sprintf('%s a ete retire du tournoi.', $playerPseudo));
-            $this->logger->info('Player removed from tournament by organizer', [
-                'player_id' => $playerId,
-                'player_pseudo' => $playerPseudo,
+            $this->registrationService->unregisterPlayer($registration->getPlayer(), $tournament);
+            $this->addFlash('success', sprintf('%s a ete retire du tournoi.', $displayName));
+            $this->logger->info('Registration removed from tournament by organizer', [
+                'registration_id' => $registrationId,
+                'player_ids' => array_map(static fn (User $member) => $member->getId(), $members),
                 'tournament_id' => $tournament->getId(),
             ]);
 
-            // Send removal notification email (async)
+            // Send removal notification email to every member (async)
             if ($this->messageBus !== null) {
-                $this->messageBus->dispatch(new SendRegistrationRemovalMessage(
-                    $playerEmail,
-                    $playerPseudo,
-                    $tournament->getName(),
-                    $tournament->getId() ?? 0
-                ));
+                foreach ($members as $member) {
+                    $this->messageBus->dispatch(new SendRegistrationRemovalMessage(
+                        $member->getEmail(),
+                        $member->getPseudo(),
+                        $tournament->getName(),
+                        $tournament->getId() ?? 0
+                    ));
+                }
             }
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
@@ -215,10 +225,12 @@ final class TournamentRegistrationsController extends AbstractController
         $users = $result['users'];
 
         // Filter out already registered users
-        $registeredPlayerIds = array_map(
-            fn ($reg) => $reg->getPlayer()->getId(),
-            $this->registrationRepository->findByTournament($tournament)
-        );
+        $registeredPlayerIds = [];
+        foreach ($this->registrationRepository->findByTournament($tournament) as $registration) {
+            foreach ($registration->getMembers() as $member) {
+                $registeredPlayerIds[] = $member->getId();
+            }
+        }
 
         $availableUsers = array_filter(
             $users,
@@ -268,16 +280,19 @@ final class TournamentRegistrationsController extends AbstractController
         $faction2 = $faction2Value !== '' ? Faction::tryFrom($faction2Value) : null;
 
         try {
-            $this->registrationService->registerPlayerByOrganizer(
+            $registration = $this->registrationService->registerPlayerByOrganizer(
                 $player,
                 $tournament,
                 $decklistUrl ?: null,
                 $faction,
                 $hero ?: null,
-                $faction2
+                $faction2,
+                false,
+                $this->resolvePartner($request, $tournament),
+                $this->partnerDeckFromRequest($request)
             );
 
-            $this->addFlash('success', sprintf('%s a ete ajoute au tournoi.', $player->getPseudo()));
+            $this->addFlash('success', sprintf('%s a ete ajoute au tournoi.', $registration->getDisplayName()));
             $this->logger->info('Player added to tournament by organizer', [
                 'player_id' => $player->getId(),
                 'player_pseudo' => $player->getPseudo(),
@@ -288,6 +303,8 @@ final class TournamentRegistrationsController extends AbstractController
             $this->addFlash('error', $this->translator->trans('flash.error.player_already_registered'));
         } catch (TournamentNotOpenException) {
             $this->addFlash('error', $this->translator->trans('flash.error.registrations_not_accepted'));
+        } catch (InvalidTeamException $e) {
+            $this->addFlash('error', $this->translator->trans($e->getTranslationKey()));
         }
 
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
@@ -314,22 +331,7 @@ final class TournamentRegistrationsController extends AbstractController
             return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
         }
 
-        // Create guest user with unique pseudo and fake email
-        $uuid = Uuid::v4()->toRfc4122();
-        $guestPseudo = 'guest_' . substr($uuid, 0, 8);
-        $guestEmail = 'guest-' . $uuid . '@tournament.local';
-
-        $guestUser = new User();
-        $guestUser->setEmail($guestEmail);
-        $guestUser->setPseudo($guestPseudo);
-        $guestUser->setName($guestName);
-        // Set unusable password (random UUID hashed) - prevents login while maintaining security
-        $guestUser->setPassword($this->passwordHasher->hashPassword($guestUser, Uuid::v4()->toRfc4122()));
-        $guestUser->setIsGuest(true);
-        $guestUser->setIsVerified(false);
-
-        $this->entityManager->persist($guestUser);
-        $this->entityManager->flush(); // Flush to get the user ID before registration
+        $guestUser = $this->createGuestUser($guestName);
 
         // Convert faction strings to Faction enum
         $faction = $factionValue !== '' ? Faction::tryFrom($factionValue) : null;
@@ -342,7 +344,10 @@ final class TournamentRegistrationsController extends AbstractController
                 $decklistUrl ?: null,
                 $faction,
                 $hero ?: null,
-                $faction2
+                $faction2,
+                false,
+                $this->resolvePartner($request, $tournament),
+                $this->partnerDeckFromRequest($request)
             );
 
             $this->addFlash('success', sprintf($this->translator->trans('flash.success.guest_added'), $guestName));
@@ -356,6 +361,8 @@ final class TournamentRegistrationsController extends AbstractController
             $this->addFlash('error', $this->translator->trans('flash.error.player_already_registered'));
         } catch (TournamentNotOpenException) {
             $this->addFlash('error', $this->translator->trans('flash.error.registrations_not_accepted'));
+        } catch (InvalidTeamException $e) {
+            $this->addFlash('error', $this->translator->trans($e->getTranslationKey()));
         }
 
         return $this->redirectToRoute('tournament_registrations', ['id' => $tournament->getId()]);
@@ -437,5 +444,63 @@ final class TournamentRegistrationsController extends AbstractController
         }
 
         return $value;
+    }
+
+    /**
+     * Create a guest account (no login possible) for a player without an account.
+     */
+    private function createGuestUser(string $name): User
+    {
+        $uuid = Uuid::v4()->toRfc4122();
+
+        $guestUser = new User();
+        $guestUser->setEmail('guest-' . $uuid . '@tournament.local');
+        $guestUser->setPseudo('guest_' . substr($uuid, 0, 8));
+        $guestUser->setName($name);
+        // Set unusable password (random UUID hashed) - prevents login while maintaining security
+        $guestUser->setPassword($this->passwordHasher->hashPassword($guestUser, Uuid::v4()->toRfc4122()));
+        $guestUser->setIsGuest(true);
+        $guestUser->setIsVerified(false);
+
+        $this->entityManager->persist($guestUser);
+        $this->entityManager->flush(); // Flush to get the user ID before registration
+
+        return $guestUser;
+    }
+
+    /**
+     * Partner of a team being added by the organizer: an existing account (partner_pseudo)
+     * or a new guest (partner_guest_name). Null for 1v1 tournaments.
+     *
+     * @throws InvalidTeamException
+     */
+    private function resolvePartner(Request $request, Tournament $tournament): ?User
+    {
+        if (!$tournament->isTeamTournament()) {
+            return null;
+        }
+
+        $pseudo = trim($request->request->getString('partner_pseudo', ''));
+        if ($pseudo !== '') {
+            return $this->userRepository->findByPseudo($pseudo)
+                ?? throw InvalidTeamException::because(InvalidTeamException::PARTNER_NOT_FOUND);
+        }
+
+        $guestName = trim($request->request->getString('partner_guest_name', ''));
+        if ($guestName !== '') {
+            return $this->createGuestUser($guestName);
+        }
+
+        throw InvalidTeamException::because(InvalidTeamException::PARTNER_REQUIRED);
+    }
+
+    private function partnerDeckFromRequest(Request $request): DeckChoice
+    {
+        return DeckChoice::fromRaw(
+            $request->request->getString('partner_decklist_url', ''),
+            $request->request->getString('partner_faction', ''),
+            $request->request->getString('partner_faction2', ''),
+            $request->request->getString('partner_hero', ''),
+        );
     }
 }

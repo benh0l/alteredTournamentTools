@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Registration;
+use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -23,10 +24,12 @@ final class RegistrationEmailService
     ) {
     }
 
+    /**
+     * Send the confirmation email to every member of the registration (both teammates in 2v2).
+     */
     public function sendConfirmationEmail(Registration $registration): void
     {
         $tournament = $registration->getTournament();
-        $player = $registration->getPlayer();
 
         $tournamentUrl = $this->urlGenerator->generate(
             'tournament_show',
@@ -40,35 +43,43 @@ final class RegistrationEmailService
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        $email = (new TemplatedEmail())
-            ->from(new Address($this->senderEmail, $this->senderName))
-            ->to(new Address($player->getEmail(), $player->getPseudo()))
-            ->subject(sprintf('Inscription confirmee - %s', $tournament->getName()))
-            ->htmlTemplate('emails/registration_confirmation.html.twig')
-            ->textTemplate('emails/registration_confirmation.txt.twig')
-            ->context([
-                'tournament' => $tournament,
-                'player' => $player,
-                'registration' => $registration,
-                'tournamentUrl' => $tournamentUrl,
-                'unregisterUrl' => $unregisterUrl,
-            ]);
+        foreach ($registration->getMembers() as $player) {
+            $teammates = array_values(array_filter(
+                $registration->getMembers(),
+                static fn (User $member): bool => $member !== $player,
+            ));
 
-        try {
-            $this->mailer->send($email);
+            $email = (new TemplatedEmail())
+                ->from(new Address($this->senderEmail, $this->senderName))
+                ->to(new Address($player->getEmail(), $player->getPseudo()))
+                ->subject(sprintf('Inscription confirmee - %s', $tournament->getName()))
+                ->htmlTemplate('emails/registration_confirmation.html.twig')
+                ->textTemplate('emails/registration_confirmation.txt.twig')
+                ->context([
+                    'tournament' => $tournament,
+                    'player' => $player,
+                    'teammate' => $teammates[0] ?? null,
+                    'registration' => $registration,
+                    'tournamentUrl' => $tournamentUrl,
+                    'unregisterUrl' => $unregisterUrl,
+                ]);
 
-            $this->logger->info('Registration confirmation email sent', [
-                'player_id' => $player->getId(),
-                'tournament_id' => $tournament->getId(),
-            ]);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Failed to send registration confirmation email', [
-                'player_id' => $player->getId(),
-                'tournament_id' => $tournament->getId(),
-                'error' => $e->getMessage(),
-            ]);
+            try {
+                $this->mailer->send($email);
 
-            throw $e;
+                $this->logger->info('Registration confirmation email sent', [
+                    'player_id' => $player->getId(),
+                    'tournament_id' => $tournament->getId(),
+                ]);
+            } catch (TransportExceptionInterface $e) {
+                $this->logger->error('Failed to send registration confirmation email', [
+                    'player_id' => $player->getId(),
+                    'tournament_id' => $tournament->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
+            }
         }
     }
 

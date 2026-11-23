@@ -25,8 +25,12 @@ Prix d'entree: {{ tournament.entryFee }}
 VOTRE INSCRIPTION
 ---
 Date d'inscription: {{ registration.registeredAt|date('d/m/Y a H:i') }}
-{% if registration.decklistUrl %}
-Decklist: {{ registration.decklistUrl }}
+{% if teammate %}
+{{ 'email.registration_confirmation.teammate'|trans }}: {{ teammate.displayName }}
+{% endif %}
+{% set decklistUrl = (registration.partner is not null and registration.partner is same as(player)) ? registration.partnerDecklistUrl : registration.decklistUrl %}
+{% if decklistUrl %}
+Decklist: {{ decklistUrl }}
 {% endif %}
 
 ---

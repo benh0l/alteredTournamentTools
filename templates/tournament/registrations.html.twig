@@ -32,7 +32,7 @@
             </a>
 
             {# Import Button #}
-            {% if tournament.isPublished or tournament.isOngoing %}
+            {% if (tournament.isPublished or tournament.isOngoing) and not tournament.teamTournament %}
                 <a href="{{ path('tournament_import', {'id': tournament.id}) }}"
                    class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium transition">
                     {{ ux_icon('lucide:upload', {class: 'w-4 h-4 inline mr-1'}) }}
@@ -293,6 +293,10 @@
                                placeholder="https://...">
                     </div>
 
+                    {% if tournament.teamTournament %}
+                        {{ include('tournament/_organizer_partner_fields.html.twig', {id_prefix: 'add-player'}) }}
+                    {% endif %}
+
                     <button type="submit"
                             class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">
                         {{ 'tournament.registrations.add_to_tournament'|trans }}
@@ -412,6 +416,10 @@
                                    class="form-input"
                                    placeholder="https://...">
                         </div>
+
+                        {% if tournament.teamTournament %}
+                            {{ include('tournament/_organizer_partner_fields.html.twig', {id_prefix: 'add-guest'}) }}
+                        {% endif %}
 
                         <button type="submit"
                                 class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition">
@@ -611,10 +619,10 @@
                             </button>
                             {# Remove button #}
                             {% if tournament.status.value == 'published' %}
-                            <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'playerId': registration.player.id}) }}"
+                            <form action="{{ path('tournament_remove_player', {'id': tournament.id, 'registrationId': registration.id}) }}"
                                   method="POST"
                                   class="inline">
-                                <input type="hidden" name="_token" value="{{ csrf_token('remove_player' ~ registration.player.id) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('remove_registration' ~ registration.id) }}">
                                 <button type="submit"
                                         class="text-red-600 hover:text-red-900"
                                         onclick="return confirm('{{ 'tournament.registrations.remove_confirm'|trans({'%player%': registration.player.pseudo}) }}')">

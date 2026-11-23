@@ -1,0 +1,79 @@
+{#
+    Partner fields for the organizer "add player" / "add guest" forms in 2v2 tournaments.
+    Expects: tournament, heroesData, factionChoices, id_prefix (unique per form).
+    The partner is either an existing account (partner_pseudo) or a new guest (partner_guest_name).
+#}
+<div class="border rounded-lg p-4 space-y-3" style="border-color: var(--border-default);">
+    <h4 class="text-sm font-medium theme-text-primary flex items-center">
+        {{ ux_icon('lucide:users', {class: 'w-4 h-4 mr-2'}) }}
+        {{ 'form.registration.partner_section_title'|trans }}
+    </h4>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+            <label for="{{ id_prefix }}-partner-pseudo" class="block text-xs font-medium theme-text-secondary mb-1">
+                {{ 'tournament.registrations.partner_pseudo_label'|trans }}
+            </label>
+            <input type="text" name="partner_pseudo" id="{{ id_prefix }}-partner-pseudo" class="form-input text-sm" autocomplete="off">
+        </div>
+        <div>
+            <label for="{{ id_prefix }}-partner-guest-name" class="block text-xs font-medium theme-text-secondary mb-1">
+                {{ 'tournament.registrations.partner_guest_name_label'|trans }}
+            </label>
+            <input type="text" name="partner_guest_name" id="{{ id_prefix }}-partner-guest-name" class="form-input text-sm" autocomplete="off">
+        </div>
+    </div>
+    <p class="text-xs theme-text-muted">{{ 'tournament.registrations.partner_help'|trans }}</p>
+
+    {% if tournament.format.isConstructed %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3"
+             data-controller="registration-form"
+             data-registration-form-heroes-value="{{ heroesData|json_encode }}"
+             data-registration-form-hero-out-of-faction-value="{{ tournament.format.isHeroOutOfFaction ? 'true' : 'false' }}"
+             data-registration-form-bifaction-value="{{ tournament.format.isBifaction ? 'true' : 'false' }}">
+            <div>
+                <label for="{{ id_prefix }}-partner-faction" class="block text-xs font-medium theme-text-secondary mb-1">
+                    {{ tournament.format.isBifaction ? 'tournament.registrations.first_faction'|trans : 'tournament.registrations.faction_label'|trans }}
+                </label>
+                <select name="partner_faction" id="{{ id_prefix }}-partner-faction" class="form-select text-sm"
+                        data-registration-form-target="faction"
+                        data-action="change->registration-form#factionChanged">
+                    <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                    {% for label, value in factionChoices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if tournament.format.isBifaction %}
+                <div>
+                    <label for="{{ id_prefix }}-partner-faction2" class="block text-xs font-medium theme-text-secondary mb-1">
+                        {{ 'tournament.registrations.second_faction'|trans }}
+                    </label>
+                    <select name="partner_faction2" id="{{ id_prefix }}-partner-faction2" class="form-select text-sm"
+                            data-registration-form-target="faction2"
+                            data-action="change->registration-form#factionChanged">
+                        <option value="">{{ 'tournament.registrations.select_faction'|trans }}</option>
+                        {% for label, value in factionChoices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            <div class="{{ tournament.format.isBifaction ? 'md:col-span-2' : '' }}">
+                <label for="{{ id_prefix }}-partner-hero" class="block text-xs font-medium theme-text-secondary mb-1">
+                    {{ 'tournament.registrations.hero_label'|trans }}
+                </label>
+                <select name="partner_hero" id="{{ id_prefix }}-partner-hero" class="form-select text-sm"
+                        data-registration-form-target="hero" disabled>
+                    <option value="">{{ 'tournament.registrations.select_faction_first'|trans }}</option>
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <label for="{{ id_prefix }}-partner-decklist" class="block text-xs font-medium theme-text-secondary mb-1">
+                    {{ 'tournament.registrations.decklist_url_label'|trans }}
+                </label>
+                <input type="url" name="partner_decklist_url" id="{{ id_prefix }}-partner-decklist" class="form-input text-sm" placeholder="https://...">
+            </div>
+        </div>
+    {% endif %}
+</div>
