@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\DTO\AssignByeRequest;
 use App\DTO\PairingSwapRequest;
 use App\Entity\Tournament;
+use App\Entity\User;
 use App\Enum\BracketSize;
 use App\Enum\PairingMode;
 use App\Enum\TournamentStructure;
@@ -290,6 +291,7 @@ final class RoundController extends AbstractController
         }
 
         // Check if current user is the organizer
+        /** @var User|null $user */
         $user = $this->getUser();
         $isOrganizer = false;
         $userRegistrationId = null;

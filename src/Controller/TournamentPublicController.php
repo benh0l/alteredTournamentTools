@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Tournament;
+use App\Entity\User;
 use App\Enum\TournamentVisibility;
 use App\Repository\RegistrationRepository;
 use App\Repository\TournamentRepository;
@@ -48,6 +49,7 @@ final class TournamentPublicController extends AbstractController
 
         // Check if current user is already registered
         $isRegistered = false;
+        /** @var User|null $user */
         $user = $this->getUser();
         if ($user !== null) {
             $registration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);

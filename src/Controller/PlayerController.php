@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Tournament;
+use App\Entity\User;
 use App\Repository\RegistrationRepository;
 use App\Repository\TournamentMatchRepository;
 use App\Service\StandingsService;
@@ -46,6 +47,7 @@ final class PlayerController extends AbstractController
         }
 
         // Find the current user's registration for highlighting
+        /** @var User|null $user */
         $user = $this->getUser();
         if ($user !== null) {
             $playerRegistration = $this->registrationRepository->findOneByTournamentAndPlayer($tournament, $user);
@@ -68,6 +70,7 @@ final class PlayerController extends AbstractController
         $standings = $this->standingsService->calculateStandings($tournament);
 
         // Find the current user's registration for highlighting
+        /** @var User|null $user */
         $user = $this->getUser();
         $playerRegistration = null;
 
@@ -101,6 +104,7 @@ final class PlayerController extends AbstractController
         }
 
         // Find the current user's registration for highlighting
+        /** @var User|null $user */
         $user = $this->getUser();
         $playerRegistration = null;
 
