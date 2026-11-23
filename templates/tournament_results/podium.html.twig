@@ -57,13 +57,18 @@
                         <div class="text-center px-2 w-full">
                             <p class="text-white font-bold text-base truncate" title="{{ podium[1].registration.displayName }}">{{ podium[1].registration.displayName }}</p>
                             <p class="text-gray-200 text-sm">{{ podium[1].matchPoints }} pts</p>
-                            {% if podium[1].registration.hero %}
-                                <div class="mt-2 flex flex-col items-center">
+                            {% set hero_decks = podium[1].registration.decks|filter(deck => deck.hero) %}
+                            {% if hero_decks is not empty %}
+                            <div class="flex justify-center gap-1">
+                            {% for deck in hero_decks %}
+                                <div class="mt-2 flex-1 min-w-0 flex flex-col items-center">
                                     <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white/50">
-                                        <img src="{{ podium[1].registration.heroImage }}" alt="{{ podium[1].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                        <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                                     </div>
-                                    <span class="text-xs text-gray-200 mt-1 truncate w-full">{{ podium[1].registration.heroLabel }}</span>
+                                    <span class="text-xs text-gray-200 mt-1 truncate w-full">{{ deck.heroLabel }}</span>
                                 </div>
+                            {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -87,13 +92,18 @@
                             <p class="text-white font-bold text-lg truncate" title="{{ podium[0].registration.displayName }}">{{ podium[0].registration.displayName }}</p>
                             <p class="text-yellow-100 text-sm font-medium">{{ podium[0].matchPoints }} pts</p>
                             <p class="text-yellow-200 text-xs mt-1">{{ podium[0].wins }}V{% if podium[0].draws > 0 %} - {{ podium[0].draws }}N{% endif %} - {{ podium[0].losses }}D</p>
-                            {% if podium[0].registration.hero %}
-                                <div class="mt-2 flex flex-col items-center">
+                            {% set hero_decks = podium[0].registration.decks|filter(deck => deck.hero) %}
+                            {% if hero_decks is not empty %}
+                            <div class="flex justify-center gap-1">
+                            {% for deck in hero_decks %}
+                                <div class="mt-2 flex-1 min-w-0 flex flex-col items-center">
                                     <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-yellow-200">
-                                        <img src="{{ podium[0].registration.heroImage }}" alt="{{ podium[0].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                        <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                                     </div>
-                                    <span class="text-xs text-yellow-100 mt-1 truncate w-full">{{ podium[0].registration.heroLabel }}</span>
+                                    <span class="text-xs text-yellow-100 mt-1 truncate w-full">{{ deck.heroLabel }}</span>
                                 </div>
+                            {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -116,13 +126,18 @@
                         <div class="text-center px-2 w-full">
                             <p class="text-white font-bold text-sm truncate" title="{{ podium[2].registration.displayName }}">{{ podium[2].registration.displayName }}</p>
                             <p class="text-amber-200 text-sm">{{ podium[2].matchPoints }} pts</p>
-                            {% if podium[2].registration.hero %}
-                                <div class="mt-2 flex flex-col items-center">
+                            {% set hero_decks = podium[2].registration.decks|filter(deck => deck.hero) %}
+                            {% if hero_decks is not empty %}
+                            <div class="flex justify-center gap-1">
+                            {% for deck in hero_decks %}
+                                <div class="mt-2 flex-1 min-w-0 flex flex-col items-center">
                                     <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-amber-300/50">
-                                        <img src="{{ podium[2].registration.heroImage }}" alt="{{ podium[2].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                        <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                                     </div>
-                                    <span class="text-xs text-amber-200 mt-1 truncate w-full">{{ podium[2].registration.heroLabel }}</span>
+                                    <span class="text-xs text-amber-200 mt-1 truncate w-full">{{ deck.heroLabel }}</span>
                                 </div>
+                            {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -147,13 +162,18 @@
                     <h2 class="text-xl font-bold text-yellow-900 dark:text-yellow-400">Vainqueur</h2>
                     <p class="text-2xl font-bold text-gold">{{ podium[0].registration.displayName }}</p>
                 </div>
-                {% if podium[0].registration.hero %}
-                    <div class="ml-6 flex flex-col items-center">
-                        <div class="w-14 h-14 rounded-full overflow-hidden border-3 shadow-md" style="border-color: {{ podium[0].registration.faction ? podium[0].registration.faction.color : '#fbbf24' }};">
-                            <img src="{{ podium[0].registration.heroImage }}" alt="{{ podium[0].registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'">
+                {% set hero_decks = podium[0].registration.decks|filter(deck => deck.hero) %}
+                {% if hero_decks is not empty %}
+                <div class="ml-6 flex gap-3">
+                {% for deck in hero_decks %}
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 rounded-full overflow-hidden border-3 shadow-md" style="border-color: {{ deck.faction ? deck.faction.color : '#fbbf24' }};">
+                            <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'">
                         </div>
-                        <span class="text-xs text-yellow-700 dark:text-yellow-500 mt-1 font-medium">{{ podium[0].registration.heroLabel }}</span>
+                        <span class="text-xs text-yellow-700 dark:text-yellow-500 mt-1 font-medium">{{ deck.heroLabel }}</span>
                     </div>
+                {% endfor %}
+                </div>
                 {% endif %}
             </div>
             <div class="text-right">
@@ -186,16 +206,21 @@
                     {% endif %}
                     <span class="font-bold text-lg" style="color: var(--text-primary);">{{ entry.registration.displayName }}</span>
                 </div>
-                {% if entry.registration.hero %}
-                    <div class="flex items-center mb-4 p-3 rounded-xl" style="background-color: var(--bg-subtle);">
-                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 mr-3 flex-shrink-0" style="border-color: {{ entry.registration.faction ? entry.registration.faction.color : 'var(--border-muted)' }};">
-                            <img src="{{ entry.registration.heroImage }}" alt="{{ entry.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span style=\'color: var(--text-muted);\'>?</span></div>'">
+                {% set hero_decks = entry.registration.decks|filter(deck => deck.hero) %}
+                {% if hero_decks is not empty %}
+                <div class="mb-4 space-y-2">
+                {% for deck in hero_decks %}
+                    <div class="flex items-center p-3 rounded-xl" style="background-color: var(--bg-subtle);">
+                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 mr-3 flex-shrink-0" style="border-color: {{ deck.faction ? deck.faction.color : 'var(--border-muted)' }};">
+                            <img src="{{ deck.heroImage }}" alt="{{ deck.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center\' style=\'background-color: var(--bg-subtle);\'><span style=\'color: var(--text-muted);\'>?</span></div>'">
                         </div>
                         <div>
-                            <p class="text-xs" style="color: var(--text-muted);">Heros</p>
-                            <p class="font-medium text-sm" style="color: var(--text-primary);">{{ entry.registration.heroLabel }}</p>
+                            <p class="text-xs" style="color: var(--text-muted);">{% if entry.registration.partner %}{{ deck.member.pseudo }}{% else %}Heros{% endif %}</p>
+                            <p class="font-medium text-sm" style="color: var(--text-primary);">{{ deck.heroLabel }}</p>
                         </div>
                     </div>
+                {% endfor %}
+                </div>
                 {% endif %}
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between p-2 rounded-lg" style="background-color: var(--bg-subtle);">

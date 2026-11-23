@@ -149,14 +149,15 @@
                 {# Player name and hero #}
                 <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;">
                     <span style="color: #ffffff; font-size: 14px; font-weight: 500; margin-top: -16px;">{{ entry.registration.displayName }}</span>
-                    {% if entry.registration.heroLabel %}
+                    {# One hero per deck: both teammates' heroes in 2v2 #}
+                    {% for deck in entry.registration.decks|filter(deck => deck.heroLabel) %}
                         <div style="display: flex; align-items: center; gap: 4px;">
-                            {% if entry.registration.heroImage %}
-                                <img src="{{ entry.registration.heroImage }}" alt="" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid {{ entry.registration.faction ? entry.registration.faction.color : '#6b7280' }};">
+                            {% if deck.heroImage %}
+                                <img src="{{ deck.heroImage }}" alt="" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid {{ deck.faction ? deck.faction.color : '#6b7280' }};">
                             {% endif %}
-                            <span style="color: #6b7280; font-size: 12px; margin-top: -16px;">{{ entry.registration.heroLabel }}</span>
+                            <span style="color: #6b7280; font-size: 12px; margin-top: -16px;">{{ deck.heroLabel }}</span>
                         </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
 
                 {# Stats #}

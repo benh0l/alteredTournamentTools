@@ -109,6 +109,18 @@ final class TeamTournamentFlowTest extends WebTestCase
         $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/registrations');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('body', 'Subhash & Marmo');
+
+        // Results pages (podium, stats, final standings and their share images) show both heroes
+        // The entity manager is reset between requests: reload the tournament from the current one
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->find(Tournament::class, $tournament->getId())?->setStatus(TournamentStatus::COMPLETED);
+        $em->flush();
+        foreach (['podium', 'stats', 'final-standings'] as $page) {
+            $crawler = $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/' . $page);
+            $this->assertResponseIsSuccessful($page);
+            $this->assertStringContainsString('Sierra &amp; Oddball', $this->client->getResponse()->getContent(), $page);
+            $this->assertStringContainsString('Subhash &amp; Marmo', $this->client->getResponse()->getContent(), $page);
+        }
     }
 
     private function teamName(Registration $team): string
