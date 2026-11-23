@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Controller;
 use App\Entity\Registration;
 use App\Entity\Tournament;
 use App\Entity\User;
+use App\Enum\Faction;
 use App\Enum\TournamentStatus;
 use App\Service\PairingService;
 use App\Service\ResultSubmissionService;
@@ -49,7 +50,11 @@ final class TeamTournamentFlowTest extends WebTestCase
         $teams = [];
         for ($i = 1; $i <= 5; ++$i) {
             $team = (new Registration($tournament, $this->createUser($this->em, 'Cap' . $i)))
-                ->setPartner($this->createUser($this->em, 'Mate' . $i));
+                ->setFaction(Faction::AXIOM)
+                ->setHero('sierra-oddball')
+                ->setPartner($this->createUser($this->em, 'Mate' . $i))
+                ->setPartnerFaction(Faction::BRAVOS)
+                ->setPartnerHero('subhash-marmo');
             $tournament->addRegistration($team);
             $this->em->persist($team);
             $teams[] = $team;
@@ -97,6 +102,13 @@ final class TeamTournamentFlowTest extends WebTestCase
         $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/rounds/standings');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('body', $this->teamName($teams[0]));
+        // Both teammates' heroes are shown in the standings
+        $this->assertSelectorTextContains('body', 'Sierra & Oddball');
+        $this->assertSelectorTextContains('body', 'Subhash & Marmo');
+
+        $this->client->request('GET', '/tournaments/' . $tournament->getId() . '/registrations');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('body', 'Subhash & Marmo');
     }
 
     private function teamName(Registration $team): string

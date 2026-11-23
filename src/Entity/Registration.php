@@ -160,6 +160,38 @@ class Registration
         ));
     }
 
+    /**
+     * Deck of each member: one entry in 1v1, two in 2v2 (player first, then partner).
+     *
+     * @return list<array{member: User, faction: ?Faction, faction2: ?Faction, hero: ?string, heroLabel: ?string, heroImage: ?string, decklistUrl: ?string}>
+     */
+    public function getDecks(): array
+    {
+        $decks = [[
+            'member' => $this->player,
+            'faction' => $this->faction,
+            'faction2' => $this->faction2,
+            'hero' => $this->hero,
+            'heroLabel' => $this->getHeroLabel(),
+            'heroImage' => $this->getHeroImage(),
+            'decklistUrl' => $this->decklistUrl,
+        ]];
+
+        if ($this->partner !== null) {
+            $decks[] = [
+                'member' => $this->partner,
+                'faction' => $this->partnerFaction,
+                'faction2' => $this->partnerFaction2,
+                'hero' => $this->partnerHero,
+                'heroLabel' => $this->getPartnerHeroLabel(),
+                'heroImage' => $this->getPartnerHeroImage(),
+                'decklistUrl' => $this->partnerDecklistUrl,
+            ];
+        }
+
+        return $decks;
+    }
+
     public function getPartner(): ?User
     {
         return $this->partner;

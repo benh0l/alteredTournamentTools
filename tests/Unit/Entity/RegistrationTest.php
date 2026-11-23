@@ -390,6 +390,20 @@ final class RegistrationTest extends TestCase
         $this->assertFalse((new Registration($solo, $this->createMock(User::class)))->isIncompleteTeam());
     }
 
+    public function testDecksListsEachMember(): void
+    {
+        [$captain, $partner] = $this->createTeamUsers();
+        $solo = (new Registration($this->createMock(Tournament::class), $captain))->setHero('nevenka-blotch');
+        $team = (clone $solo)->setPartner($partner)->setPartnerHero('nevenka-blotch')->setPartnerFaction(Faction::LYRA);
+
+        $this->assertCount(1, $solo->getDecks());
+        $this->assertSame($captain, $solo->getDecks()[0]['member']);
+        $this->assertCount(2, $team->getDecks());
+        $this->assertSame($partner, $team->getDecks()[1]['member']);
+        $this->assertSame(Faction::LYRA, $team->getDecks()[1]['faction']);
+        $this->assertSame('Nevenka & Blotch', $team->getDecks()[1]['heroLabel']);
+    }
+
     /**
      * @return array{User, User}
      */

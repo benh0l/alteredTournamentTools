@@ -66,8 +66,9 @@
                                     <span class="text-xs" style="color: var(--text-muted);">(BYE)</span>
                                 {% endif %}
                             </div>
-                            {% if standing.registration.hero %}
-                                <div class="text-sm" style="color: var(--text-muted);">{{ standing.registration.heroLabel }}</div>
+                            {% set hero_labels = standing.registration.decks|filter(deck => deck.hero)|map(deck => deck.heroLabel) %}
+                            {% if hero_labels is not empty %}
+                                <div class="text-sm" style="color: var(--text-muted);">{{ hero_labels|join(' · ') }}</div>
                             {% endif %}
                         </div>
                         {# Organizer drop/undrop action (mobile) #}
@@ -166,16 +167,7 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                {% if standing.registration.hero %}
-                                    <div class="flex flex-col items-center">
-                                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 mb-1 {% if standing.registration.isDropped %}grayscale{% endif %}" style="border-color: {{ standing.registration.faction ? standing.registration.faction.color : 'var(--border-muted)' }};">
-                                            <img src="{{ standing.registration.heroImage }}" alt="{{ standing.registration.heroLabel }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-200\'><span class=\'text-xs text-gray-500\'>?</span></div>'">
-                                        </div>
-                                        <span class="text-xs" style="color: var(--text-muted);">{{ standing.registration.heroLabel }}</span>
-                                    </div>
-                                {% else %}
-                                    <span class="text-xs" style="color: var(--text-muted);">-</span>
-                                {% endif %}
+                                {{ include('components/_registration_heroes.html.twig', {registration: standing.registration, grayscale: standing.registration.isDropped}) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold" style="color: var(--text-primary);">
                                 {{ standing.matchPoints }}
