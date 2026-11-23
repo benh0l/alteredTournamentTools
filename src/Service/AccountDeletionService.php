@@ -116,6 +116,9 @@ final class AccountDeletionService
 
         foreach ($registrations as $registration) {
             $tournament = $registration->getTournament();
+            // In 2v2 the user may be the partner: export their own deck, and name the teammate
+            $isPartner = $registration->getPartner() !== null && $registration->getPartner()->getId() === $user->getId();
+            $teammate = $isPartner ? $registration->getPlayer() : $registration->getPartner();
             $data[] = [
                 'tournament' => [
                     'id' => $tournament->getId(),
@@ -125,10 +128,11 @@ final class AccountDeletionService
                     'status' => $tournament->getStatus()->value,
                 ],
                 'registered_at' => $registration->getRegisteredAt()->format('c'),
-                'faction' => $registration->getFaction()?->value,
-                'faction2' => $registration->getFaction2()?->value,
-                'hero' => $registration->getHero(),
-                'decklist_url' => $registration->getDecklistUrl(),
+                'faction' => ($isPartner ? $registration->getPartnerFaction() : $registration->getFaction())?->value,
+                'faction2' => ($isPartner ? $registration->getPartnerFaction2() : $registration->getFaction2())?->value,
+                'hero' => $isPartner ? $registration->getPartnerHero() : $registration->getHero(),
+                'decklist_url' => $isPartner ? $registration->getPartnerDecklistUrl() : $registration->getDecklistUrl(),
+                'teammate' => $teammate?->getPseudo(),
             ];
         }
 

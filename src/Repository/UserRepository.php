@@ -297,7 +297,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Find all disputed matches for a user (FR74).
      *
-     * @return array<array{match: \App\Entity\TournamentMatch, tournament: \App\Entity\Tournament, opponent: ?User, resolution: ?string}>
+     * @return array<array{match: \App\Entity\TournamentMatch, tournament: \App\Entity\Tournament, opponent: ?\App\Entity\Registration, resolution: ?string}>
      */
     public function findDisputedMatchesForUser(User $user): array
     {
@@ -337,12 +337,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             }
 
             if ($isDispute) {
-                $opponent = null;
-                if ($match->getPlayer1()?->hasMember($user)) {
-                    $opponent = $match->getPlayer2()?->getPlayer();
-                } else {
-                    $opponent = $match->getPlayer1()?->getPlayer();
-                }
+                // Opposing side: a player, or a whole team in 2v2
+                $opponent = $match->getPlayer1()?->hasMember($user)
+                    ? $match->getPlayer2()
+                    : $match->getPlayer1();
 
                 $result[] = [
                     'match' => $match,
